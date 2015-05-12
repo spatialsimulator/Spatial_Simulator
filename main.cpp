@@ -120,7 +120,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   string reqPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/req/version1");
   ListOfSpecies *los = model->getListOfSpecies();
   ListOfCompartments *loc = model->getListOfCompartments();
-  ListOfRules *lorules = model->getListOfRules();
+  //ListOfRules *lorules = model->getListOfRules();
   SpatialCompartmentPlugin *cPlugin = 0;
   //sbml spatial package
   SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(spatialPrefix));
@@ -239,7 +239,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
     if (geometry->getGeometryDefinition(i)->isSampledFieldGeometry()) {
       //SampleFieldGeometry
-      SampledFieldGeometry *sfGeo	= static_cast<SampledFieldGeometry*>(geometry->getGeometryDefinition(i));
+      //SampledFieldGeometry *sfGeo	= static_cast<SampledFieldGeometry*>(geometry->getGeometryDefinition(i));
       SampledField *samField = geometry->getListOfSampledFields() -> get(0);  //may need changes
       cout << "image size:" << endl << "width * height * depth = " << samField->getNumSamples1() << " * " << samField->getNumSamples2() << " * " << samField->getNumSamples3() << endl << endl;
       isImageBased = true;
@@ -259,8 +259,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 
   int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
   int numOfVolIndexes = Xindex * Yindex * Zindex;
-  int indexMax = Zindex * Yindex * Xindex;
-  int indexMin = -1;
+  //int indexMax = Zindex * Yindex * Xindex;
+  //int indexMin = -1;
 
   //int numOfIndexes = Xdiv * Ydiv * Zdiv;
   //unit
@@ -652,9 +652,9 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       geoInfo->compartmentId = loc->get(i)->getId().c_str();
       geoInfo->domainTypeId = cPlugin->getCompartmentMapping()->getDomainType().c_str();
       //geoInfo->bt = new boundaryType[numOfVolIndexes];
-      if (dType->getSpatialDimensions() == volDimension) {
+      if (dType->getSpatialDimensions() == (int)volDimension) {
         geoInfo->isVol = true;
-      } else if (dType->getSpatialDimensions() == memDimension) {
+      } else if (dType->getSpatialDimensions() == (int)memDimension) {
         geoInfo->isVol = false;
       }
       geoInfoList.push_back(geoInfo);
@@ -1257,11 +1257,11 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       if (!sliceFlag) {
         outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
       } else if (slicedim == 'z') {
-        outputTimeCource_zslice(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname, slice);
+        outputTimeCource_zslice(gp, model, varInfoList, memList, xInfo, yInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Xsize, Ysize, file_num, fname, slice);
       } else if (slicedim == 'y') {
-        outputTimeCource_yslice(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname, slice);
+        outputTimeCource_yslice(gp, model, varInfoList, memList, xInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Zsize, file_num, fname, slice);
       } else if (slicedim == 'x') {
-        outputTimeCource_xslice(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname, slice);
+        outputTimeCource_xslice(gp, model, varInfoList, memList, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Ysize, Zsize, file_num, fname, slice);
       }
       file_num++;
     }

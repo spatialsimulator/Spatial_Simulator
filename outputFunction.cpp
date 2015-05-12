@@ -304,10 +304,10 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
   }
 }
 
-void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, string fname, int zslice)
+void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, double Xsize, double Ysize, int file_num, string fname, int zslice)
 {
   dimension = 2;
-  int X = 0, Y = 0, Z = 0, index = 0, tmp_u;
+  int X = 0, Y = 0, index = 0, tmp_u;
   unsigned int i, j;
   string dir_txt = "", dir_img = "";
   unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
@@ -461,10 +461,10 @@ void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
 }
 
-void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, string fname, int yslice)
+void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Zsize, int file_num, string fname, int yslice)
 {
   dimension = 2;
-  int X = 0, Y = 0, Z = 0, index = 0, tmp_u;
+  int X = 0, Z = 0, index = 0, tmp_u;
   unsigned int i, j;
   string dir_txt = "", dir_img = "";
   unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
@@ -538,7 +538,7 @@ void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varI
     for (Z = 0; Z < Zindex; Z++) {
       for (X = 0; X < Xindex; X++) {
         index = Z * Yindex * Xindex + yslice * Xindex + X;
-        ofs_mem << yInfo->value[index] << ", " << zInfo->value[index];
+        ofs_mem << xInfo->value[index] << ", " << zInfo->value[index];
         for (i = 0; i < numOfSpecies; i++) {
           variableInfo *sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
           if (sInfo != 0 && !sInfo->inVol) {
@@ -612,10 +612,10 @@ void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
 }
 
-void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, string fname, int xslice)
+void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Ysize, double Zsize, int file_num, string fname, int xslice)
 {
   dimension = 2;
-  int X = 0, Y = 0, Z = 0, index = 0, tmp_u;
+  int Y = 0, Z = 0, index = 0, tmp_u;
   unsigned int i, j;
   string dir_txt = "", dir_img = "";
   unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());

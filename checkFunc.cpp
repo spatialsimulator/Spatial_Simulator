@@ -8,22 +8,22 @@
 #include "sbml/packages/spatial/extension/SpatialExtension.h"
 #include "mystruct.h"
 
-#define CHECK(X) (X == 0 || X == Xindex - 1)
+#define CHECK(A, Aindex) (A == 0 || A == Aindex - 1)
 
 using namespace std;
 
 void checkMemPosition(vector<GeometryInfo*> geoInfoList, int Xindex, int Yindex, int Zindex) {
-	int X, Y, Z, i, j, index;
+	unsigned int X, Y, Z, i, j, index;
 	GeometryInfo* geoInfo;
-	for (i = 0; i < geoInfoList.size(); ++i) {
+	for (i = 0; i < (unsigned int)geoInfoList.size(); ++i) {
 		geoInfo = geoInfoList[i];
 		if(geoInfo->isVol == false) {
-			for (j = 0; j < geoInfo->domainIndex.size(); ++j) {
+			for (j = 0; j < (unsigned int)geoInfo->domainIndex.size(); ++j) {
 				index = geoInfo->domainIndex[j];
 				Z = index / (Xindex * Yindex);
 				Y = (index - Z * Xindex * Yindex) / Xindex;
 				X = index - Z * Xindex * Yindex - Y * Xindex;
-				if (CHECK(X) || CHECK(Y) || CHECK(Z)) {
+				if (CHECK(X, (unsigned int)Xindex) || CHECK(Y, (unsigned int)Yindex) || CHECK(Z, (unsigned int)Zindex)) {
 					cerr << "bad geometry." << endl;
 					exit(-1);
 				}
