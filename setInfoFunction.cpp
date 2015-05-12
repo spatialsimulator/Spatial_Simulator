@@ -169,7 +169,7 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
         case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
           sInfo->diffCInfo[0] = info;
           sInfo->diffCInfo[1] = info;
-          if(Zindex  < 1)sInfo->diffCInfo[2] = info;
+          if(Zindex > 1)sInfo->diffCInfo[2] = info;
           break;
                                   
         case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
