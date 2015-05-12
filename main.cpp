@@ -35,6 +35,7 @@
 #include "boundaryFunction.h"
 #include "outputFunction.h"
 #include "checkStability.h"
+#include "checkFunc.h"
 #include <zlib.h>
 
 using namespace std;
@@ -1073,6 +1074,11 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   }
   cout << "finished" << endl;
 
+
+  //膜が端にいるかどうかチェック。いたら終了。mashimo
+	cout << "checking membrane position in geometry..." << endl;
+	checkMemPosition(geoInfoList, Xindex, Yindex, Zindex);	
+
   //calc normal unit vector of membrane (for mem diffusion and mem transport)
   normalUnitVector *nuVec = 0;
   voronoiInfo *vorI = 0;
@@ -1108,6 +1114,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     cout << "dt must be less than " << min_dt << endl;
     exit(1);
   }
+
   //reaction information
   setReactionInfo(model, varInfoList, rInfoList, fast_rInfoList, freeConstList, numOfVolIndexes);
   //rate rule information
