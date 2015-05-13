@@ -1,7 +1,7 @@
 PROG = main
 CFLAGS = -Wall -Wextra -g -c -O2
 CC = g++
-OBJS = main.o setInfoFunction.o initializeFunction.o boundaryFunction.o astFunction.o freeFunction.o searchFunction.o calcPDE.o outputFunction.o checkStability.o
+OBJS = main.o setInfoFunction.o initializeFunction.o boundaryFunction.o astFunction.o freeFunction.o searchFunction.o calcPDE.o outputFunction.o checkStability.o checkFunc.o
 
 $(PROG): $(OBJS)
 	$(CC) -L/usr/local/lib -lsbml -lz -o $(PROG) $(OBJS)
@@ -26,6 +26,8 @@ outputFunction.o: outputFunction.cpp
 	$(CC) $(CFLAGS) outputFunction.cpp
 checkStability.o: checkStability.cpp
 	$(CC) $(CFLAGS) checkStability.cpp
+checkFunc.o: checkFunc.cpp
+	$(CC) $(CFLAGS) checkFunc.cpp
 
 .PHONY: clean
 clean:

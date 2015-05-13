@@ -35,6 +35,7 @@
 #include "boundaryFunction.h"
 #include "outputFunction.h"
 #include "checkStability.h"
+#include "checkFunc.h"
 #include <zlib.h>
 
 using namespace std;
@@ -52,6 +53,7 @@ void printErrorMessage()
   cout << "-d #(double or int): delta t (ex. -d 0.01)" << endl;
   cout << "-o #(int): output results every # step(ex. -o 10)" << endl;
   cout << "-c #(double or int): max of color bar range # (ex. -c 1)" << endl;
+  cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;//added by mashimo
   exit(1);
 }
 
@@ -96,7 +98,6 @@ int main(int argc, char *argv[])
 
 void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 {
-  //cout << " " << AST_PLUS << " " << AST_MINUS << " " << AST_TIMES << " " << AST_DIVIDE << " " << AST_POWER << " " << AST_FUNCTION_POWER << " " << AST_FUNCTION_ABS << " " << AST_FUNCTION_ARCCOS << " " << AST_FUNCTION_ARCCOSH << " " << AST_FUNCTION_ARCCSC << " " << AST_FUNCTION_ARCCSCH << " " << AST_FUNCTION_ARCSEC << " " << AST_FUNCTION_ARCSECH << " " << AST_FUNCTION_ARCSIN << " " << AST_FUNCTION_ARCSINH << " " << AST_FUNCTION_ARCTAN << " " << AST_FUNCTION_ARCTANH << " " << AST_FUNCTION_CEILING << " " << AST_FUNCTION_COS << " " << AST_FUNCTION_COSH << " " << AST_FUNCTION_COT << " " << AST_FUNCTION_COTH << " " << AST_FUNCTION_CSC << " " << AST_FUNCTION_CSCH << " " << AST_FUNCTION_DELAY << " " << AST_FUNCTION_EXP << " " << AST_FUNCTION_FACTORIAL << " " << AST_FUNCTION_FLOOR << " " << AST_FUNCTION_LN << " " << AST_FUNCTION_LOG << " " << AST_FUNCTION_PIECEWISE << " " << AST_FUNCTION_ROOT << " " << AST_FUNCTION_SEC << " " << AST_FUNCTION_SECH << " " << AST_FUNCTION_SIN << " " << AST_FUNCTION_SINH << " " << AST_FUNCTION_TAN << " " << AST_FUNCTION_TANH << " " << AST_LAMBDA << " " << AST_LOGICAL_AND << " " << AST_LOGICAL_NOT << " " << AST_LOGICAL_OR << " " << AST_LOGICAL_XOR << " " << AST_RATIONAL << " " << AST_RELATIONAL_EQ << " " << AST_RELATIONAL_GEQ << " " << AST_RELATIONAL_GT << " " << AST_RELATIONAL_LEQ << " " << AST_RELATIONAL_LT << " " << AST_RELATIONAL_NEQ << endl;
   struct stat st;
   unsigned int i, j, k, m;
   int X = 0, Y = 0, Z = 0, index = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0, out_step = 1;
@@ -119,7 +120,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   string reqPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/req/version1");
   ListOfSpecies *los = model->getListOfSpecies();
   ListOfCompartments *loc = model->getListOfCompartments();
-  ListOfRules *lorules = model->getListOfRules();
+  //ListOfRules *lorules = model->getListOfRules();
   SpatialCompartmentPlugin *cPlugin = 0;
   //sbml spatial package
   SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(spatialPrefix));
@@ -156,9 +157,12 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   //option
   double range_max = 1.0;
   int opt_result = 0;
-  extern char *optarg;
+  extern char	*optarg;
   extern int optind;
-  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:")) != -1) {
+  int slice = 0;
+  char slicedim = 'z';
+  bool sliceFlag = false;
+  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:s:")) != -1) {
     switch(opt_result) {
     case 'x':
       for (i = 0; i < string(optarg).size(); i++) {
@@ -201,6 +205,16 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       }
       range_max = atof(optarg);
       break;
+    case 's':
+      if (optarg[0] != 'x' && optarg[0] != 'y' && optarg[0] != 'z') printErrorMessage();
+      else slicedim = optarg[0];
+      for (i = 1; i < string(optarg).size(); i++) {
+        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+      }
+      sliceFlag = true;
+      slice = atoi(optarg + 1) * 2;
+      if (sliceFlag == true && dimension != 3) printErrorMessage();
+      break;      
     default:
       printErrorMessage();
       break;
@@ -225,7 +239,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
     if (geometry->getGeometryDefinition(i)->isSampledFieldGeometry()) {
       //SampleFieldGeometry
-      SampledFieldGeometry *sfGeo	= static_cast<SampledFieldGeometry*>(geometry->getGeometryDefinition(i));
+      //SampledFieldGeometry *sfGeo	= static_cast<SampledFieldGeometry*>(geometry->getGeometryDefinition(i));
       SampledField *samField = geometry->getListOfSampledFields() -> get(0);  //may need changes
       cout << "image size:" << endl << "width * height * depth = " << samField->getNumSamples1() << " * " << samField->getNumSamples2() << " * " << samField->getNumSamples3() << endl << endl;
       isImageBased = true;
@@ -245,8 +259,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 
   int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
   int numOfVolIndexes = Xindex * Yindex * Zindex;
-  int indexMax = Zindex * Yindex * Xindex;
-  int indexMin = -1;
+  //int indexMax = Zindex * Yindex * Xindex;
+  //int indexMin = -1;
 
   //int numOfIndexes = Xdiv * Ydiv * Zdiv;
   //unit
@@ -638,9 +652,9 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       geoInfo->compartmentId = loc->get(i)->getId().c_str();
       geoInfo->domainTypeId = cPlugin->getCompartmentMapping()->getDomainType().c_str();
       //geoInfo->bt = new boundaryType[numOfVolIndexes];
-      if (dType->getSpatialDimensions() == volDimension) {
+      if (dType->getSpatialDimensions() == (int)volDimension) {
         geoInfo->isVol = true;
-      } else if (dType->getSpatialDimensions() == memDimension) {
+      } else if (dType->getSpatialDimensions() == (int)memDimension) {
         geoInfo->isVol = false;
       }
       geoInfoList.push_back(geoInfo);
@@ -1059,6 +1073,11 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   }
   cout << "finished" << endl;
 
+
+  //膜が端にいるかどうかチェック。いたら終了。mashimo
+	cout << "checking membrane position in geometry..." << endl;
+	checkMemPosition(geoInfoList, Xindex, Yindex, Zindex);	
+
   //calc normal unit vector of membrane (for mem diffusion and mem transport)
   normalUnitVector *nuVec = 0;
   voronoiInfo *vorI = 0;
@@ -1094,6 +1113,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     cout << "dt must be less than " << min_dt << endl;
     exit(1);
   }
+
   //reaction information
   setReactionInfo(model, varInfoList, rInfoList, fast_rInfoList, freeConstList, numOfVolIndexes);
   //rate rule information
@@ -1121,31 +1141,63 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     }
   }
 
+//-----------
+  if(sliceFlag) { 
+    dimension = 2;
+  }
+//-----------  
+
   ofstream ofs;
   string geo_filename = "./result/" + fname + "/txt/geometry/all_membrane.csv";
   ofs.open(geo_filename.c_str());
   ofs << "# information about membrane domain" << endl;
   ofs << "# about values of domainTypeId column: 0 - not in the domain, 1 - in the domain, 2 - in the pseudo domain" << endl;
   //ofs << "# mesh num: [" << (Xindex + 1) / 2 - 1 << " x " << (Yindex + 1) / 2 - 1 << " x " << (Zindex + 1) / 2 - 1 << "]" << endl << endl;
-  ofs << "# x";
-  switch(dimension) {
-  case 1:
-    ofs << ", all";
+  switch (slicedim) {
+  case 'x':
+    ofs << "# y"; 
+    ofs << ", z, all";
     for (i = 0; i < memList.size(); i++) {
       ofs << ", " << memList[i];
     }
     ofs << endl;
-    for (X = 0; X < Xindex; X++) {
-      //all membrane
-      ofs << xInfo->value[X] << ", " << geo_edge[X];
-      //each membrane domain
-      for (i = 0; i < memInfoList.size(); i++) {
-        ofs << ", " << memInfoList[i]->isDomain[index];
+    for (Z = 0; Z < Zindex; Z++) {
+      for (Y = 0; Y < Yindex; Y++) {
+        index = Z * Yindex * Xindex + Y * Xindex + slice;
+        //all membrane
+        ofs << yInfo->value[index] << ", " << zInfo->value[index] << ", " << geo_edge[index];
+        //each membrane domain
+        for (i = 0; i < memInfoList.size(); i++) {
+          ofs << ", " << memInfoList[i]->isDomain[index];
+        }
+        ofs << endl;
       }
       ofs << endl;
     }
     break;
-  case 2:
+  case 'y':
+    ofs << "# x"; 
+    ofs << ", z, all";
+    for (i = 0; i < memList.size(); i++) {
+      ofs << ", " << memList[i];
+    }
+    ofs << endl;
+    for (Z = 0; Z < Zindex; Z++) {
+      for (X = 0; X < Xindex; X++) {
+        index = Z * Yindex * Xindex + slice * Xindex + X;
+        //all membrane
+        ofs << xInfo->value[index] << ", " << zInfo->value[index] << ", " << geo_edge[index];
+        //each membrane domain
+        for (i = 0; i < memInfoList.size(); i++) {
+          ofs << ", " << memInfoList[i]->isDomain[index];
+        }
+        ofs << endl;
+      }
+      ofs << endl;
+    }
+    break;
+  case 'z':
+    ofs << "# x"; 
     ofs << ", y, all";
     for (i = 0; i < memList.size(); i++) {
       ofs << ", " << memList[i];
@@ -1153,7 +1205,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     ofs << endl;
     for (Y = 0; Y < Yindex; Y++) {
       for (X = 0; X < Xindex; X++) {
-        index = Y * Xindex + X;
+        index = slice * Yindex * Xindex + Y * Xindex + X;
         //all membrane
         ofs << xInfo->value[index] << ", " << yInfo->value[index] << ", " << geo_edge[index];
         //each membrane domain
@@ -1165,35 +1217,16 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       ofs << endl;
     }
     break;
-  case 3:
-    ofs << ", y, z, all";
-    for (i = 0; i < memList.size(); i++) {
-      ofs << ", " << memList[i];
-    }
-    ofs << endl;
-    for (Z = 0; Z < Zindex; Z++) {
-      for (Y = 0; Y < Yindex; Y++) {
-        for (X = 0; X < Xindex; X++) {
-          index = Z * Yindex * Xindex + Y * Xindex + X;
-          //all membrane
-          ofs << xInfo->value[index] << ", " << yInfo->value[index] << ", " << zInfo->value[index] << ", " << geo_edge[index];
-          //each membrane domain
-          for (i = 0; i < memInfoList.size(); i++) {
-            ofs << ", " << memInfoList[i]->isDomain[index];
-          }
-          ofs << endl;
-        }
-        ofs << endl;
-      }
-      ofs << endl;
-    }
-    break;
-  default:
-    break;
   }
   ofs.close();
   delete[] geo_edge;
   cout << "finished" << endl << endl;
+
+//-----------------------
+  if(sliceFlag) {
+    dimension = 3;
+  }
+//-----------------------
 
   //simulation
   cout << "simulation starts" << endl;
@@ -1221,7 +1254,15 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       //    }
       //   }
       //   cout << maxam - minmin << endl; //for ii thesis to obtain quantitative analysis
-      outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
+      if (!sliceFlag) {
+        outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
+      } else if (slicedim == 'z') {
+        outputTimeCource_zslice(gp, model, varInfoList, memList, xInfo, yInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Xsize, Ysize, file_num, fname, slice);
+      } else if (slicedim == 'y') {
+        outputTimeCource_yslice(gp, model, varInfoList, memList, xInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Zsize, file_num, fname, slice);
+      } else if (slicedim == 'x') {
+        outputTimeCource_xslice(gp, model, varInfoList, memList, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Ysize, Zsize, file_num, fname, slice);
+      }
       file_num++;
     }
     out_end = clock();
