@@ -35,6 +35,8 @@
 #include "boundaryFunction.h"
 #include "outputFunction.h"
 #include "checkStability.h"
+#include "outputImage.h"
+#include "outputHDF.h"
 #include <zlib.h>
 
 using namespace std;
@@ -96,7 +98,6 @@ int main(int argc, char *argv[])
 
 void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 {
-  //cout << " " << AST_PLUS << " " << AST_MINUS << " " << AST_TIMES << " " << AST_DIVIDE << " " << AST_POWER << " " << AST_FUNCTION_POWER << " " << AST_FUNCTION_ABS << " " << AST_FUNCTION_ARCCOS << " " << AST_FUNCTION_ARCCOSH << " " << AST_FUNCTION_ARCCSC << " " << AST_FUNCTION_ARCCSCH << " " << AST_FUNCTION_ARCSEC << " " << AST_FUNCTION_ARCSECH << " " << AST_FUNCTION_ARCSIN << " " << AST_FUNCTION_ARCSINH << " " << AST_FUNCTION_ARCTAN << " " << AST_FUNCTION_ARCTANH << " " << AST_FUNCTION_CEILING << " " << AST_FUNCTION_COS << " " << AST_FUNCTION_COSH << " " << AST_FUNCTION_COT << " " << AST_FUNCTION_COTH << " " << AST_FUNCTION_CSC << " " << AST_FUNCTION_CSCH << " " << AST_FUNCTION_DELAY << " " << AST_FUNCTION_EXP << " " << AST_FUNCTION_FACTORIAL << " " << AST_FUNCTION_FLOOR << " " << AST_FUNCTION_LN << " " << AST_FUNCTION_LOG << " " << AST_FUNCTION_PIECEWISE << " " << AST_FUNCTION_ROOT << " " << AST_FUNCTION_SEC << " " << AST_FUNCTION_SECH << " " << AST_FUNCTION_SIN << " " << AST_FUNCTION_SINH << " " << AST_FUNCTION_TAN << " " << AST_FUNCTION_TANH << " " << AST_LAMBDA << " " << AST_LOGICAL_AND << " " << AST_LOGICAL_NOT << " " << AST_LOGICAL_OR << " " << AST_LOGICAL_XOR << " " << AST_RATIONAL << " " << AST_RELATIONAL_EQ << " " << AST_RELATIONAL_GEQ << " " << AST_RELATIONAL_GT << " " << AST_RELATIONAL_LEQ << " " << AST_RELATIONAL_LT << " " << AST_RELATIONAL_NEQ << endl;
   struct stat st;
   unsigned int i, j, k, m;
   int X = 0, Y = 0, Z = 0, index = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0, out_step = 1;
@@ -119,7 +120,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   string reqPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/req/version1");
   ListOfSpecies *los = model->getListOfSpecies();
   ListOfCompartments *loc = model->getListOfCompartments();
-  ListOfRules *lorules = model->getListOfRules();
+  //ListOfRules *lorules = model->getListOfRules();//unused variable
   SpatialCompartmentPlugin *cPlugin = 0;
   //sbml spatial package
   SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(spatialPrefix));
@@ -225,7 +226,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
     if (geometry->getGeometryDefinition(i)->isSampledFieldGeometry()) {
       //SampleFieldGeometry
-      SampledFieldGeometry *sfGeo	= static_cast<SampledFieldGeometry*>(geometry->getGeometryDefinition(i));
+      //SampledFieldGeometry *sfGeo	= static_cast<SampledFieldGeometry*>(geometry->getGeometryDefinition(i));//unuse now
       SampledField *samField = geometry->getListOfSampledFields() -> get(0);  //may need changes
       cout << "image size:" << endl << "width * height * depth = " << samField->getNumSamples1() << " * " << samField->getNumSamples2() << " * " << samField->getNumSamples3() << endl << endl;
       isImageBased = true;
@@ -245,8 +246,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 
   int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
   int numOfVolIndexes = Xindex * Yindex * Zindex;
-  int indexMax = Zindex * Yindex * Xindex;
-  int indexMin = -1;
+  //int indexMax = Zindex * Yindex * Xindex;//unused variable
+  //int indexMin = -1;//unused variable
 
   //int numOfIndexes = Xdiv * Ydiv * Zdiv;
   //unit
@@ -415,9 +416,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
               exit(1);
             }
 
-            //ofstream sam_ofs;
-            //string sam_fname = "/Users/matsui/Documents/SBMLSimulator/build/Debug/sample.csv";
-            //sam_ofs.open(sam_fname.c_str());
             GeometryInfo *geoInfo = new GeometryInfo;
             InitializeAVolInfo(geoInfo);
             geoInfo->compartmentId = c->getId().c_str();
@@ -638,9 +636,9 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       geoInfo->compartmentId = loc->get(i)->getId().c_str();
       geoInfo->domainTypeId = cPlugin->getCompartmentMapping()->getDomainType().c_str();
       //geoInfo->bt = new boundaryType[numOfVolIndexes];
-      if (dType->getSpatialDimensions() == volDimension) {
+      if (dType->getSpatialDimensions() == (int)volDimension) {
         geoInfo->isVol = true;
-      } else if (dType->getSpatialDimensions() == memDimension) {
+      } else if (dType->getSpatialDimensions() == (int)memDimension) {
         geoInfo->isVol = false;
       }
       geoInfoList.push_back(geoInfo);
@@ -933,6 +931,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   }
   cout << "finished" << endl << endl;
   //make directories to output result (txt and img)
+  /*
   if(stat(string("./result/" + fname + "/txt").c_str(), &st) != 0) {
     system(string("mkdir ./result/" + fname + "/txt").c_str());
   }
@@ -942,23 +941,41 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   if(stat(string("./result/" + fname + "/img").c_str(), &st) != 0) {
     system(string("mkdir ./result/" + fname + "/img").c_str());
   }
-
+  */
+  if(stat(string("./result/" + fname + "/img_opencv").c_str(), &st) != 0) {//added by mashimo
+    system(string("mkdir ./result/" + fname + "/img_opencv").c_str());
+  }
+  if(stat(string("./result/" + fname + "/HDF5").c_str(), &st) != 0) {//added by mashimo
+    system(string("mkdir ./result/" + fname + "/HDF5").c_str());
+  }
+  makeHDF(fname, los);//added by mashimo
+  if (dimension == 3) make3DHDF(fname, los);
   for (i = 0; i < numOfSpecies; i++) {
     Species *s = los->get(i);
     variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
     if (sInfo != 0) {
       if (sInfo->inVol) {
+        /*
         if(stat(string("./result/" + fname + "/txt/volume").c_str(), &st) != 0) {
           system(string("mkdir ./result/" + fname + "/txt/volume").c_str());
         }
+        */
       } else {
+        /*
         if(stat(string("./result/" + fname + "/txt/membrane").c_str(), &st) != 0) {
           system(string("mkdir ./result/" + fname + "/txt/membrane").c_str());
         }
+        */
       }
+      /*
       if(stat(string("./result/" + fname + "/img/" + s->getId()).c_str(), &st) != 0) {
         system(string("mkdir ./result/" + fname + "/img/" + s->getId()).c_str());
       }
+      */
+      if(stat(string("./result/" + fname + "/img_opencv/" + s->getId()).c_str(), &st) != 0) {//added by mashimo
+        system(string("mkdir ./result/" + fname + "/img_opencv/" + s->getId()).c_str());
+      }
+
     }
   }
 
@@ -1121,6 +1138,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     }
   }
 
+  /*
   ofstream ofs;
   string geo_filename = "./result/" + fname + "/txt/geometry/all_membrane.csv";
   ofs.open(geo_filename.c_str());
@@ -1192,7 +1210,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     break;
   }
   ofs.close();
-  delete[] geo_edge;
+  //delete[] geo_edge;
+  */
   cout << "finished" << endl << endl;
 
   //simulation
@@ -1207,21 +1226,11 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     *sim_time = t * dt;
     //output
     out_start = clock();
-    //         double maxam = 0, minmin=10;
     if (count % out_step == 0) {
-      //   variableInfo *sInfo = searchInfoById(varInfoList, "s1_cyt");
-      //   GeometryInfo *geoInfo = sInfo->geoi;
-      //   for (j = 0; j < geoInfo->domainIndex.size(); j++) {
-      //     index = geoInfo->domainIndex[j];
-      //     if(maxam < sInfo->value[index]) {
-      //       maxam = sInfo->value[index];                      
-      //     }                    
-      //     if(minmin > sInfo->value[index]) {
-      //       minmin = sInfo->value[index];                      
-      //    }
-      //   }
-      //   cout << maxam - minmin << endl; //for ii thesis to obtain quantitative analysis
-      outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
+      //outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
+      if (dimension == 2) outputImg(model, varInfoList, memList, memInfoList, geo_edge, Xdiv, Ydiv, Xsize, Ysize, *sim_time, range_max, fname, file_num);
+      else if (dimension == 3) output3D_uint8(varInfoList, los, Xindex, Yindex, Zindex, file_num, fname, range_max);
+      outputValueData(varInfoList, los, Xdiv, Ydiv, Zdiv, dimension, file_num, fname);
       file_num++;
     }
     out_end = clock();
@@ -1478,6 +1487,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   pclose(gp);
 
   //free
+  delete[] geo_edge;//mashimo
   freeVarInfo(varInfoList);
   freeAvolInfo(geoInfoList);
   freeRInfo(rInfoList);
