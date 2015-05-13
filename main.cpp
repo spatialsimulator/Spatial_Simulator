@@ -37,6 +37,7 @@
 #include "checkStability.h"
 #include "outputImage.h"
 #include "outputHDF.h"
+#include "checkFunc.h"
 #include <zlib.h>
 
 using namespace std;
@@ -54,6 +55,7 @@ void printErrorMessage()
   cout << "-d #(double or int): delta t (ex. -d 0.01)" << endl;
   cout << "-o #(int): output results every # step(ex. -o 10)" << endl;
   cout << "-c #(double or int): max of color bar range # (ex. -c 1)" << endl;
+  cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;//added by mashimo
   exit(1);
 }
 
@@ -157,9 +159,12 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   //option
   double range_max = 1.0;
   int opt_result = 0;
-  extern char *optarg;
+  extern char	*optarg;
   extern int optind;
-  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:")) != -1) {
+  int slice = 0;
+  char slicedim = 'z';
+  bool sliceFlag = false;
+  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:s:")) != -1) {
     switch(opt_result) {
     case 'x':
       for (i = 0; i < string(optarg).size(); i++) {
@@ -202,6 +207,16 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       }
       range_max = atof(optarg);
       break;
+    case 's':
+      if (optarg[0] != 'x' && optarg[0] != 'y' && optarg[0] != 'z') printErrorMessage();
+      else slicedim = optarg[0];
+      for (i = 1; i < string(optarg).size(); i++) {
+        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+      }
+      sliceFlag = true;
+      slice = atoi(optarg + 1) * 2;
+      if (sliceFlag == true && dimension != 3) printErrorMessage();
+      break;      
     default:
       printErrorMessage();
       break;
@@ -248,7 +263,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   int numOfVolIndexes = Xindex * Yindex * Zindex;
   //int indexMax = Zindex * Yindex * Xindex;//unused variable
   //int indexMin = -1;//unused variable
-
   //int numOfIndexes = Xdiv * Ydiv * Zdiv;
   //unit
   unsigned int volDimension = 0, memDimension = 0;
@@ -1076,6 +1090,11 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   }
   cout << "finished" << endl;
 
+
+  //膜が端にいるかどうかチェック。いたら終了。mashimo
+	cout << "checking membrane position in geometry..." << endl;
+	checkMemPosition(geoInfoList, Xindex, Yindex, Zindex);	
+
   //calc normal unit vector of membrane (for mem diffusion and mem transport)
   normalUnitVector *nuVec = 0;
   voronoiInfo *vorI = 0;
@@ -1111,6 +1130,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     cout << "dt must be less than " << min_dt << endl;
     exit(1);
   }
+
   //reaction information
   setReactionInfo(model, varInfoList, rInfoList, fast_rInfoList, freeConstList, numOfVolIndexes);
   //rate rule information
@@ -1137,82 +1157,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       }
     }
   }
-
-  /*
-  ofstream ofs;
-  string geo_filename = "./result/" + fname + "/txt/geometry/all_membrane.csv";
-  ofs.open(geo_filename.c_str());
-  ofs << "# information about membrane domain" << endl;
-  ofs << "# about values of domainTypeId column: 0 - not in the domain, 1 - in the domain, 2 - in the pseudo domain" << endl;
-  //ofs << "# mesh num: [" << (Xindex + 1) / 2 - 1 << " x " << (Yindex + 1) / 2 - 1 << " x " << (Zindex + 1) / 2 - 1 << "]" << endl << endl;
-  ofs << "# x";
-  switch(dimension) {
-  case 1:
-    ofs << ", all";
-    for (i = 0; i < memList.size(); i++) {
-      ofs << ", " << memList[i];
-    }
-    ofs << endl;
-    for (X = 0; X < Xindex; X++) {
-      //all membrane
-      ofs << xInfo->value[X] << ", " << geo_edge[X];
-      //each membrane domain
-      for (i = 0; i < memInfoList.size(); i++) {
-        ofs << ", " << memInfoList[i]->isDomain[index];
-      }
-      ofs << endl;
-    }
-    break;
-  case 2:
-    ofs << ", y, all";
-    for (i = 0; i < memList.size(); i++) {
-      ofs << ", " << memList[i];
-    }
-    ofs << endl;
-    for (Y = 0; Y < Yindex; Y++) {
-      for (X = 0; X < Xindex; X++) {
-        index = Y * Xindex + X;
-        //all membrane
-        ofs << xInfo->value[index] << ", " << yInfo->value[index] << ", " << geo_edge[index];
-        //each membrane domain
-        for (i = 0; i < memInfoList.size(); i++) {
-          ofs << ", " << memInfoList[i]->isDomain[index];
-        }
-        ofs << endl;
-      }
-      ofs << endl;
-    }
-    break;
-  case 3:
-    ofs << ", y, z, all";
-    for (i = 0; i < memList.size(); i++) {
-      ofs << ", " << memList[i];
-    }
-    ofs << endl;
-    for (Z = 0; Z < Zindex; Z++) {
-      for (Y = 0; Y < Yindex; Y++) {
-        for (X = 0; X < Xindex; X++) {
-          index = Z * Yindex * Xindex + Y * Xindex + X;
-          //all membrane
-          ofs << xInfo->value[index] << ", " << yInfo->value[index] << ", " << zInfo->value[index] << ", " << geo_edge[index];
-          //each membrane domain
-          for (i = 0; i < memInfoList.size(); i++) {
-            ofs << ", " << memInfoList[i]->isDomain[index];
-          }
-          ofs << endl;
-        }
-        ofs << endl;
-      }
-      ofs << endl;
-    }
-    break;
-  default:
-    break;
-  }
-  ofs.close();
-  //delete[] geo_edge;
-  */
-  cout << "finished" << endl << endl;
 
   //simulation
   cout << "simulation starts" << endl;

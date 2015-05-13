@@ -19,14 +19,14 @@ const string IMGFILENAME = "ImageData.h5";
 
 void makeHDF(string fname, ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
   H5File file("./result/" + fname + "/HDF5/" + FILENAME, H5F_ACC_TRUNC);
-  for (int i = 0; i < los->size(); ++i) {
+  for (unsigned int i = 0; i < los->size(); ++i) {
     file.createGroup(los->get(i)->getId());
   }
 }
 
-void make3DHDF(vector<variable>string fname, ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
+void make3DHDF(string fname, ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
   H5File file("./result/" + fname + "/HDF5/" + IMGFILENAME, H5F_ACC_TRUNC);
-  for (int i = 0; i < los->size(); ++i) {
+  for (unsigned int i = 0; i < los->size(); ++i) {
     file.createGroup(los->get(i)->getId());
   }
 }
@@ -107,7 +107,7 @@ void output3D_uint8 (vector<variableInfo*>&varInfoList, ListOfSpecies* los, int 
     sInfo = searchInfoById(varInfoList, s_id.c_str());
     geoInfo = sInfo->geoi;
     spGroup = file.openGroup(s_id);
-    for (int j = 0; j < geoInfo->domainIndex.size(); j++) {
+    for (int j = 0; j < (int)geoInfo->domainIndex.size(); j++) {
       index = geoInfo->domainIndex[j];
       Z = index / (Xindex * Yindex);
       Y = (index - Z * Xindex * Yindex) / Xindex;

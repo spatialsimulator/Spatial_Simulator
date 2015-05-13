@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -g -c -O2
 OPENCVFLAGS = `pkg-config --libs opencv`
 HDF5LFLAGS = -lhdf5 -lhdf5_cpp
 CC = g++
-OBJS = main.o setInfoFunction.o initializeFunction.o boundaryFunction.o astFunction.o freeFunction.o searchFunction.o calcPDE.o outputFunction.o checkStability.o outputImage.o outputHDF.o
+OBJS = main.o setInfoFunction.o initializeFunction.o boundaryFunction.o astFunction.o freeFunction.o searchFunction.o calcPDE.o outputFunction.o checkStability.o outputImage.o outputHDF.o checkFunc.o
 
 $(PROG): $(OBJS)
 	$(CC) -L/usr/local/lib -lsbml -lz $(OPENCVFLAGS) $(HDF5LFLAGS) -o $(PROG) $(OBJS)
@@ -32,6 +32,8 @@ outputImage.o: outputImage.cpp
 	$(CC) $(CFLAGS) `pkg-config --cflags opencv` outputImage.cpp
 outputHDF.o: outputHDF.cpp
 	$(CC) $(CFLAGS) outputHDF.cpp
+checkFunc.o: checkFunc.cpp
+	$(CC) $(CFLAGS) checkFunc.cpp
 
 .PHONY: clean
 clean:
