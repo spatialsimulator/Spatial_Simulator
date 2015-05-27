@@ -12,7 +12,7 @@
 
 using namespace std;
 
-void checkMemPosition(vector<GeometryInfo*> geoInfoList, int Xindex, int Yindex, int Zindex) {
+void checkMemPosition(vector<GeometryInfo*> geoInfoList, int Xindex, int Yindex, int Zindex, int dimension) {
 	unsigned int X, Y, Z, i, j, index;
 	GeometryInfo* geoInfo;
 	for (i = 0; i < (unsigned int)geoInfoList.size(); ++i) {
@@ -23,9 +23,21 @@ void checkMemPosition(vector<GeometryInfo*> geoInfoList, int Xindex, int Yindex,
 				Z = index / (Xindex * Yindex);
 				Y = (index - Z * Xindex * Yindex) / Xindex;
 				X = index - Z * Xindex * Yindex - Y * Xindex;
-				if (CHECK(X, (unsigned int)Xindex) || CHECK(Y, (unsigned int)Yindex) || CHECK(Z, (unsigned int)Zindex)) {
-					cerr << "bad geometry." << endl;
-					exit(-1);
+        if (CHECK(X, (unsigned int)Xindex)) {
+          cerr << "bad geometry." << endl;
+          exit(-1);
+        }
+        if (dimension <= 2) {
+          if (CHECK(Y, (unsigned int)Yindex)) {
+            cerr << "bad geometry." << endl;
+            exit(-1);
+          }
+        }
+        if (dimension == 3) {
+          if (CHECK(Z, (unsigned int)Zindex)) {
+            cerr << "bad geometry." << endl;
+            exit(-1);
+          }
 				}
 			}
 		}

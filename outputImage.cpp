@@ -25,38 +25,35 @@ void makeColorBar(Mat* colorBar) {
     for (x = 0; x < barSizeX; ++x) {
       for (c = 0; c < colorBar->channels(); ++c) {
         if(c == 0) {//B
-          if(y < 240) {//2~5
+          if(y < 240) {//5~2
             colorBar->at<Vec3b>(y, x)[c] = 0;
           }
-          else if(240 <= y && y < 320) {//1 <= color < 2
+          else if(240 <= y && y < 320) {//2~1
             colorBar->at<Vec3b>(y, x)[c] = (y - 240) * (256 / 80);
           }
-          else if(320 <= y && y < 400) {//0 <= color < 1
+          else if(320 <= y && y < 400) {//1~0
             colorBar->at<Vec3b>(y, x)[c] = 139 + (399 - y) * (116 / 80);
           }
         }
         else if (c == 1) {//G
-          if(y < 80) {
+          if(y < 80) {//5~4
             colorBar->at<Vec3b>(y, x)[c] = y * (256 / 80);
           }
-          else if(80 <= y && y < 240) {
+          else if(80 <= y && y < 320) {//4~1
             colorBar->at<Vec3b>(y, x)[c] = 255;
           }
-          else if(240 <= y && y < 320) {
-            colorBar->at<Vec3b>(y, x)[c] = 255 - ((y - 240) * (256 / 80));
-          }
-          else if(320 <= y) {
-            colorBar->at<Vec3b>(y, x)[c] = 0;
+          else if(320 <= y && y < 400) {//1~0
+            colorBar->at<Vec3b>(y, x)[c] = 255 - ((y - 320) * (256 / 80));
           }
         }
         else if (c == 2) {//R
-          if(y < 80) {
+          if(y < 80) {//5~4
             colorBar->at<Vec3b>(y, x)[c] = 255;
           }
-          else if(80 <= y && y < 240) {
+          else if(80 <= y && y < 240) {//4~2
             colorBar->at<Vec3b>(y, x)[c] = 255 - ((y - 80) * (256 / 160));
           }
-          else if(240 <= y) {
+          else if(240 <= y) {//2~0
             colorBar->at<Vec3b>(y, x)[c] = 0;
           }
         }
