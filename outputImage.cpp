@@ -70,13 +70,16 @@ void makeValueMat(Mat* mat, double* value, int Xindex, int Yindex) {
       for (c = 0; c < mat->channels(); ++c) {
         if(0 <= value[index] && value[index] < 1) {//0~1
           if(c == 0) mat->at<Vec3b>(Y, X)[c] = 139.0 + (value[index] * (255.0 - 139.0));
-          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 0;
+          //else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 0;
+          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = value[index] * 255.0;
           else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 0;
         }
         else if(1 <= value[index] && value[index] < 2) {//1~2
           if(c == 0) mat->at<Vec3b>(Y, X)[c] = 255.0 - (value[index] - 1) * 255.0;
-          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = (value[index] - 1) * 255.0;
-          else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 0;
+          //else if(c == 1) mat->at<Vec3b>(Y, X)[c] = (value[index] - 1) * 255.0;
+          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 255.0;
+          //else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 0;
+          else if(c == 2) mat->at<Vec3b>(Y, X)[c] = value[index] - 1 * 255.0;
         }
         else if(2 <= value[index] && value[index] < 4) {//2~4
           if(c == 0) mat->at<Vec3b>(Y, X)[c] = 0;
@@ -89,9 +92,9 @@ void makeValueMat(Mat* mat, double* value, int Xindex, int Yindex) {
           else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 255;
         }
         else {
-          if(c == 0) mat->at<Vec3b>(Y, X)[c] = 0;
-          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 0;
-          else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 255;
+          if(c == 0) mat->at<Vec3b>(Y, X)[c] = 0;//B
+          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 0;//G
+          else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 255;//R
         }
       }
     }
