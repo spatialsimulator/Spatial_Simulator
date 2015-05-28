@@ -1076,7 +1076,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 
   //膜が端にいるかどうかチェック。いたら終了。mashimo
 	cout << "checking membrane position in geometry..." << endl;
-	checkMemPosition(geoInfoList, Xindex, Yindex, Zindex);	
+	checkMemPosition(geoInfoList, Xindex, Yindex, Zindex, dimension);	
 
   //calc normal unit vector of membrane (for mem diffusion and mem transport)
   normalUnitVector *nuVec = 0;
