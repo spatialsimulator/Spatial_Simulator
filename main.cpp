@@ -1141,92 +1141,147 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     }
   }
 
-//-----------
-  if(sliceFlag) { 
-    dimension = 2;
-  }
-//-----------  
-
   ofstream ofs;
   string geo_filename = "./result/" + fname + "/txt/geometry/all_membrane.csv";
   ofs.open(geo_filename.c_str());
   ofs << "# information about membrane domain" << endl;
   ofs << "# about values of domainTypeId column: 0 - not in the domain, 1 - in the domain, 2 - in the pseudo domain" << endl;
   //ofs << "# mesh num: [" << (Xindex + 1) / 2 - 1 << " x " << (Yindex + 1) / 2 - 1 << " x " << (Zindex + 1) / 2 - 1 << "]" << endl << endl;
-  switch (slicedim) {
-  case 'x':
-    ofs << "# y"; 
-    ofs << ", z, all";
-    for (i = 0; i < memList.size(); i++) {
-      ofs << ", " << memList[i];
-    }
-    ofs << endl;
-    for (Z = 0; Z < Zindex; Z++) {
+  switch(dimension) {
+    case 1:
+      ofs << ", all";
+      for (i = 0; i < memList.size(); i++) {
+        ofs << ", " << memList[i];
+      }
+      ofs << endl;
+      for (X = 0; X < Xindex; X++) {
+        //all membrane
+        ofs << xInfo->value[X] << ", " << geo_edge[X];
+        //each membrane domain
+        for (i = 0; i < memInfoList.size(); i++) {
+          ofs << ", " << memInfoList[i]->isDomain[index];
+        }
+        ofs << endl;
+      }
+      break;
+    case 2:
+      ofs << ", y, all";
+      for (i = 0; i < memList.size(); i++) {
+        ofs << ", " << memList[i];
+      }
+      ofs << endl;
       for (Y = 0; Y < Yindex; Y++) {
-        index = Z * Yindex * Xindex + Y * Xindex + slice;
-        //all membrane
-        ofs << yInfo->value[index] << ", " << zInfo->value[index] << ", " << geo_edge[index];
-        //each membrane domain
-        for (i = 0; i < memInfoList.size(); i++) {
-          ofs << ", " << memInfoList[i]->isDomain[index];
+        for (X = 0; X < Xindex; X++) {
+          index = Y * Xindex + X;
+          //all membrane
+          ofs << xInfo->value[index] << ", " << yInfo->value[index] << ", " << geo_edge[index];
+          //each membrane domain
+          for (i = 0; i < memInfoList.size(); i++) {
+            ofs << ", " << memInfoList[i]->isDomain[index];
+          }
+          ofs << endl;
         }
         ofs << endl;
       }
-      ofs << endl;
-    }
-    break;
-  case 'y':
-    ofs << "# x"; 
-    ofs << ", z, all";
-    for (i = 0; i < memList.size(); i++) {
-      ofs << ", " << memList[i];
-    }
-    ofs << endl;
-    for (Z = 0; Z < Zindex; Z++) {
-      for (X = 0; X < Xindex; X++) {
-        index = Z * Yindex * Xindex + slice * Xindex + X;
-        //all membrane
-        ofs << xInfo->value[index] << ", " << zInfo->value[index] << ", " << geo_edge[index];
-        //each membrane domain
-        for (i = 0; i < memInfoList.size(); i++) {
-          ofs << ", " << memInfoList[i]->isDomain[index];
+      break;
+    case 3:
+      if(!sliceFlag) {
+        ofs << ", y, z, all";
+        for (i = 0; i < memList.size(); i++) {
+          ofs << ", " << memList[i];
         }
         ofs << endl;
-      }
-      ofs << endl;
-    }
-    break;
-  case 'z':
-    ofs << "# x"; 
-    ofs << ", y, all";
-    for (i = 0; i < memList.size(); i++) {
-      ofs << ", " << memList[i];
-    }
-    ofs << endl;
-    for (Y = 0; Y < Yindex; Y++) {
-      for (X = 0; X < Xindex; X++) {
-        index = slice * Yindex * Xindex + Y * Xindex + X;
-        //all membrane
-        ofs << xInfo->value[index] << ", " << yInfo->value[index] << ", " << geo_edge[index];
-        //each membrane domain
-        for (i = 0; i < memInfoList.size(); i++) {
-          ofs << ", " << memInfoList[i]->isDomain[index];
+        for (Z = 0; Z < Zindex; Z++) {
+          for (Y = 0; Y < Yindex; Y++) {
+            for (X = 0; X < Xindex; X++) {
+              index = Z * Yindex * Xindex + Y * Xindex + X;
+              //all membrane
+              ofs << xInfo->value[index] << ", " << yInfo->value[index] << ", " << zInfo->value[index] << ", " << geo_edge[index];
+              //each membrane domain
+              for (i = 0; i < memInfoList.size(); i++) {
+                ofs << ", " << memInfoList[i]->isDomain[index];
+              }
+              ofs << endl;
+            }
+            ofs << endl;
+          }
+          ofs << endl;
         }
-        ofs << endl;
+      } else {
+        switch (slicedim) {
+          case 'x':
+            ofs << "# y"; 
+            ofs << ", z, all";
+            for (i = 0; i < memList.size(); i++) {
+              ofs << ", " << memList[i];
+            }
+            ofs << endl;
+            for (Z = 0; Z < Zindex; Z++) {
+              for (Y = 0; Y < Yindex; Y++) {
+                index = Z * Yindex * Xindex + Y * Xindex + slice;
+                //all membrane
+                ofs << yInfo->value[index] << ", " << zInfo->value[index] << ", " << geo_edge[index];
+                //each membrane domain
+                for (i = 0; i < memInfoList.size(); i++) {
+                  ofs << ", " << memInfoList[i]->isDomain[index];
+                }
+                ofs << endl;
+              }
+              ofs << endl;
+            }
+            break;
+          case 'y':
+            ofs << "# x"; 
+            ofs << ", z, all";
+            for (i = 0; i < memList.size(); i++) {
+              ofs << ", " << memList[i];
+            }
+            ofs << endl;
+            for (Z = 0; Z < Zindex; Z++) {
+              for (X = 0; X < Xindex; X++) {
+                index = Z * Yindex * Xindex + slice * Xindex + X;
+                //all membrane
+                ofs << xInfo->value[index] << ", " << zInfo->value[index] << ", " << geo_edge[index];
+                //each membrane domain
+                for (i = 0; i < memInfoList.size(); i++) {
+                  ofs << ", " << memInfoList[i]->isDomain[index];
+                }
+                ofs << endl;
+              }
+              ofs << endl;
+            }
+            break;
+          case 'z':
+            ofs << "# x"; 
+            ofs << ", y, all";
+            for (i = 0; i < memList.size(); i++) {
+              ofs << ", " << memList[i];
+            }
+            ofs << endl;
+            for (Y = 0; Y < Yindex; Y++) {
+              for (X = 0; X < Xindex; X++) {
+                index = slice * Yindex * Xindex + Y * Xindex + X;
+                //all membrane
+                ofs << xInfo->value[index] << ", " << yInfo->value[index] << ", " << geo_edge[index];
+                //each membrane domain
+                for (i = 0; i < memInfoList.size(); i++) {
+                  ofs << ", " << memInfoList[i]->isDomain[index];
+                }
+                ofs << endl;
+              }
+              ofs << endl;
+            }
+            break;
+          default:
+            break;
+        }
+        default: 
+        break;             
       }
-      ofs << endl;
-    }
-    break;
   }
   ofs.close();
   delete[] geo_edge;
   cout << "finished" << endl << endl;
-
-//-----------------------
-  if(sliceFlag) {
-    dimension = 3;
-  }
-//-----------------------
 
   //simulation
   cout << "simulation starts" << endl;

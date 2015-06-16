@@ -218,11 +218,11 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           sInfo->adCInfo = new variableInfo*[3];
           fill_n(sInfo->adCInfo, 3, reinterpret_cast<variableInfo*>(0));
         }
-        sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate()] = info;
+        sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate() - 1] = info;
         if (model->getRule(info->id) == 0 && p->isSetValue()) {
           info->isResolved = true;
           info->isUniform = true;
-          sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate()-1]->value = new double(p->getValue());
+          sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate() - 1]->value = new double(p->getValue());
         }
         break;
       case SBML_SPATIAL_BOUNDARYCONDITION://boundary condition
