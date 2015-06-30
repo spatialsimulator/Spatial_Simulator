@@ -156,13 +156,14 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 
   //option
   double range_max = 1.0;
+  double range_min = 0.0;
   int opt_result = 0;
   extern char	*optarg;
   extern int optind;
   int slice = 0;
   char slicedim = 'z';
   bool sliceFlag = false;
-  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:s:")) != -1) {
+  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:")) != -1) {
     switch(opt_result) {
     case 'x':
       for (i = 0; i < string(optarg).size(); i++) {
@@ -204,6 +205,12 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
         if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
       }
       range_max = atof(optarg);
+      break;
+    case 'C':
+      for (i = 0; i < string(optarg).size(); i++) {
+        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+      }
+      range_min = atof(optarg);
       break;
     case 's':
       if (optarg[0] != 'x' && optarg[0] != 'y' && optarg[0] != 'z') printErrorMessage();
@@ -255,6 +262,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   cout << "simulation time = " << end_time << endl;
   cout << "dt = " << dt << endl;
   cout << "output results every " << out_step << " step" << endl;
+  cout << "color bar range min: " << range_min << endl;
   cout << "color bar range max: " << range_max << endl << endl;
 
   int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
@@ -1310,13 +1318,13 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       //   }
       //   cout << maxam - minmin << endl; //for ii thesis to obtain quantitative analysis
       if (!sliceFlag) {
-        outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
+        outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
       } else if (slicedim == 'z') {
-        outputTimeCource_zslice(gp, model, varInfoList, memList, xInfo, yInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Xsize, Ysize, file_num, fname, slice);
+        outputTimeCource_zslice(gp, model, varInfoList, memList, xInfo, yInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Xsize, Ysize, file_num, fname, slice);
       } else if (slicedim == 'y') {
-        outputTimeCource_yslice(gp, model, varInfoList, memList, xInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Zsize, file_num, fname, slice);
+        outputTimeCource_yslice(gp, model, varInfoList, memList, xInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Zsize, file_num, fname, slice);
       } else if (slicedim == 'x') {
-        outputTimeCource_xslice(gp, model, varInfoList, memList, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Ysize, Zsize, file_num, fname, slice);
+        outputTimeCource_xslice(gp, model, varInfoList, memList, yInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Ysize, Zsize, file_num, fname, slice);
       }
       file_num++;
     }

@@ -13,7 +13,7 @@
 #include "mystruct.h"
 #include "searchFunction.h"
 
-void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, string fname)
+void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, string fname)
 {
   int X = 0, Y = 0, Z = 0, index = 0, tmp_u;
   unsigned int i, j;
@@ -222,7 +222,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
   //fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], Xsize);
   fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], xInfo->value[Xindex - 1]);
   //if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], Ysize);
-  if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], yInfo->value[Yindex - 1]);
+  if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], yInfo->value[Yindex * Xindex - 1]);
   fprintf(gp, "set tics out\n");
   fprintf(gp, "set tics font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
   fprintf(gp, "set xtics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
@@ -230,7 +230,8 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
   fprintf(gp, "set ytics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
   fprintf(gp, "set mytics\n");
   //fprintf(gp, "set grid lw 0.5\n");
-  fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
+  //fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
+  fprintf(gp, "set cbrange[%lf:%lf]\n", range_min, range_max);
   fprintf(gp, "set palette defined (0 \"dark-blue\", 2 \"blue\", 4 \"green\", 8 \"yellow\", 10 \"red\")\n");
   fprintf(gp, "set xlabel \"x\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
   if (dimension >= 2) fprintf(gp, "set ylabel \"y\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
@@ -294,7 +295,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
           //fprintf(gp, "splot \"%s\" u 1:2:3:%d with points palette\n", filename_mem.c_str(), 3 + mem_count);
         } else if (sInfo->inVol) { // 未完
           fprintf(gp, "set view equal xyz\n");
-          fprintf(gp, "set zrange[%lf:%lf]\n", zInfo->value[0], Zsize);
+          fprintf(gp, "set zrange[%lf:%lf]\n", zInfo->value[0], zInfo->value[Zindex * Yindex * Xindex - 1]);
           fprintf(gp, "set ztics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
           fprintf(gp, "set mztics\n");
           fprintf(gp, "set terminal png truecolor size 640,640\n");
@@ -306,7 +307,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
   }
 }
 
-void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, double Xsize, double Ysize, int file_num, string fname, int zslice)
+void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, double Xsize, double Ysize, int file_num, string fname, int zslice)
 {
   dimension = 2;
   int X = 0, Y = 0, index = 0, tmp_u;
@@ -414,7 +415,7 @@ void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   //fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], Xsize);
   fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], xInfo->value[Xindex - 1]);
   //if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], Ysize);
-  if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], yInfo->value[Yindex - 1]);
+  if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], yInfo->value[Yindex * Xindex - 1]);
   fprintf(gp, "set tics out\n");
   fprintf(gp, "set tics font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
   fprintf(gp, "set xtics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
@@ -422,7 +423,8 @@ void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   fprintf(gp, "set ytics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
   fprintf(gp, "set mytics\n");
   //fprintf(gp, "set grid lw 0.5\n");
-  fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
+  //fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
+  fprintf(gp, "set cbrange[%lf:%lf]\n", range_min, range_max);
   fprintf(gp, "set palette defined (0 \"dark-blue\", 2 \"blue\", 4 \"green\", 8 \"yellow\", 10 \"red\")\n");
   fprintf(gp, "set xlabel \"x\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
   fprintf(gp, "set ylabel \"y\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
@@ -465,7 +467,7 @@ void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
 }
 
-void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Zsize, int file_num, string fname, int yslice)
+void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Zsize, int file_num, string fname, int yslice)
 {
   dimension = 2;
   int X = 0, Z = 0, index = 0, tmp_u;
@@ -576,7 +578,8 @@ void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   fprintf(gp, "set ytics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
   fprintf(gp, "set mytics\n");
   //fprintf(gp, "set grid lw 0.5\n");
-  fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
+  //fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
+  fprintf(gp, "set cbrange[%lf:%lf]\n", range_min, range_max);
   fprintf(gp, "set palette defined (0 \"dark-blue\", 2 \"blue\", 4 \"green\", 8 \"yellow\", 10 \"red\")\n");
   fprintf(gp, "set xlabel \"x\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
   fprintf(gp, "set ylabel \"z\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
@@ -618,7 +621,7 @@ void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
 }
 
-void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Ysize, double Zsize, int file_num, string fname, int xslice)
+void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Ysize, double Zsize, int file_num, string fname, int xslice)
 {
   dimension = 2;
   int Y = 0, Z = 0, index = 0, tmp_u;
@@ -729,7 +732,8 @@ void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   fprintf(gp, "set ytics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
   fprintf(gp, "set mytics\n");
   //fprintf(gp, "set grid lw 0.5\n");
-  fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
+  //fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
+  fprintf(gp, "set cbrange[%lf:%lf]\n", range_min, range_max);
   fprintf(gp, "set palette defined (0 \"dark-blue\", 2 \"blue\", 4 \"green\", 8 \"yellow\", 10 \"red\")\n");
   fprintf(gp, "set xlabel \"y\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
   fprintf(gp, "set ylabel \"z\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
