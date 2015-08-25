@@ -317,6 +317,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   //geometryDefinition
   double *tmp_isDomain = new double[numOfVolIndexes];
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
+   if( geometry->getGeometryDefinition(i)-> isSetIsActive() && !(geometry->getGeometryDefinition(i)->getIsActive())) continue; 
     if (geometry->getGeometryDefinition(i)->isAnalyticGeometry()) {
       //AnalyticVolumes
       AnalyticGeometry *analyticGeo = static_cast<AnalyticGeometry*>(geometry->getGeometryDefinition(i));
@@ -410,7 +411,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
             default:
               break;
             }
-            uLong comprLen = numOfVolIndexes / 4;
+            uLong comprLen = samField->getSamplesLength();
             Byte *compr = (Byte*)calloc(sizeof(Byte), comprLen);
             int *compr_int = (int*)calloc(sizeof(int), comprLen);
             Byte *uncompr = (Byte*)calloc(sizeof(Byte), uncomprLen);
