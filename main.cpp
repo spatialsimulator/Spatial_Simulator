@@ -1414,6 +1414,19 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
               if ((geoInfoList[j]->adjacentGeo1 == reactantGeo && geoInfoList[j]->adjacentGeo2 == productGeo)
                   || (geoInfoList[j]->adjacentGeo1 == productGeo && geoInfoList[j]->adjacentGeo2 == reactantGeo)) {//mem transport
                 //cout << geoInfoList[j]->domainTypeId << endl;
+               // for (int y = 0; y < Yindex; y += 1) {
+               //   for (int x = 0; x < Xindex; x += 1) {
+               //     int index = y * Xindex + x;
+               //     if (geoInfoList[j]->bType[index].isBofXp || geoInfoList[j]->bType[index].isBofXm || geoInfoList[j]->bType[index].isBofYp || geoInfoList[j]->bType[index].isBofYm) {
+               //       cout << "1" << flush;
+               //     }
+               //     else {
+               //       cout << "0" << flush;
+               //     }
+               //   }
+               //   cout << endl;
+               // }
+               // exit(0);
                 calcMemTransport(rInfoList[i], geoInfoList[j], nuVec, Xindex, Yindex, Zindex, dt, m, deltaX, deltaY, deltaZ, dimension, r->getNumReactants());
                 break;
               }

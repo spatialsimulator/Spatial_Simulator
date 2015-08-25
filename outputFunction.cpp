@@ -256,8 +256,8 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
       }
       if (dimension == 2) {//2D
                           
-        //fprintf(gp, "set terminal png size 2560,2560\n");
-        fprintf(gp, "set terminal png truecolor size 500,500\n");
+        fprintf(gp, "set terminal png truecolor size 2560,2560\n");
+        //fprintf(gp, "set terminal png truecolor size 500,500\n");
         fprintf(gp, "set output \"/dev/null\"\n");
         if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
         else fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
