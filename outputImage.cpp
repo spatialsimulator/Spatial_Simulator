@@ -1,6 +1,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <ctime>
 #include "sbml/SBMLTypes.h"
 #include "sbml/extension/SBMLExtensionRegistry.h"
 #include "sbml/packages/req/common/ReqExtensionTypes.h"
@@ -30,9 +31,10 @@ void addMemToValueMat(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv);
 void resizeMat(Mat* valueMat_sparse, Mat* valueMat_mag, int magnification);
 void makeColorBar(Mat* colorBar);
 void makeColorBarArea(Mat* area, double range_max, double range_min, int* cbSize, int* cbIndent);
-void setDetail(Mat* image, int* indent, int* areaSize, double t, double Xmin, double Xmax, double Ymin, double Ymax);
+void setDetail(Mat* image, int* indent, int* areaSize, double t, double Xmin, double Xmax, double Ymin, double Ymax, int Xdiv, int Ydiv, string fname, string s_id, int magnification);
 int countDigits(double number);
 int calcMagnification(int Xdiv, int Ydiv);
+string getCurrentTime();
 
 void outputImg(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, vector<GeometryInfo*> memInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, string fname, int file_num) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, magnification = 1;
@@ -97,7 +99,7 @@ void outputImg(Model *model, vector<variableInfo*> &varInfoList, vector<const ch
     Mat *Roi_cbArea = new Mat(*image, Rect(indent[0] + areaSize[0], 0, cbAreaSize[0], cbAreaSize[1]));
     colorBarArea->copyTo(*Roi_cbArea);
     //================= value area frame & number =====================
-    setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY);
+    setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY, Xdiv, Ydiv, fname, s_id, magnification);
     ss << "./result/" << fname << "/img_opencv/" << s_id << "/" << file_num << ".png";
     imwrite(ss.str(), *image);
     ss.str("");
@@ -303,12 +305,12 @@ void makeColorBarArea(Mat* area, double range_max, double range_min, int* cbSize
   }
 }
 
-void setDetail(Mat* image, int* indent, int* areaSize, double t, double Xmin, double Xmax, double Ymin, double Ymax) {
+void setDetail(Mat* image, int* indent, int* areaSize, double t, double Xmin, double Xmax, double Ymin, double Ymax, int Xdiv, int Ydiv, string fname, string s_id, int magnification) {
   int i, fix[2];
   double number;
-  int thickness = areaSize[0] / 200;
-  if (thickness == 0) thickness = 1;
   int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
+  int thickness = baseSize / 200;
+  if (thickness == 0) thickness = 1;
   float fontsize = baseSize * 0.6 / 200;
   Scalar black(0, 0, 0);
   Point left_top(indent[0] - 1, indent[1] - 1);
@@ -359,9 +361,27 @@ void setDetail(Mat* image, int* indent, int* areaSize, double t, double Xmin, do
   }
   //=============== t ====================
   ss << "t = " << t;
-  putText(*image, ss.str().c_str(), Point(indent[0], indent[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  putText(*image, ss.str(), Point(indent[0], indent[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  ss.str("");
+  //=============== Xdiv Ydiv magnification ====================
+  fontsize /= 2;
+  thickness /= 2;
+  if (thickness == 0) thickness = 1;
+  ss << "Xdiv = " << Xdiv;
+  putText(*image, ss.str(), Point(ceil(fontsize * 36), image->rows - ceil(fontsize * 108)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  ss.str("");
+  ss << "Ydiv = " << Ydiv;
+  putText(*image, ss.str(), Point(ceil(fontsize * 36), image->rows - ceil(fontsize * 72)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  ss.str("");
+  ss << "magnification = " << magnification;
+  putText(*image, ss.str(), Point(ceil(fontsize * 36), image->rows - ceil(fontsize * 36)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  //=============== modelName spId ====================
+  putText(*image, "model: " + fname, Point(ceil(fontsize * 36), ceil(fontsize * 36)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  putText(*image, "sp: " + s_id, Point(ceil(fontsize * 36), ceil(fontsize * 72)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  //=============== date ===============
+  string date = getCurrentTime();
+  putText(*image, date, Point(image->cols - 1, image->rows - 1) - Point(ceil(fontsize * 18) * (date.length() + 1), ceil(fontsize * 36)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
 }
-
 
 int countDigits(double number) {
   int integer, ans1 = 1, ans2 = 0;
@@ -394,3 +414,19 @@ int calcMagnification(int Xdiv, int Ydiv) {
   else m2 = base / Ydiv + 1;
   return max(m1, m2);
 }  
+
+string getCurrentTime() {
+  time_t now = time(NULL);
+  struct tm *pnow = localtime(&now);
+  char week[7][4] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+  stringstream ss;
+  /*
+  printf("%2d/%2d/%2d(%s)\n",
+      pnow->tm_year+1900,
+      pnow->tm_mon + 1,
+      pnow->tm_mday,
+      week[pnow->tm_wday]);
+      */
+  ss << pnow->tm_year+1900 << "/" << pnow->tm_mon + 1 << "/" << pnow->tm_mday << "(" << week[pnow->tm_wday] << ")";
+  return ss.str();
+}
