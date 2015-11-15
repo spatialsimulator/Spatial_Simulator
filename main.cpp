@@ -1140,12 +1140,12 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   cout << endl << "outputting geometries into text file... " << endl;
   int *geo_edge = new int[numOfVolIndexes];
   fill_n(geo_edge, numOfVolIndexes, 0);
-  vector<GeometryInfo*> memInfoList = vector<GeometryInfo*>();
+  //vector<GeometryInfo*> memInfoList = vector<GeometryInfo*>();
   for (i = 0; i < geoInfoList.size(); i++) {
     GeometryInfo *geoInfo = geoInfoList[i];
     if (geoInfo->isVol == false) {//avol is membrane
       memList.push_back(geoInfo->domainTypeId);
-      memInfoList.push_back(geoInfo);
+      //memInfoList.push_back(geoInfo);
       for (Z = 0; Z < Zindex; Z++) {
         for (Y = 0; Y < Yindex; Y++) {
           for (X = 0; X < Xindex; X++) {
@@ -1174,16 +1174,21 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     if (count % out_step == 0) {
       //outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
       if (dimension == 2) {
-        outputImg(model, varInfoList, memList, memInfoList, geo_edge, Xdiv, Ydiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize, *sim_time, range_min, range_max, fname, file_num);
+        outputImg(model, varInfoList, geo_edge, Xdiv, Ydiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize, *sim_time, range_min, range_max, fname, file_num);
       }
       else if (dimension == 3) {
         if (sliceFlag) {
-          if (slicedim == 'x') cout << "coming soon" << endl; 
-          else if (slicedim == 'y') cout << "coming soon" << endl;
-          else if (slicedim == 'z') cout << "coming soon" << endl; 
-          else cerr << "unknown dimension, output is skipped." << endl;
+          if (slicedim == 'x') {
+            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, yInfo->value[0], yInfo->value[0] + Ysize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim);
+          }
+          else if (slicedim == 'y') {
+            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim);
+          }
+          else if (slicedim == 'z') {
+            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim);
+          }
         }
-        else  output3D_uint8(varInfoList, los, Xindex, Yindex, Zindex, file_num, fname, range_max);
+        else output3D_uint8(varInfoList, los, Xindex, Yindex, Zindex, file_num, fname, range_max);
       }
       outputValueData(varInfoList, los, Xdiv, Ydiv, Zdiv, dimension, file_num, fname);
       file_num++;
