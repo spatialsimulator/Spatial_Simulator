@@ -11,13 +11,224 @@
 #include "searchFunction.h"
 using namespace std;
 //opencv 
-#include <cv.h>
-#include <highgui.h>
-#define imgSizeX 640
-#define imgSizeY 640
+//#include <cv.h>
+//#include <highgui.h>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui.hpp>
 #define barSizeX 20
 #define barSizeY 400
+#define cbAreaX 100
+#define cbAreaY 420
 using namespace cv;
+Vec3b infVec(192, 192, 192);
+Vec3b nanVec(255, 192, 255);
+
+void makeValueMat(Mat* valueMat, double* value, int Xindex, int Yindex, double range_min, double range_max);
+void makeMemValueMat(Mat* valueMat, double* value, int* geo_edge, int Xindex, int Yindex, double range_min, double range_max);
+void sparseMat(Mat* origin, Mat* result);
+void addMemToValueMat(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv);
+void resizeMat(Mat* valueMat_sparse, Mat* valueMat_mag, int magnification);
+void makeColorBar(Mat* colorBar);
+void makeColorBarArea(Mat* area, double range_max, double range_min, int* cbSize, int* cbIndent);
+void setDetail(Mat* image, int* indent, int* areaSize, double t, double Xmin, double Xmax, double Ymin, double Ymax);
+int countDigits(double number);
+int calcMagnification(int Xdiv, int Ydiv);
+
+void outputImg(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, vector<GeometryInfo*> memInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, string fname, int file_num) {
+  int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, magnification = 1;
+  int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2];
+  areaSize[0] = Xindex;//空間領域は膜も描画できるようにこう
+  areaSize[1] = Yindex;
+  magnification = calcMagnification(Xdiv, Ydiv);
+  if (1 < magnification) {//小さい時には定数倍して表示する
+    areaSize[0] *= magnification;
+    areaSize[1] *= magnification;
+  }
+  imageSize[0] = areaSize[0] * 2;
+  imageSize[1] = areaSize[1] * 2;
+  indent[0] = (imageSize[0] - areaSize[0]) / 2;
+  indent[1] = (imageSize[1] - areaSize[1]) / 2;
+  //=================== color bar ======================
+  cbSize[0] = areaSize[0] / 10;
+  cbSize[1] = areaSize[1];
+  cbAreaSize[0] = imageSize[0] - indent[0] - areaSize[0];
+  cbAreaSize[1] = imageSize[1];
+  cbIndent[0] = areaSize[0] * 10 / 200;
+  if (cbIndent[0] == 0) cbIndent[0] = 10;
+  cbIndent[1] = (cbAreaSize[1] - cbSize[1]) / 2;
+  Mat colorBar(Size(barSizeX, barSizeY), CV_8UC3, Scalar(255, 255, 255));
+  Mat* colorBarArea = new Mat(Size(cbAreaSize[0], cbAreaSize[1]), CV_8UC3, Scalar(255, 255, 255));
+  Mat Roi_colorBar(*colorBarArea, Rect(cbIndent[0], cbIndent[1], cbSize[0], cbSize[1]));//ROIの指定
+  makeColorBar(&colorBar);
+  resize(colorBar, Roi_colorBar, Size(cbSize[0], cbSize[1]), INTER_NEAREST);//カラー領域をリサイズ
+  makeColorBarArea(colorBarArea, range_max, range_min, cbSize, cbIndent);
+
+  stringstream ss;
+  string dir_name, s_id;
+  unsigned int i;
+  unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
+  ListOfSpecies *los = model->getListOfSpecies();
+  variableInfo *sInfo;
+  for (i = 0; i < numOfSpecies; ++i) {
+    sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
+    s_id = los->get(i)->getId();
+    Mat* image = new Mat(Size(imageSize[0], imageSize[1]), CV_8UC3, Scalar(255, 255, 255));
+    //================== value area =====================  
+    Mat* valueMat = new Mat(Size(Xdiv, Ydiv), CV_8UC3, Scalar(0, 0, 0));
+    Mat* valueMat_sparse = new Mat(Size(Xindex, Yindex), CV_8UC3, Scalar(0, 0, 0));
+    if (sInfo->inVol) {
+      makeValueMat(valueMat, sInfo->value, Xindex, Yindex, range_min, range_max);
+    }
+    sparseMat(valueMat, valueMat_sparse);//縦横２倍
+    addMemToValueMat(valueMat_sparse, geo_edge, Xdiv, Ydiv);
+    if (!sInfo->inVol) {
+      makeMemValueMat(valueMat_sparse, sInfo->value, geo_edge, Xindex, Yindex, range_min, range_max);
+    }
+    Mat Roi_val(*image, Rect(indent[0], indent[1], areaSize[0], areaSize[1]));//ROIの指定
+    if (1 < magnification) {
+      Mat* valueMat_mag = new Mat(Size(areaSize[0], areaSize[1]), CV_8UC3, Scalar(0, 0, 0));
+      resizeMat(valueMat_sparse, valueMat_mag, magnification);
+      valueMat_mag->copyTo(Roi_val);
+      delete valueMat_mag;
+    } else {
+      valueMat_sparse->copyTo(Roi_val);//ROI_valに反応空間の値をコピー
+    }
+    //================== colorbar area ==================
+    Mat *Roi_cbArea = new Mat(*image, Rect(indent[0] + areaSize[0], 0, cbAreaSize[0], cbAreaSize[1]));
+    colorBarArea->copyTo(*Roi_cbArea);
+    //================= value area frame & number =====================
+    setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY);
+    ss << "./result/" << fname << "/img_opencv/" << s_id << "/" << file_num << ".png";
+    imwrite(ss.str(), *image);
+    ss.str("");
+    delete valueMat;
+    delete valueMat_sparse;
+    delete Roi_cbArea;
+    delete image;
+  }
+  delete colorBarArea;
+}
+
+void makeValueMat(Mat* mat, double* value, int Xindex, int Yindex, double range_min, double range_max) {
+  int X, Y, index;
+  double value_level = 0;
+  for (Y = 0; Y < mat->rows; ++Y) {
+    for (X = 0; X < mat->cols; ++X) {
+      index = (Yindex - 1 - Y * 2) * Xindex + X * 2;//疎行列用 なんかこうしないと逆になっちゃう
+      value_level = (value[index] - range_min) / (range_max - range_min);
+      if(value_level < 0) {//~0
+        mat->at<Vec3b>(Y, X) = Vec3b(139.0, 0, 0);//BGR
+      }
+      else if(0 <= value_level && value_level < 1) {//0~1
+        mat->at<Vec3b>(Y, X) = Vec3b(139.0 + value_level * (255.0 - 139.0), value_level * 255.0, 0);
+      }
+      else if(1 <= value_level && value_level < 2) {//1~2
+        mat->at<Vec3b>(Y, X) = Vec3b(255.0 - (value_level - 1) * 255.0, 255, value_level - 1 * 255.0);
+      }
+      else if(2 <= value_level && value_level < 4) {//2~4
+        mat->at<Vec3b>(Y, X) = Vec3b(0, 255, (value_level - 2.0) / 2.0 * 255.0);
+      }
+      else if(4 <= value_level && value_level <= 5) {//4~5
+        mat->at<Vec3b>(Y, X) = Vec3b(0, 255.0 - (value_level - 4.0) * 255.0, 255);
+      }
+      else if (5 < value_level){//~5
+        mat->at<Vec3b>(Y, X) = Vec3b(0, 255, 255);
+      }
+      else if (isnan(value[index])) {//nan
+        mat->at<Vec3b>(Y, X) = nanVec;
+      }
+      else if (isinf(value[index])) {//inf
+        mat->at<Vec3b>(Y, X) = infVec;
+      }
+      else {
+        cout << "unknown invalid value" << endl;
+      }
+    }
+  }
+}
+
+void makeMemValueMat(Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, double range_min, double range_max) {
+  int X, Y, index;
+  double value_level = 0;
+  for (Y = 0; Y < Yindex; ++Y) {
+    for (X = 0; X < Xindex; ++X) {
+      index = (Yindex - 1 - Y) * Xindex + X;//疎行列用 なんかこうしないと逆になっちゃう
+      if (geo_edge[index] == 1 || geo_edge[index] == 2) {
+        value_level = (value[index] - range_min) / (range_max - range_min);
+        if(value_level < 0) {//~0
+          mat->at<Vec3b>(Y, X) = Vec3b(139.0, 0, 0);//BGR
+        }
+        else if(0 <= value_level && value_level < 1) {//0~1
+          mat->at<Vec3b>(Y, X) = Vec3b(139.0 + value_level * (255.0 - 139.0), value_level * 255.0, 0);
+        }
+        else if(1 <= value_level && value_level < 2) {//1~2
+          mat->at<Vec3b>(Y, X) = Vec3b(255.0 - (value_level - 1) * 255.0, 255, value_level - 1 * 255.0);
+        }
+        else if(2 <= value_level && value_level < 4) {//2~4
+          mat->at<Vec3b>(Y, X) = Vec3b(0, 255, (value_level - 2.0) / 2.0 * 255.0);
+        }
+        else if(4 <= value_level && value_level <= 5) {//4~5
+          mat->at<Vec3b>(Y, X) = Vec3b(0, 255.0 - (value_level - 4.0) * 255.0, 255);
+        }
+        else if (5 < value_level){//~5
+          mat->at<Vec3b>(Y, X) = Vec3b(0, 255, 255);
+        }
+        else if (isnan(value[index])) {//nan
+          mat->at<Vec3b>(Y, X) = nanVec;
+        }
+        else if (isinf(value[index])) {//inf
+          mat->at<Vec3b>(Y, X) = infVec;
+        }
+        else {
+          cout << "unknown invalid value" << endl;
+        }
+      }
+    }
+  }
+}
+
+void sparseMat(Mat* origin, Mat* result) {
+  int Y, X, rX, rY;
+  for (Y = origin->rows - 1; 0 <= Y; --Y) {
+    for (X = 0; X < origin->cols; ++X) {
+      rX = X * 2;
+      rY = Y * 2;
+      result->at<Vec3b>(rY, rX) = origin->at<Vec3b>(Y, X);
+      if (X != origin->cols - 1) result->at<Vec3b>(rY, rX + 1) = origin->at<Vec3b>(Y, X);
+      if (Y != 0) result->at<Vec3b>(rY - 1, rX) = origin->at<Vec3b>(Y, X);
+      if (Y != 0 && X != origin->cols - 1) result->at<Vec3b>(rY - 1, rX + 1) = origin->at<Vec3b>(Y, X);
+    }
+  }
+}
+
+void resizeMat(Mat* origin, Mat* result, int magnification) {
+  int Y, X, rX, rY, i, j;
+  for (Y = origin->rows - 1; 0 <= Y; --Y) {
+    for (X = 0; X < origin->cols; ++X) {
+      rX = X * magnification;
+      rY = Y * magnification;
+      for (i = 0; i < magnification; ++i) {
+        for (j = 0; j < magnification; ++j) {
+          result->at<Vec3b>(rY + j, rX + i) = origin->at<Vec3b>(Y, X);
+        }
+      }
+    }
+  }
+}
+
+void addMemToValueMat(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv) {
+  int Xindex = Xdiv * 2 - 1, Yindex = Ydiv * 2 - 1, index;
+  for (int Y = 0; Y < Yindex; ++Y) {
+    for (int X = 0; X < Xindex; ++X) {
+      index = (Yindex  - 1 - Y) * Xindex + X;
+      if (geo_edge[index] == 2 || geo_edge[index] == 1) {
+        valueMat->at<Vec3b>(Y, X)[0] = 255;
+        valueMat->at<Vec3b>(Y, X)[1] = 255;
+        valueMat->at<Vec3b>(Y, X)[2] = 255;
+      }
+    }
+  }
+}
 
 void makeColorBar(Mat* colorBar) {
   int x, y, c;
@@ -62,170 +273,124 @@ void makeColorBar(Mat* colorBar) {
   }
 }
 
-void makeValueMat(Mat* mat, double* value, int Xindex, int Yindex) {
-  int X, Y, c, index;
-  for (Y = 0; Y < mat->rows; ++Y) {
-    for (X = 0; X < mat->cols; ++X) {
-      index = (Yindex - 1 - Y * 2) * Xindex + X * 2;//疎行列用 なんかこうしないと逆になっちゃう
-      for (c = 0; c < mat->channels(); ++c) {
-        if(0 <= value[index] && value[index] < 1) {//0~1
-          if(c == 0) mat->at<Vec3b>(Y, X)[c] = 139.0 + (value[index] * (255.0 - 139.0));
-          //else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 0;
-          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = value[index] * 255.0;
-          else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 0;
-        }
-        else if(1 <= value[index] && value[index] < 2) {//1~2
-          if(c == 0) mat->at<Vec3b>(Y, X)[c] = 255.0 - (value[index] - 1) * 255.0;
-          //else if(c == 1) mat->at<Vec3b>(Y, X)[c] = (value[index] - 1) * 255.0;
-          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 255.0;
-          //else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 0;
-          else if(c == 2) mat->at<Vec3b>(Y, X)[c] = value[index] - 1 * 255.0;
-        }
-        else if(2 <= value[index] && value[index] < 4) {//2~4
-          if(c == 0) mat->at<Vec3b>(Y, X)[c] = 0;
-          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 255;
-          else if(c == 2) mat->at<Vec3b>(Y, X)[c] = (value[index] - 2.0) / 2.0 * 255.0;
-        }
-        else if(4 <= value[index] && value[index] <= 5) {//4~5
-          if(c == 0) mat->at<Vec3b>(Y, X)[c] = 0;
-          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 255.0 - (value[index] - 4.0) * 255.0;
-          else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 255;
-        }
-        else {
-          if(c == 0) mat->at<Vec3b>(Y, X)[c] = 0;//B
-          else if(c == 1) mat->at<Vec3b>(Y, X)[c] = 0;//G
-          else if(c == 2) mat->at<Vec3b>(Y, X)[c] = 255;//R
-        }
-      }
-    }
-  }
-}
-
-void setDetail(Mat* img, double time, double range_max, double Xsize, double Ysize, int* areaSize, int* indent) {
-  //FrameLine of ValueArea
-  line(*img, Point(indent[0], indent[1] + areaSize[1]), Point(indent[0] + areaSize[0] - 1, indent[1] + areaSize[1]), Scalar(0, 0, 0));//bottom
-  line(*img, Point(indent[0], indent[1] - 1), Point(indent[0] + areaSize[0] - 1, indent[1] - 1), Scalar(0, 0, 0));//top
-  line(*img, Point(indent[0] - 1, indent[1] - 1), Point(indent[0] - 1, indent[1] + areaSize[1]), Scalar(0, 0, 0));//left
-  line(*img, Point(indent[0] + areaSize[0], indent[1] - 1), Point(indent[0] + areaSize[0], indent[1] + areaSize[1]), Scalar(0, 0, 0));//right
-  //tics of valueArea
+void makeColorBarArea(Mat* area, double range_max, double range_min, int* cbSize, int* cbIndent) {
   int i;
-  int ltic = 8, stic = 4, bltic = 5;
-  int intervalX = (double)areaSize[0] / 5, intervalY = (double)areaSize[1] / 5;
-  //long tics
+  int bltics = area->cols * 5.0 / 200.0;
+  if (bltics == 0) bltics = 1;
+  Scalar black(0, 0, 0);
+  int thickness = area->cols / 200.0;
+  //============== set tics line ===================
   for (i = 0; i < 6; ++i) {
-    line(*img, Point(indent[0] - 1 + intervalX * i, indent[1] - 1), Point(indent[0] - 1 + intervalX * i, indent[1] - 1 - ltic), Scalar(0, 0, 0));
-    line(*img, Point(indent[0] - 1 + intervalX * i, indent[1] + areaSize[1]), Point(indent[0] - 1 + intervalX * i, indent[1] + areaSize[1] + ltic), Scalar(0, 0, 0));
-    line(*img, Point(indent[0] - 1, indent[1] - 1 + intervalY * i), Point(indent[0] - 1 - ltic, indent[1] - 1 + intervalY * i), Scalar(0, 0, 0));
-    line(*img, Point(imgSizeX - indent[0], indent[1] - 1 + intervalY * i), Point(imgSizeX - indent[0] + ltic, indent[1] - 1 + intervalY * i), Scalar(0, 0, 0));
+    line(*area, Point(cbIndent[0] - bltics, cbIndent[1] + cbSize[1] * i / 5), Point(cbIndent[0], cbIndent[1] + cbSize[1] * i / 5), black, thickness);
+    line(*area, Point(cbIndent[0] + cbSize[0], cbIndent[1] + cbSize[1] * i / 5), Point(cbIndent[0] + cbSize[0] + bltics, cbIndent[1] + cbSize[1] * i / 5), black, thickness);
   }
-  //short tics
-  for (i = 0; i < 5; ++i) {
-    line(*img, Point(indent[0] - 1 + (intervalX / 2) + intervalX * i, indent[1] - 1), Point(indent[0] - 1 + (intervalX / 2) + intervalX * i, indent[1] - 1 - stic), Scalar(0, 0, 0));//top
-    line(*img, Point(indent[0] - 1 + (intervalX / 2) + intervalX * i, indent[1] + areaSize[1]), Point(indent[0] - 1 + (intervalX / 2) + intervalX * i, indent[1] + areaSize[1] + stic), Scalar(0, 0, 0));//bottom
-    line(*img, Point(indent[0] - 1, indent[1] - 1 + (intervalY / 2) + intervalY * i), Point(indent[0] - 1 - stic, indent[1] - 1 + (intervalY / 2) + intervalY * i), Scalar(0, 0, 0));//left
-    line(*img, Point(indent[0] + areaSize[0], indent[1] - 1 + (intervalY / 2) + intervalY * i), Point(indent[0] + areaSize[0] + stic, indent[1] - 1 + (intervalY / 2) + intervalY * i), Scalar(0, 0, 0));//right
-  }
-  //Frame Line of color bar
-  line(*img, Point(imgSizeX - indent[0] + 20, imgSizeY - indent[1]), Point(imgSizeX - indent[0] + 20 + barSizeX, imgSizeY - indent[1]), Scalar(0, 0, 0));//bottom
-  line(*img, Point(imgSizeX - indent[0] + 20, indent[1] - 1), Point(imgSizeX - indent[0] + 20 + barSizeX, indent[1] - 1), Scalar(0, 0, 0));//top
-  line(*img, Point(imgSizeX - indent[0] + 20, indent[1] - 1), Point(imgSizeX - indent[0] + 20, indent[1] - 1 + areaSize[1]), Scalar(0, 0, 0));//left
-  line(*img, Point(imgSizeX - indent[0] + 20 + barSizeX, indent[1] - 1), Point(imgSizeX - indent[0] + 20 + barSizeX, indent[1] - 1 + areaSize[1]), Scalar(0, 0, 0));//right
-  
-  //colorBar tics
-  for (i = 0; i < 6; ++i) {
-    line(*img, Point(imgSizeX - indent[0] + 20 - 1, indent[1] - 1 + intervalY * i), Point(imgSizeX - indent[0] + 20 - 1 - bltic, indent[1] - 1 + intervalY * i), Scalar(0, 0, 0));
-    line(*img, Point(imgSizeX - indent[0] + 20 + barSizeX, indent[1] - 1 + intervalY * i), Point(imgSizeX - indent[0] + 20 + barSizeX + bltic, indent[1] - 1 + intervalY * i), Scalar(0, 0, 0));
-  }
-
-  //set numbers
+  //============== set frame line ====================
+  line(*area, Point(cbIndent[0], cbIndent[1]), Point(cbIndent[0], cbIndent[1] + cbSize[1]), black, thickness);
+  line(*area, Point(cbIndent[0] + cbSize[0], cbIndent[1]), Point(cbIndent[0] + cbSize[0], cbIndent[1] + cbSize[1]), black, thickness);
+  line(*area, Point(cbIndent[0], cbIndent[1]), Point(cbIndent[0] + cbSize[0], cbIndent[1]), black, thickness);
+  line(*area, Point(cbIndent[0], cbIndent[1] + cbSize[1]), Point(cbIndent[0] + cbSize[0], cbIndent[1] + cbSize[1]), black, thickness);
+  //============== set tics number ==================
   stringstream ss;
-  //time
-  ss << "t=" << fixed << setprecision(5) << time;
-  putText(*img, ss.str().c_str(), Point(imgSizeX / 3, indent[1] / 2), FONT_HERSHEY_COMPLEX, 1.0, Scalar(0, 0, 0), 1, CV_AA);
-  ss << resetiosflags(ios_base::floatfield);
-  ss.str("");
-  //colorbar number
-  for (i = 0; i <= 5; ++i) {
-    ss << range_max - ((double)i / 5.0) * range_max;
-    putText(*img, ss.str().c_str(), Point(imgSizeX - (indent[0] - barSizeX * 3), indent[1] + 5 + intervalY * i), FONT_HERSHEY_COMPLEX, 0.8, Scalar(0, 0, 0), 1, CV_AA); 
-    ss.str("");
-  }
-  //x y scale
-  putText(*img, "x", Point(imgSizeX / 2, imgSizeY - indent[1] + 70), FONT_HERSHEY_COMPLEX, 0.8, Scalar(0, 0, 0), 1, CV_AA); 
-  putText(*img, "y", Point(indent[0] - 80, imgSizeY / 2), FONT_HERSHEY_COMPLEX, 0.8, Scalar(0, 0, 0), 1, CV_AA); 
-  //X scale
-  for (i = 0; i <= 5; ++i) {
-    ss << ((double)i / 5.0) * Xsize;
-    putText(*img, ss.str().c_str(), Point(indent[0] - 10 + intervalX * i, indent[1] + areaSize[1] + 35), FONT_HERSHEY_COMPLEX, 0.6, Scalar(0, 0, 0), 1, CV_AA);
-    ss.str("");
-  }
-  //Y scale
-  for (i = 0; i <= 5; ++i) {
-    ss << Ysize - ((double)i / 5.0) * Ysize;
-    putText(*img, ss.str().c_str(), Point(indent[0] - 50, indent[1] + 5 + intervalY * i), FONT_HERSHEY_COMPLEX, 0.6, Scalar(0, 0, 0), 1, CV_AA);
+  float fontsize = area->cols / 200.0;
+  thickness = area->cols / 200.0;
+  if(thickness == 0) thickness = 1;
+  int num_indentX = fontsize * 15 / 0.7;
+  int num_indentY = fontsize * 5 / 0.7;
+  for (i = 0; i < 6; ++i) {
+    ss << range_max - ((double)i / 5.0) * (range_max - range_min);
+    putText(*area, ss.str().c_str(), Point(cbIndent[0] + cbSize[0] + num_indentX, cbIndent[1] + num_indentY + cbSize[1] * i / 5), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
     ss.str("");
   }
 }
 
-void addMemToValueMat(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv) {
-  Mat valueTwice;
-  int Xindex = Xdiv * 2 - 1, Yindex = Ydiv * 2 - 1, index;
-  resize(*valueMat, valueTwice, Size(Xindex, Yindex), INTER_NEAREST);
-  for (int Y = 0; Y < Yindex; ++Y) {
-    for (int X = 0; X < Xindex; ++X) {
-      index = (Yindex  - 1 - Y) * Xindex + X;
-      if (geo_edge[index] == 2 || geo_edge[index] == 1) {
-        valueTwice.at<Vec3b>(Y, X)[0] = 255;
-        valueTwice.at<Vec3b>(Y, X)[1] = 255;
-        valueTwice.at<Vec3b>(Y, X)[2] = 255;
-      }
+void setDetail(Mat* image, int* indent, int* areaSize, double t, double Xmin, double Xmax, double Ymin, double Ymax) {
+  int i, fix[2];
+  double number;
+  int thickness = areaSize[0] / 200;
+  if (thickness == 0) thickness = 1;
+  int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
+  float fontsize = baseSize * 0.6 / 200;
+  Scalar black(0, 0, 0);
+  Point left_top(indent[0] - 1, indent[1] - 1);
+  Point right_top(indent[0] + areaSize[0], indent[1] - 1);
+  Point left_bottom(indent[0] - 1, indent[1] + areaSize[1]);
+  Point right_bottom(indent[0] + areaSize[0], indent[1] + areaSize[1]);
+  //============== set frame line of value area =====================
+  rectangle(*image, left_top - Point(thickness - 1, thickness - 1), right_top + Point(thickness - 1, 0), black, -1);
+  rectangle(*image, left_bottom + Point(0, thickness - 1), right_bottom + Point(thickness - 1, 0), black, -1);
+  rectangle(*image, left_top - Point(thickness - 1, 0), left_bottom + Point(0, thickness - 1), black, -1);
+  rectangle(*image, right_top + Point(thickness - 1, 0), right_bottom + Point(0, thickness - 1), black, -1);
+  //============== long tics =================
+  int ltics = areaSize[0] * 8 / 200;
+  if(ltics == 0) ltics = 2;
+  for (i = 0; i < 6; ++i) {
+    line(*image, left_bottom + Point(areaSize[0] * i / 5, thickness), left_bottom + Point(areaSize[0] * i / 5, ltics), black, thickness);
+    line(*image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5)), left_bottom + Point(-ltics, -(areaSize[1] * i / 5)), black, thickness);
+  }
+  //============== short tics ================
+  int stics = ltics / 2;
+  for (i = 0; i < 5; ++i) {
+    line(*image, left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), thickness), left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), stics), black, thickness);
+    line(*image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5 + areaSize[1] / 10)), left_bottom + Point(-stics, -(areaSize[1] * i / 5 + areaSize[1] / 10)), black, thickness);
+  }
+  //============== number & text =================
+  fix[0] = fontsize * 9;
+  fix[1] = ceil(fontsize * 9) + ltics + ceil(fontsize * 54);
+  putText(*image, "x", Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA); 
+  putText(*image, "y", Point(indent[0] / 2 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA); 
+  //=============== X scale ======================
+  stringstream ss;
+  fix[1] = ceil(fontsize * 9) + ltics + ceil(fontsize * 27);
+  for (i = 0; i < 6; ++i) {
+    number = Xmin + (Xmax - Xmin) * i / 5;
+    ss << number;
+    fix[0] = ceil(fontsize * 9 * countDigits(number));//桁数に応じてずらし幅を決定
+    putText(*image, ss.str().c_str(), left_bottom + Point(areaSize[0] * i / 5 - fix[0], fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+    ss.str("");
+  }
+  //=============== Y scale ======================
+  fix[1] = fontsize * 9;
+  for (i = 0; i < 6; ++i) {
+    number = Ymin + (Ymax - Ymin) * i / 5;
+    ss << number;
+    fix[0] = ceil(fontsize * 18 * countDigits(number)) + ltics + ceil(fontsize * 27);
+    putText(*image, ss.str().c_str(), left_bottom + Point(-fix[0], -(areaSize[1] * i / 5) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+    ss.str("");
+  }
+  //=============== t ====================
+  ss << "t = " << t;
+  putText(*image, ss.str().c_str(), Point(indent[0], indent[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+}
+
+
+int countDigits(double number) {
+  int integer, ans1 = 1, ans2 = 0;
+  double decimal;
+  stringstream ss;
+  if (number == 0) return 1; 
+  integer = floor(number);
+  if (integer != 0) {
+    ans1 = (int)log10((double)integer) + 1;
+  }
+  decimal = number - integer;
+  if (decimal != 0) { 
+    while (decimal - int(decimal) != 0 && ans2 < 10) {
+      decimal *= 10;
+      ss << decimal;
+      ss >> decimal;
+      ss.str("");  
+      ans2++;
     }
   }
-  *valueMat = valueTwice;
+  if(ans2 != 0) ans2++;//小数点の分
+  return ans1 + ans2;
 }
 
-void outputImg(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, vector<GeometryInfo*> memInfoList, int* geo_edge, int Xdiv, int Ydiv, double Xsize, double Ysize, double time, double range_max, string fname, int file_num) {
-  Mat *valueMat;//反応空間
-  //set parameter
-  int areaSize[2], indent[2];//0:X 1:Y
-  if (Xsize > Ysize) {//X Y のうち、大きい方が400 
-    areaSize[0] = imgSizeX * (400.0 / 640.0);
-    areaSize[1] = areaSize[0] * (Ysize / Xsize);
-  } else {
-    areaSize[1] = imgSizeY * (400.0 / 640.0);
-    areaSize[0] = areaSize[1] * (Xsize / Ysize);
-  }
-  indent[0] = (imgSizeX - areaSize[0]) / 2;
-  indent[1] = (imgSizeY - areaSize[1]) / 2;
-  Mat base(Size(imgSizeX, imgSizeY), CV_8UC3, Scalar(255, 255, 255));//画像全体
-  Mat colorBar(Size(barSizeX, barSizeY), CV_8UC3, Scalar(0, 0, 0));
-  Mat valueArea, barArea;
-  stringstream ss;
-  string dir_name;
-
-  unsigned int i;
-  unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
-  ListOfSpecies *los = model->getListOfSpecies();
-  variableInfo *sInfo;
-  for (i = 0; i < numOfSpecies; ++i) {
-    valueMat = new Mat(Size(Xdiv, Ydiv), CV_8UC3, Scalar(100, 0, 0));
-    sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
-    string s_id = los->get(i)->getId();
-    makeValueMat(valueMat, sInfo->value, Xdiv * 2 - 1, Ydiv * 2 - 1);
-    addMemToValueMat(valueMat, geo_edge, Xdiv, Ydiv);
-    makeColorBar(&colorBar);
-
-    resize(*valueMat, valueArea, Size(areaSize[0], areaSize[1]), INTER_NEAREST);//リサイズ
-    resize(colorBar, barArea, Size(barSizeX, areaSize[1]), INTER_NEAREST);//リサイズ
-    Mat Roi_val(base, Rect(indent[0], indent[1], valueArea.cols, valueArea.rows));//ROIの指定
-    Mat Roi_bar(base, Rect(indent[0] + areaSize[0] + 20, indent[1], barArea.cols, barArea.rows));//ROIの指定
-    valueArea.copyTo(Roi_val);//ROI_valに反応空間の値をコピー
-    barArea.copyTo(Roi_bar);//ROI_barに反応空間の値をコピー
-
-    setDetail(&base, time, range_max, Xsize, Ysize, areaSize, indent);
-    ss << "./result/" << fname << "/img_opencv/" << s_id << "/" << file_num << ".png";
-    imwrite(ss.str(), base);
-    ss.str("");
-    delete valueMat;
-  }
-}
+int calcMagnification(int Xdiv, int Ydiv) {
+  int m1, m2, base = 100;
+  if (base % Xdiv == 0) m1 = base / Xdiv;
+  else m1 = base / Xdiv + 1;
+  if (base % Ydiv == 0) m2 = base / Ydiv;
+  else m2 = base / Ydiv + 1;
+  return max(m1, m2);
+}  

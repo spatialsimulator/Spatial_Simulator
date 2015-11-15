@@ -157,14 +157,14 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   int Xplus1 = 0, Xminus1 = 0, Yplus1 = 0, Yminus1 = 0, Zplus1 = 0, Zminus1 = 0;
 
   //option
-  double range_max = 1.0;
+  double range_max = 1.0, range_min = 0.0;
   int opt_result = 0;
   extern char	*optarg;
   extern int optind;
   int slice = 0;
   char slicedim = 'z';
   bool sliceFlag = false;
-  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:s:")) != -1) {
+  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:")) != -1) {
     switch(opt_result) {
     case 'x':
       for (i = 0; i < string(optarg).size(); i++) {
@@ -206,6 +206,12 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
         if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
       }
       range_max = atof(optarg);
+      break;
+    case 'C':
+      for (i = 0; i < string(optarg).size(); i++) {
+        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+      }
+      range_min = atof(optarg);
       break;
     case 's':
       if (optarg[0] != 'x' && optarg[0] != 'y' && optarg[0] != 'z') printErrorMessage();
@@ -257,6 +263,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   cout << "simulation time = " << end_time << endl;
   cout << "dt = " << dt << endl;
   cout << "output results every " << out_step << " step" << endl;
+  cout << "color bar range min: " << range_min << endl << endl;
   cout << "color bar range max: " << range_max << endl << endl;
 
   int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
@@ -295,7 +302,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   t_info->value = sim_time;
   t_info->isResolved = true;
   t_info->isUniform = true;
-
   //volume index
   vector<int> volumeIndexList;
   for (Z = 0; Z < Zindex; Z += 2) {
@@ -358,7 +364,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
             //judge if the coordinate point is inside the analytic volume
             fill_n(tmp_isDomain, numOfVolIndexes, 0);
             reversePolishInitial(volumeIndexList, geoInfo->rpInfo, tmp_isDomain, numOfASTNodes, Xindex, Yindex, Zindex, false);
-            //cout << geoInfo->domainTypeId << endl;
             for (k = 0; k < (unsigned int)numOfVolIndexes; k++) {
               index = k;
               geoInfo->isDomain[k] = (int)tmp_isDomain[k];
@@ -993,10 +998,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     }
   }
 
-        
-        
-        
-        
   //draw geometries
   variableInfo *xInfo = 0, *yInfo = 0, *zInfo = 0;
   if (dimension >= 1){
@@ -1160,7 +1161,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 
   //simulation
   cout << "simulation starts" << endl;
-  FILE *gp = popen("/opt/local/bin/gnuplot -persist", "w");
+  //FILE *gp = popen("/opt/local/bin/gnuplot -persist", "w");
   clock_t diff_start, diff_end, boundary_start, boundary_end, out_start, out_end, re_start, re_end, ad_start, ad_end, assign_start, assign_end, update_start, update_end;
   clock_t re_time = 0, diff_time = 0, output_time = 0, ad_time = 0, update_time = 0, mem_time = 0, boundary_time = 0, assign_time = 0;
   clock_t sim_start = clock();
@@ -1172,8 +1173,18 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     out_start = clock();
     if (count % out_step == 0) {
       //outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
-      if (dimension == 2) outputImg(model, varInfoList, memList, memInfoList, geo_edge, Xdiv, Ydiv, Xsize, Ysize, *sim_time, range_max, fname, file_num);
-      else if (dimension == 3) output3D_uint8(varInfoList, los, Xindex, Yindex, Zindex, file_num, fname, range_max);
+      if (dimension == 2) {
+        outputImg(model, varInfoList, memList, memInfoList, geo_edge, Xdiv, Ydiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize, *sim_time, range_min, range_max, fname, file_num);
+      }
+      else if (dimension == 3) {
+        if (sliceFlag) {
+          if (slicedim == 'x') cout << "coming soon" << endl; 
+          else if (slicedim == 'y') cout << "coming soon" << endl;
+          else if (slicedim == 'z') cout << "coming soon" << endl; 
+          else cerr << "unknown dimension, output is skipped." << endl;
+        }
+        else  output3D_uint8(varInfoList, los, Xindex, Yindex, Zindex, file_num, fname, range_max);
+      }
       outputValueData(varInfoList, los, Xdiv, Ydiv, Zdiv, dimension, file_num, fname);
       file_num++;
     }
@@ -1428,7 +1439,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   //cerr << "  mem_time: "<< (mem_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
   cerr << "assign_time: "<< (assign_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
   cerr << "output_time: "<< (output_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-  pclose(gp);
+  //pclose(gp);
 
   //free
   delete[] geo_edge;//mashimo

@@ -25,18 +25,18 @@ void checkMemPosition(vector<GeometryInfo*> geoInfoList, int Xindex, int Yindex,
 				X = index - Z * Xindex * Yindex - Y * Xindex;
         if (CHECK(X, (unsigned int)Xindex)) {
           cerr << "bad geometry." << endl;
-          exit(-1);
+          //exit(-1);
         }
-        if (dimension <= 2) {
+        if (dimension >= 2) {
           if (CHECK(Y, (unsigned int)Yindex)) {
             cerr << "bad geometry." << endl;
-            exit(-1);
+            //exit(-1);
           }
         }
         if (dimension == 3) {
           if (CHECK(Z, (unsigned int)Zindex)) {
             cerr << "bad geometry." << endl;
-            exit(-1);
+            //exit(-1);
           }
 				}
 			}

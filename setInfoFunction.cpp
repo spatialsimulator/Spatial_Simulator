@@ -39,7 +39,6 @@ void setCompartmentInfo(Model *model, vector<variableInfo*> &varInfoList)
 
 void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
 {
-  
   Model *model = doc->getModel();
   XMLNamespaces *xns = doc->getNamespaces();
   string spatialPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/spatial/version1");
@@ -53,7 +52,7 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
     Species *s = los->get(i);
     ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(reqPrefix));
     SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(spatialPrefix));
-    //species have spatial extension             
+    //species have spatial extension
     if (splugin->getIsSpatial()) {
       variableInfo *info = new variableInfo;
       InitializeVarInfo(info);
@@ -70,7 +69,6 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
       //species is spatially defined
                        
       ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
-                        
       if (cm -> getViableWithoutChange()) {
         if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
           info->value = new double[numOfVolIndexes];
@@ -195,7 +193,7 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
             sInfo->diffCInfo[0]  -> value = new double(p->getValue());
             sInfo->diffCInfo[1]  -> value = new double(p->getValue());
-            if(Zindex  < 1)   sInfo->diffCInfo[2]  -> value = new double(p->getValue());
+            if(Zindex > 1)   sInfo->diffCInfo[2]  -> value = new double(p->getValue());
             break;
                                     
           case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
@@ -222,11 +220,11 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           sInfo->adCInfo = new variableInfo*[3];
           fill_n(sInfo->adCInfo, 3, reinterpret_cast<variableInfo*>(0));
         }
-        sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate()] = info;
+        sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate() - 1] = info;
         if (model->getRule(info->id) == 0 && p->isSetValue()) {
           info->isResolved = true;
           info->isUniform = true;
-          sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate()-1]->value = new double(p->getValue());
+          sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate() - 1]->value = new double(p->getValue());
         }
         break;
       case SBML_SPATIAL_BOUNDARYCONDITION://boundary condition
