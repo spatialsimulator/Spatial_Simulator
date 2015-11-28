@@ -221,7 +221,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       sliceFlag = true;
       slice = atoi(optarg + 1) * 2;
       if (sliceFlag == true && dimension != 3) printErrorMessage();
-      break;      
+      break;
     default:
       printErrorMessage();
       break;
@@ -241,7 +241,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   string fname(argv[optind]);
   fname = fname.substr((int)fname.find_last_of("/") + 1, (int)fname.find_last_of(".") - (int)fname.find_last_of("/") - 1);
   if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir result/" + fname).c_str());
-        
+
   bool isImageBased = false;
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
     if (geometry->getGeometryDefinition(i)->isSampledFieldGeometry()) {
@@ -317,7 +317,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   //geometryDefinition
   double *tmp_isDomain = new double[numOfVolIndexes];
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
-   if( geometry->getGeometryDefinition(i)-> isSetIsActive() && !(geometry->getGeometryDefinition(i)->getIsActive())) continue; 
+   if( geometry->getGeometryDefinition(i)-> isSetIsActive() && !(geometry->getGeometryDefinition(i)->getIsActive())) continue;
     if (geometry->getGeometryDefinition(i)->isAnalyticGeometry()) {
       //AnalyticVolumes
       AnalyticGeometry *analyticGeo = static_cast<AnalyticGeometry*>(geometry->getGeometryDefinition(i));
@@ -398,19 +398,20 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
                 samVol = sfGeo->getSampledVolume(k);
               }
             }
-            uLong uncomprLen = 0;
-            switch (dimension) {
-            case 1:
-              uncomprLen = samField->getNumSamples1();
-              break;
-            case 2:
-              uncomprLen = samField->getNumSamples1() * samField->getNumSamples2();
-              break;
-            case 3:
-              uncomprLen = samField->getNumSamples1() * samField->getNumSamples2() * samField->getNumSamples3();
-            default:
-              break;
-            }
+            //uLong uncomprLen = 0;
+            //switch (dimension) {
+            //case 1:
+            //  uncomprLen = samField->getNumSamples1();
+            //  break;
+            //case 2:
+            //  uncomprLen = samField->getNumSamples1() * samField->getNumSamples2();
+            //  break;
+            //case 3:
+            //  uncomprLen = samField->getNumSamples1() * samField->getNumSamples2() * samField->getNumSamples3();
+            //default:
+            //  break;
+            //}
+            uLong uncomprLen = samField->getUncompressedLength();
             uLong comprLen = samField->getSamplesLength();
             Byte *compr = (Byte*)calloc(sizeof(Byte), comprLen);
             int *compr_int = (int*)calloc(sizeof(int), comprLen);
@@ -430,14 +431,19 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
               177 #define Z_BUF_ERROR    (-5)
               178 #define Z_VERSION_ERROR (-6)
             */
-
-            int err = uncompress(uncompr, &uncomprLen, (const Byte*)compr, comprLen);
-            if (err != Z_OK) {
-              cout << "err with uncompress" << endl;
-              cout << err << endl;
-              exit(1);
+            // isdeflated
+            if(uncomprLen > comprLen){
+              int err = uncompress(uncompr, &uncomprLen, (const Byte*)compr, comprLen);
+              if (err != Z_OK) {
+                cout << "err with uncompress" << endl;
+                cout << err << endl;
+                exit(1);
+              }
+            }else{
+              Byte *temp = compr;
+              compr = uncompr;
+              uncompr = temp;
             }
-
             //ofstream sam_ofs;
             //string sam_fname = "/Users/matsui/Documents/SBMLSimulator/build/Debug/sample.csv";
             //sam_ofs.open(sam_fname.c_str());
@@ -533,8 +539,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
                 }
               }
             }
-            free(compr);
             free(compr_int);
+            free(compr);
             free(uncompr);
           }
         }
@@ -572,7 +578,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
             }
           }
         }
-                                
+
         //domainの位置(analytic geo)
         for (Z = 0; Z < Zindex; Z += 2) {
           for (Y = 0; Y < Yindex; Y += 2) {
@@ -985,10 +991,10 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     }
   }
 
-        
-        
-        
-        
+
+
+
+
   //draw geometries
   variableInfo *xInfo = 0, *yInfo = 0, *zInfo = 0;
   if (dimension >= 1){
@@ -1000,7 +1006,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   if (dimension >= 3) {
     zInfo = searchInfoById(varInfoList, zaxis);
   }
-        
+
 //set species' initial condition
   //boundary type(Xp, Xm, Yp, Ym, Zx, Zm)
   //parse dependence among species, compartments, parameters
@@ -1085,7 +1091,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 
   //膜が端にいるかどうかチェック。いたら終了。mashimo
 	cout << "checking membrane position in geometry..." << endl;
-	checkMemPosition(geoInfoList, Xindex, Yindex, Zindex, dimension);	
+	checkMemPosition(geoInfoList, Xindex, Yindex, Zindex, dimension);
 
   //calc normal unit vector of membrane (for mem diffusion and mem transport)
   normalUnitVector *nuVec = 0;
@@ -1219,7 +1225,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       } else {
         switch (slicedim) {
           case 'x':
-            ofs << "# y"; 
+            ofs << "# y";
             ofs << ", z, all";
             for (i = 0; i < memList.size(); i++) {
               ofs << ", " << memList[i];
@@ -1240,7 +1246,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
             }
             break;
           case 'y':
-            ofs << "# x"; 
+            ofs << "# x";
             ofs << ", z, all";
             for (i = 0; i < memList.size(); i++) {
               ofs << ", " << memList[i];
@@ -1261,7 +1267,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
             }
             break;
           case 'z':
-            ofs << "# x"; 
+            ofs << "# x";
             ofs << ", y, all";
             for (i = 0; i < memList.size(); i++) {
               ofs << ", " << memList[i];
@@ -1284,8 +1290,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
           default:
             break;
         }
-        default: 
-        break;             
+        default:
+        break;
       }
   }
   ofs.close();
@@ -1311,10 +1317,10 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       //   for (j = 0; j < geoInfo->domainIndex.size(); j++) {
       //     index = geoInfo->domainIndex[j];
       //     if(maxam < sInfo->value[index]) {
-      //       maxam = sInfo->value[index];                      
-      //     }                    
+      //       maxam = sInfo->value[index];
+      //     }
       //     if(minmin > sInfo->value[index]) {
-      //       minmin = sInfo->value[index];                      
+      //       minmin = sInfo->value[index];
       //    }
       //   }
       //   cout << maxam - minmin << endl; //for ii thesis to obtain quantitative analysis
@@ -1380,7 +1386,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
           //     if(X == 76 && Y == 7) {
           //       cout << 3 << " " << flush;
           //     }
-          //     else {                                              
+          //     else {
           //       cout << sInfo->geoi->isDomain[Y*Xindex+X] << " " << flush;
           //     }
           //   }
