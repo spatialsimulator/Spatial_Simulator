@@ -72,7 +72,6 @@ int main(int argc, char *argv[])
 
   struct stat st;
   if(stat("./result", &st) != 0) system("mkdir ./result");
-
   //cout << doc->getNamespaces() << endl;
   //XMLNamespaces *x = doc->getNamespaces();
   if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial") && doc->getPkgRequired("req")) {//PDE
@@ -391,7 +390,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
         if (c->getSpatialDimensions() == volDimension) {
           cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin(spatialPrefix));
           if (cPlugin != 0) {
-            SampledField *samField = geometry->getListOfSampledFields() ->get(0);          ///may need changes
+            SampledField *samField = geometry->getListOfSampledFields() ->get(sfGeo -> getSampledField());
             SampledVolume *samVol = 0;
             for (k = 0; k < sfGeo->getNumSampledVolumes(); k++) {
               if (sfGeo->getSampledVolume(k)->getDomainType() == cPlugin->getCompartmentMapping()->getDomainType()) {
