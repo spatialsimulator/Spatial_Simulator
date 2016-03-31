@@ -263,7 +263,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   cout << "simulation time = " << end_time << endl;
   cout << "dt = " << dt << endl;
   cout << "output results every " << out_step << " step" << endl;
-  cout << "color bar range min: " << range_min << endl << endl;
+  cout << "color bar range min: " << range_min << endl;
   cout << "color bar range max: " << range_max << endl << endl;
 
   int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
@@ -313,9 +313,24 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   }
 
   cout << "defining geometry... " << endl;
+  /* mashimo */
+  GeometryInfo* allAreaInfo = new GeometryInfo;
+  allAreaInfo->isDomain = new int[numOfVolIndexes];
+  int aaIndex;
+  for (Z = 0; Z < Zindex; ++Z) {
+    for (Y = 0; Y < Yindex; ++Y) {
+      for (X = 0; X < Xindex; ++X) {
+        aaIndex = Z * Xindex * Yindex + Y * Xindex + X;
+        allAreaInfo->isDomain[aaIndex] = 1; 
+        allAreaInfo->domainIndex.push_back(aaIndex); 
+      }
+    }
+  }
+  /* moshima */
   //geometryDefinition
   double *tmp_isDomain = new double[numOfVolIndexes];
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
+   if( geometry->getGeometryDefinition(i)-> isSetIsActive() && !(geometry->getGeometryDefinition(i)->getIsActive())) continue;
     if (geometry->getGeometryDefinition(i)->isAnalyticGeometry()) {
       //AnalyticVolumes
       AnalyticGeometry *analyticGeo = static_cast<AnalyticGeometry*>(geometry->getGeometryDefinition(i));
@@ -367,14 +382,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
             for (k = 0; k < (unsigned int)numOfVolIndexes; k++) {
               index = k;
               geoInfo->isDomain[k] = (int)tmp_isDomain[k];
-              Z = index / (Xindex * Yindex);
-              Y = (index - Z * Xindex * Yindex) / Xindex;
-              X = index - Z * Xindex * Yindex - Y * Xindex;
-              if (geoInfo->isDomain[k] == 1 && string(geoInfo->domainTypeId) == "nucleus") {
-                //cerr << X << ", " << Y << ", " << Z << ", " << geoInfo->isDomain[k] << endl;
-              } else {
-                //cout << geoInfo->domainTypeId << endl;
-              }
             }
             geoInfoList.push_back(geoInfo);
           }
@@ -395,20 +402,21 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
                 samVol = sfGeo->getSampledVolume(k);
               }
             }
-            uLong uncomprLen = 0;
-            switch (dimension) {
-            case 1:
-              uncomprLen = samField->getNumSamples1();
-              break;
-            case 2:
-              uncomprLen = samField->getNumSamples1() * samField->getNumSamples2();
-              break;
-            case 3:
-              uncomprLen = samField->getNumSamples1() * samField->getNumSamples2() * samField->getNumSamples3();
-            default:
-              break;
-            }
-            uLong comprLen = numOfVolIndexes / 4;
+            //uLong uncomprLen = 0;
+            //switch (dimension) {
+            //case 1:
+            //  uncomprLen = samField->getNumSamples1();
+            //  break;
+            //case 2:
+            //  uncomprLen = samField->getNumSamples1() * samField->getNumSamples2();
+            //  break;
+            //case 3:
+            //  uncomprLen = samField->getNumSamples1() * samField->getNumSamples2() * samField->getNumSamples3();
+            //default:
+            //  break;
+            //}
+            uLong uncomprLen = samField->getUncompressedLength();
+            uLong comprLen = samField->getSamplesLength();
             Byte *compr = (Byte*)calloc(sizeof(Byte), comprLen);
             int *compr_int = (int*)calloc(sizeof(int), comprLen);
             Byte *uncompr = (Byte*)calloc(sizeof(Byte), uncomprLen);
@@ -427,14 +435,20 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
               177 #define Z_BUF_ERROR    (-5)
               178 #define Z_VERSION_ERROR (-6)
             */
-
-            int err = uncompress(uncompr, &uncomprLen, (const Byte*)compr, comprLen);
-            if (err != Z_OK) {
-              cout << "err with uncompress" << endl;
-              cout << err << endl;
-              exit(1);
+            // isdeflated
+            if(uncomprLen > comprLen){
+              int err = uncompress(uncompr, &uncomprLen, (const Byte*)compr, comprLen);
+              if (err != Z_OK) {
+                cout << "err with uncompress" << endl;
+                cout << err << endl;
+                exit(1);
+              }
+            }else{
+              Byte *temp = compr;
+              compr = uncompr;
+              uncompr = temp;
             }
-
+ 
             GeometryInfo *geoInfo = new GeometryInfo;
             InitializeAVolInfo(geoInfo);
             geoInfo->compartmentId = c->getId().c_str();
@@ -455,15 +469,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
             geoInfo->isBoundary = new int[numOfVolIndexes];
             fill_n(geoInfo->isBoundary, numOfVolIndexes, 0);
             geoInfoList.push_back(geoInfo);
-            /*
-              for (Y = 0; Y <= samField->getNumSamples2(); Y++) {
-              for (X = 0; X <= samField->getNumSamples1(); X++) {
-              sam_ofs << (unsigned int)uncompr[Y * samField->getNumSamples1() + X] << ", ";
-              }
-              sam_ofs << endl;
-              }
-              sam_ofs.close();
-            */
             for (Z = 0; Z < Zindex; Z += 2) {
               for (Y = 0; Y < Yindex; Y += 2) {
                 for (X = 0; X < Xindex; X += 2) {
@@ -527,8 +532,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
                 }
               }
             }
-            free(compr);
             free(compr_int);
+            free(compr);
             free(uncompr);
           }
         }
@@ -566,7 +571,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
             }
           }
         }
-                                
         //domainの位置(analytic geo)
         for (Z = 0; Z < Zindex; Z += 2) {
           for (Y = 0; Y < Yindex; Y += 2) {
@@ -706,261 +710,260 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
         geoInfo->bType[j].isBofZm = false;
       }
       switch (dimension) {
-      case 1:
-        for (X = 0; X < Xindex; X++) {
-          if (X % 2 != 0) {
-            Xplus1 = Y * Xindex + (X + 1);
-            Xminus1 = Y * Xindex + (X - 1);
-            if (X != 0 && X != (Xindex - 1)) {
-              if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
-                  (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {
-                geoInfo->isDomain[X] = 1;
-                geoInfo->domainIndex.push_back(X);
-              }
-            }
-          }
-        }
-        break;
-      case 2:
-        for (Y = 0; Y < Yindex; Y++) {
+        case 1:
           for (X = 0; X < Xindex; X++) {
-            if ((Y * Xindex + X) % 2 != 0) {
+            if (X % 2 != 0) {
               Xplus1 = Y * Xindex + (X + 1);
               Xminus1 = Y * Xindex + (X - 1);
-              Yplus1 = (Y + 1) * Xindex + X;
-              Yminus1 = (Y - 1) * Xindex + X;
-              if (X != 0 && X != (Xindex - 1) && Y != 0 && Y != (Yindex - 1)) {
+              if (X != 0 && X != (Xindex - 1)) {
                 if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
                     (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {
-                  geoInfo->isDomain[Y * Xindex + X] = 1;
-                  geoInfo->domainIndex.push_back(Y * Xindex + X);
-                  geoInfo->bType[Y * Xindex + X].isBofXp = true;
-                  geoInfo->bType[Y * Xindex + X].isBofXm = true;
-                } else if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
-                           (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {
-                  geoInfo->isDomain[Y * Xindex + X] = 1;
-                  geoInfo->domainIndex.push_back(Y * Xindex + X);
-                  geoInfo->bType[Y * Xindex + X].isBofYp = true;
-                  geoInfo->bType[Y * Xindex + X].isBofYm = true;
-                }
-              } else if (X == 0 || X == Xindex - 1) {
-                if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
-                    (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {
-                  geoInfo->isDomain[Y * Xindex + X] = 1;
-                  geoInfo->domainIndex.push_back(Y * Xindex + X);
-                  geoInfo->bType[Y * Xindex + X].isBofYp = true;
-                  geoInfo->bType[Y * Xindex + X].isBofYm = true;
-                }
-              } else if (Y == 0 || Y == Yindex - 1) {
-                if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
-                    (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {
-                  geoInfo->isDomain[Y * Xindex + X] = 1;
+                  geoInfo->isDomain[X] = 1;
                   geoInfo->domainIndex.push_back(X);
-                  geoInfo->bType[Y * Xindex + X].isBofXp = true;
-                  geoInfo->bType[Y * Xindex + X].isBofXm = true;
                 }
               }
             }
           }
-        }
-        //pseudo membrane
-        for (Y = 0; Y < Yindex; Y++) {
-          for (X = 0; X < Xindex; X++) {
-            //if (!(X % 2 == 0 && Y % 2 == 0)) {
-            if ((X % 2 != 0 && Y % 2 != 0)) {
-              Xplus1 = Y * Xindex + (X + 1);
-              Xminus1 = Y * Xindex + (X - 1);
-              Yplus1 = (Y + 1) * Xindex + X;
-              Yminus1 = (Y - 1) * Xindex + X;
-              if (X != 0 && X != Xindex - 1 && Y != 0 && Y != Yindex - 1){
-                if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) ||
-                    (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1)) {
-                  geoInfo->isDomain[Y * Xindex + X] = 2;
-                  geoInfo->pseudoMemIndex.push_back(Y * Xindex + X);
-                }
-                if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Yplus1] == 1) ||
-                    (geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Yminus1] == 1) ||
-                    (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) ||
-                    (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Xminus1] == 1)) {
-                  geoInfo->isDomain[Y * Xindex + X] = 2;
-                  geoInfo->pseudoMemIndex.push_back(Y * Xindex + X);
-                }
-              } else if (X == 0 || X == Xindex - 1) {
-                if (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1) {
-                  geoInfo->isDomain[Y * Xindex + X] = 2;
-                  geoInfo->pseudoMemIndex.push_back(Y * Xindex + X);
-                }
-              } else if (Y == 0 || Y == Yindex - 1) {
-                if (geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) {
-                  geoInfo->isDomain[Y * Xindex + X] = 2;
-                  geoInfo->pseudoMemIndex.push_back(Y * Xindex + X);
-                }
-              }
-            }
-          }
-        }
-        break;
-      case 3:
-        for (Z = 0; Z < Zindex; Z++) {
+          break;
+        case 2:
           for (Y = 0; Y < Yindex; Y++) {
             for (X = 0; X < Xindex; X++) {
-              if ((Z * Yindex * Xindex + Y * Xindex + X) % 2 != 0) {
-                Xplus1 = Z * Yindex * Xindex + Y * Xindex + (X + 1);
-                Xminus1 = Z * Yindex * Xindex + Y * Xindex + (X - 1);
-                Yplus1 = Z * Yindex * Xindex + (Y + 1) * Xindex + X;
-                Yminus1 = Z * Yindex * Xindex + (Y - 1) * Xindex + X;
-                Zplus1 = (Z + 1) * Yindex * Xindex + Y * Xindex + X;
-                Zminus1 = (Z - 1) * Yindex * Xindex + Y * Xindex + X;
-                if ((X * Y * Z) != 0 && X != (Xindex - 1) && Y != (Yindex - 1) && Z != (Zindex - 1)) {//not at the edge of simulation space
+              if ((Y * Xindex + X) % 2 != 0) {
+                Xplus1 = Y * Xindex + (X + 1);
+                Xminus1 = Y * Xindex + (X - 1);
+                Yplus1 = (Y + 1) * Xindex + X;
+                Yminus1 = (Y - 1) * Xindex + X;
+                if (X != 0 && X != (Xindex - 1) && Y != 0 && Y != (Yindex - 1)) {
                   if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
-                      (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {//X
-                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXm = true;
+                      (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {
+                    geoInfo->isDomain[Y * Xindex + X] = 1;
+                    geoInfo->domainIndex.push_back(Y * Xindex + X);
+                    geoInfo->bType[Y * Xindex + X].isBofXp = true;
+                    geoInfo->bType[Y * Xindex + X].isBofXm = true;
                   } else if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
-                             (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {//Y
-                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
-                  } else if ((geoInfo->adjacentGeo1->isDomain[Zplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zminus1] == 1) ||
-                             (geoInfo->adjacentGeo1->isDomain[Zminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zplus1] == 1)) {//Z
-                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZp = true;
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZm = true;
+                      (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {
+                    geoInfo->isDomain[Y * Xindex + X] = 1;
+                    geoInfo->domainIndex.push_back(Y * Xindex + X);
+                    geoInfo->bType[Y * Xindex + X].isBofYp = true;
+                    geoInfo->bType[Y * Xindex + X].isBofYm = true;
                   }
                 } else if (X == 0 || X == Xindex - 1) {
                   if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
-                      (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {//Y
-                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
-                  } else if ((geoInfo->adjacentGeo1->isDomain[Zplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zminus1] == 1) ||
-                             (geoInfo->adjacentGeo1->isDomain[Zminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zplus1] == 1)) {//Z
-                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex +Y * Xindex + X);
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZp = true;
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZm = true;
+                      (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {
+                    geoInfo->isDomain[Y * Xindex + X] = 1;
+                    geoInfo->domainIndex.push_back(Y * Xindex + X);
+                    geoInfo->bType[Y * Xindex + X].isBofYp = true;
+                    geoInfo->bType[Y * Xindex + X].isBofYm = true;
                   }
                 } else if (Y == 0 || Y == Yindex - 1) {
                   if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
-                      (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {//X
-                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXm = true;
-                  } else if ((geoInfo->adjacentGeo1->isDomain[Zplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zminus1] == 1) ||
-                             (geoInfo->adjacentGeo1->isDomain[Zminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zplus1] == 1)) {//Y
-                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex +Y * Xindex + X);
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
-                  }
-                } else if (Z == 0 || Z == Zindex - 1) {
-                  if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
-                      (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {//X
-                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXm = true;
-                  } else if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
-                             (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {//Y
-                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex +Y * Xindex + X);
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
-                    geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
+                      (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {
+                    geoInfo->isDomain[Y * Xindex + X] = 1;
+                    geoInfo->domainIndex.push_back(X);
+                    geoInfo->bType[Y * Xindex + X].isBofXp = true;
+                    geoInfo->bType[Y * Xindex + X].isBofXm = true;
                   }
                 }
               }
             }
           }
-        }//mashimodao
-        //pseudo membrane
-        for (Z = 0; Z < Zindex; Z++) {
+          //pseudo membrane
           for (Y = 0; Y < Yindex; Y++) {
             for (X = 0; X < Xindex; X++) {
-              if ((X % 2 != 0 && Y % 2 != 0) || (Y % 2 != 0 && Z % 2 != 0) || (Z % 2 != 0 && X % 2 != 0)) {
-                index = Z * Yindex * Xindex + Y * Xindex + X;
-                Xplus1 = Z * Yindex * Xindex + Y * Xindex + (X + 1);
-                Xminus1 = Z * Yindex * Xindex + Y * Xindex + (X - 1);
-                Yplus1 = Z * Yindex * Xindex + (Y + 1) * Xindex + X;
-                Yminus1 = Z * Yindex * Xindex + (Y - 1) * Xindex + X;
-                Zplus1 = (Z + 1) * Yindex * Xindex + Y * Xindex + X;
-                Zminus1 = (Z - 1) * Yindex * Xindex + Y * Xindex + X;
-                if (X != 0 && X != Xindex - 1 && Y != 0 && Y != Yindex - 1 && Z != 0 && Z != Zindex - 1){
+              if ((X % 2 != 0 && Y % 2 != 0)) {
+                Xplus1 = Y * Xindex + (X + 1);
+                Xminus1 = Y * Xindex + (X - 1);
+                Yplus1 = (Y + 1) * Xindex + X;
+                Yminus1 = (Y - 1) * Xindex + X;
+                if (X != 0 && X != Xindex - 1 && Y != 0 && Y != Yindex - 1){
                   if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) ||
-                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1) ||
-                      (geoInfo->isDomain[Zplus1] == 1 && geoInfo->isDomain[Zminus1] == 1)) {
-                    geoInfo->isDomain[index] = 2;
-                    geoInfo->pseudoMemIndex.push_back(index);
+                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1)) {
+                    geoInfo->isDomain[Y * Xindex + X] = 2;
+                    geoInfo->pseudoMemIndex.push_back(Y * Xindex + X);
                   }
                   if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Yplus1] == 1) ||
                       (geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Yminus1] == 1) ||
-                      (geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
-                      (geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
-                      (geoInfo->isDomain[Xminus1] == 1 && geoInfo->isDomain[Yplus1] == 1) ||
-                      (geoInfo->isDomain[Xminus1] == 1 && geoInfo->isDomain[Yminus1] == 1) ||
-                      (geoInfo->isDomain[Xminus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
-                      (geoInfo->isDomain[Xminus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
-                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
-                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
-                      (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
-                      (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zminus1] == 1)) {
-                    geoInfo->isDomain[index] = 2;
-                    geoInfo->pseudoMemIndex.push_back(index);
+                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) ||
+                      (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Xminus1] == 1)) {
+                    geoInfo->isDomain[Y * Xindex + X] = 2;
+                    geoInfo->pseudoMemIndex.push_back(Y * Xindex + X);
                   }
                 } else if (X == 0 || X == Xindex - 1) {
-                  if ((geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1) ||
-                      (geoInfo->isDomain[Zplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
-                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
-                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
-                      (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
-                      (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zminus1] == 1)) {
-                    geoInfo->isDomain[index] = 2;
-                    geoInfo->pseudoMemIndex.push_back(index);
+                  if (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1) {
+                    geoInfo->isDomain[Y * Xindex + X] = 2;
+                    geoInfo->pseudoMemIndex.push_back(Y * Xindex + X);
                   }
                 } else if (Y == 0 || Y == Yindex - 1) {
-                  if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) ||
-                      (geoInfo->isDomain[Zplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
-                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
-                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
-                      (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
-                      (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zminus1] == 1)) {
-                    geoInfo->isDomain[index] = 2;
-                  }
-                } else if (Z == 0 || Z == Zindex - 1) {
-                  if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) ||
-                      (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1)) {
-                    geoInfo->isDomain[index] = 2;
-                    geoInfo->pseudoMemIndex.push_back(index);
+                  if (geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) {
+                    geoInfo->isDomain[Y * Xindex + X] = 2;
+                    geoInfo->pseudoMemIndex.push_back(Y * Xindex + X);
                   }
                 }
               }
             }
           }
-        }
-        break;
-      default:
-        break;
+          break;
+        case 3:
+          for (Z = 0; Z < Zindex; Z++) {
+            for (Y = 0; Y < Yindex; Y++) {
+              for (X = 0; X < Xindex; X++) {
+                if ((Z * Yindex * Xindex + Y * Xindex + X) % 2 != 0) {
+                  Xplus1 = Z * Yindex * Xindex + Y * Xindex + (X + 1);
+                  Xminus1 = Z * Yindex * Xindex + Y * Xindex + (X - 1);
+                  Yplus1 = Z * Yindex * Xindex + (Y + 1) * Xindex + X;
+                  Yminus1 = Z * Yindex * Xindex + (Y - 1) * Xindex + X;
+                  Zplus1 = (Z + 1) * Yindex * Xindex + Y * Xindex + X;
+                  Zminus1 = (Z - 1) * Yindex * Xindex + Y * Xindex + X;
+                  if ((X * Y * Z) != 0 && X != (Xindex - 1) && Y != (Yindex - 1) && Z != (Zindex - 1)) {//not at the edge of simulation space
+                    if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
+                        (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {//X
+                      geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                      geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXm = true;
+                    } else if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
+                        (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {//Y
+                      geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                      geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
+                    } else if ((geoInfo->adjacentGeo1->isDomain[Zplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zminus1] == 1) ||
+                        (geoInfo->adjacentGeo1->isDomain[Zminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zplus1] == 1)) {//Z
+                      geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                      geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZp = true;
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZm = true;
+                    }
+                  } else if (X == 0 || X == Xindex - 1) {
+                    if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
+                        (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {//Y
+                      geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                      geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
+                    } else if ((geoInfo->adjacentGeo1->isDomain[Zplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zminus1] == 1) ||
+                        (geoInfo->adjacentGeo1->isDomain[Zminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zplus1] == 1)) {//Z
+                      geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                      geoInfo->domainIndex.push_back(Z * Yindex * Xindex +Y * Xindex + X);
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZp = true;
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZm = true;
+                    }
+                  } else if (Y == 0 || Y == Yindex - 1) {
+                    if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
+                        (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {//X
+                      geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                      geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXm = true;
+                    } else if ((geoInfo->adjacentGeo1->isDomain[Zplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zminus1] == 1) ||
+                        (geoInfo->adjacentGeo1->isDomain[Zminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zplus1] == 1)) {//Y
+                      geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                      geoInfo->domainIndex.push_back(Z * Yindex * Xindex +Y * Xindex + X);
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
+                    }
+                  } else if (Z == 0 || Z == Zindex - 1) {
+                    if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
+                        (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {//X
+                      geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                      geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXm = true;
+                    } else if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
+                        (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {//Y
+                      geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                      geoInfo->domainIndex.push_back(Z * Yindex * Xindex +Y * Xindex + X);
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
+                      geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
+                    }
+                  }
+                }
+              }
+            }
+          }//mashimodao
+          //pseudo membrane
+          for (Z = 0; Z < Zindex; Z++) {
+            for (Y = 0; Y < Yindex; Y++) {
+              for (X = 0; X < Xindex; X++) {
+                if ((X % 2 != 0 && Y % 2 != 0) || (Y % 2 != 0 && Z % 2 != 0) || (Z % 2 != 0 && X % 2 != 0)) {
+                  index = Z * Yindex * Xindex + Y * Xindex + X;
+                  Xplus1 = Z * Yindex * Xindex + Y * Xindex + (X + 1);
+                  Xminus1 = Z * Yindex * Xindex + Y * Xindex + (X - 1);
+                  Yplus1 = Z * Yindex * Xindex + (Y + 1) * Xindex + X;
+                  Yminus1 = Z * Yindex * Xindex + (Y - 1) * Xindex + X;
+                  Zplus1 = (Z + 1) * Yindex * Xindex + Y * Xindex + X;
+                  Zminus1 = (Z - 1) * Yindex * Xindex + Y * Xindex + X;
+                  if (X != 0 && X != Xindex - 1 && Y != 0 && Y != Yindex - 1 && Z != 0 && Z != Zindex - 1){
+                    if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) ||
+                        (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1) ||
+                        (geoInfo->isDomain[Zplus1] == 1 && geoInfo->isDomain[Zminus1] == 1)) {
+                      geoInfo->isDomain[index] = 2;
+                      geoInfo->pseudoMemIndex.push_back(index);
+                    }
+                    if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Yplus1] == 1) ||
+                        (geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Yminus1] == 1) ||
+                        (geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
+                        (geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
+                        (geoInfo->isDomain[Xminus1] == 1 && geoInfo->isDomain[Yplus1] == 1) ||
+                        (geoInfo->isDomain[Xminus1] == 1 && geoInfo->isDomain[Yminus1] == 1) ||
+                        (geoInfo->isDomain[Xminus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
+                        (geoInfo->isDomain[Xminus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
+                        (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
+                        (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
+                        (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
+                        (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zminus1] == 1)) {
+                      geoInfo->isDomain[index] = 2;
+                      geoInfo->pseudoMemIndex.push_back(index);
+                    }
+                  } else if (X == 0 || X == Xindex - 1) {
+                    if ((geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1) ||
+                        (geoInfo->isDomain[Zplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
+                        (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
+                        (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
+                        (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
+                        (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zminus1] == 1)) {
+                      geoInfo->isDomain[index] = 2;
+                      geoInfo->pseudoMemIndex.push_back(index);
+                    }
+                  } else if (Y == 0 || Y == Yindex - 1) {
+                    if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) ||
+                        (geoInfo->isDomain[Zplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
+                        (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
+                        (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Zminus1] == 1) ||
+                        (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zplus1] == 1) ||
+                        (geoInfo->isDomain[Yminus1] == 1 && geoInfo->isDomain[Zminus1] == 1)) {
+                      geoInfo->isDomain[index] = 2;
+                    }
+                  } else if (Z == 0 || Z == Zindex - 1) {
+                    if ((geoInfo->isDomain[Xplus1] == 1 && geoInfo->isDomain[Xminus1] == 1) ||
+                        (geoInfo->isDomain[Yplus1] == 1 && geoInfo->isDomain[Yminus1] == 1)) {
+                      geoInfo->isDomain[index] = 2;
+                      geoInfo->pseudoMemIndex.push_back(index);
+                    }
+                  }
+                }
+              }
+            }
+          }
+          break;
+        default:
+          break;
       }
     }
   }
   cout << "finished" << endl << endl;
   //make directories to output result (txt and img)
   /*
-  if(stat(string("./result/" + fname + "/txt").c_str(), &st) != 0) {
-    system(string("mkdir ./result/" + fname + "/txt").c_str());
-  }
-  if(stat(string("./result/" + fname + "/txt/geometry").c_str(), &st) != 0) {
-    system(string("mkdir ./result/" + fname + "/txt/geometry").c_str());
-  }
-  if(stat(string("./result/" + fname + "/img").c_str(), &st) != 0) {
-    system(string("mkdir ./result/" + fname + "/img").c_str());
-  }
-  */
+     if(stat(string("./result/" + fname + "/txt").c_str(), &st) != 0) {
+     system(string("mkdir ./result/" + fname + "/txt").c_str());
+     }
+     if(stat(string("./result/" + fname + "/txt/geometry").c_str(), &st) != 0) {
+     system(string("mkdir ./result/" + fname + "/txt/geometry").c_str());
+     }
+     if(stat(string("./result/" + fname + "/img").c_str(), &st) != 0) {
+     system(string("mkdir ./result/" + fname + "/img").c_str());
+     }
+     */
   if(stat(string("./result/" + fname + "/img_opencv").c_str(), &st) != 0) {//added by mashimo
     system(string("mkdir ./result/" + fname + "/img_opencv").c_str());
   }
@@ -975,26 +978,25 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     if (sInfo != 0) {
       if (sInfo->inVol) {
         /*
-        if(stat(string("./result/" + fname + "/txt/volume").c_str(), &st) != 0) {
-          system(string("mkdir ./result/" + fname + "/txt/volume").c_str());
-        }
-        */
+           if(stat(string("./result/" + fname + "/txt/volume").c_str(), &st) != 0) {
+           system(string("mkdir ./result/" + fname + "/txt/volume").c_str());
+           }
+           */
       } else {
         /*
-        if(stat(string("./result/" + fname + "/txt/membrane").c_str(), &st) != 0) {
-          system(string("mkdir ./result/" + fname + "/txt/membrane").c_str());
-        }
-        */
+           if(stat(string("./result/" + fname + "/txt/membrane").c_str(), &st) != 0) {
+           system(string("mkdir ./result/" + fname + "/txt/membrane").c_str());
+           }
+           */
       }
       /*
-      if(stat(string("./result/" + fname + "/img/" + s->getId()).c_str(), &st) != 0) {
-        system(string("mkdir ./result/" + fname + "/img/" + s->getId()).c_str());
-      }
-      */
+         if(stat(string("./result/" + fname + "/img/" + s->getId()).c_str(), &st) != 0) {
+         system(string("mkdir ./result/" + fname + "/img/" + s->getId()).c_str());
+         }
+         */
       if(stat(string("./result/" + fname + "/img_opencv/" + s->getId()).c_str(), &st) != 0) {//added by mashimo
         system(string("mkdir ./result/" + fname + "/img_opencv/" + s->getId()).c_str());
       }
-
     }
   }
 
@@ -1009,8 +1011,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   if (dimension >= 3) {
     zInfo = searchInfoById(varInfoList, zaxis);
   }
-        
-//set species' initial condition
+
+  //set species' initial condition
   //boundary type(Xp, Xm, Yp, Ym, Zx, Zm)
   //parse dependence among species, compartments, parameters
   cout << "assigning initial conditions of species and parameters..." << endl;
@@ -1075,11 +1077,43 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
         parseAST(ast, info->rpInfo, varInfoList, info->rpInfo->listNum, freeConstList);
         cout << info->id << ": " << SBML_formulaToString(ast) << endl;
         bool isAllArea = (info->sp != 0)? false: true;
-        if (info->sp != 0) info->geoi = searchAvolInfoByCompartment(geoInfoList, info->sp->getCompartment().c_str());
-        reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
+        if (info->sp != 0) {// Symbol == species
+          info->geoi = searchAvolInfoByCompartment(geoInfoList, info->sp->getCompartment().c_str());
+          reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
+        }
+        else if (info->sp == 0) {// Symbol == parameter mashimo
+          ListOfParameters* lop = model->getListOfParameters();
+          for (j = 0; j < numOfParameters; ++j) {
+            if (info->id == lop->get(j)->getId()) {
+              info->para = lop->get(j);
+              SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(lop->get(j)->getPlugin(spatialPrefix));
+              if (pPlugin->isSpatialParameter()) {//Spatial Parameter
+                cout << "-> spatial parameter" << endl;
+                string spId;
+                if (pPlugin->getType() == SBML_SPATIAL_DIFFUSIONCOEFFICIENT) {
+                  spId = pPlugin->getDiffusionCoefficient()->getVariable();
+                }
+                else if(pPlugin->getType() == SBML_SPATIAL_ADVECTIONCOEFFICIENT) {
+                  spId = pPlugin->getAdvectionCoefficient()->getVariable();
+                }
+                else if(pPlugin->getType() == SBML_SPATIAL_BOUNDARYCONDITION) {
+                  spId = pPlugin->getBoundaryCondition()->getVariable();
+                }
+                string comId = searchInfoById(varInfoList, spId.c_str())->sp->getCompartment();
+                info->geoi = searchAvolInfoByCompartment(geoInfoList, comId.c_str());
+                reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, false);
+              }
+              else {//Normal Parameter
+                cout << "-> normal parameter" << endl;
+                reversePolishInitial(allAreaInfo->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, true);
+              }
+              break;
+            }
+          }
+        }//omihsam
         info->isResolved = true;
         if (info->hasAssignmentRule) orderedARule.push_back(info);
-      }
+      } 
       if (i == notOrderedInfo.size() - 1) {
         for (j = 0, resolved_count = 0; j < notOrderedInfo.size(); j++) {
           if (notOrderedInfo[j]->isResolved == true) resolved_count++;
@@ -1092,18 +1126,22 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   cout << "finished" << endl;
 
 
-  //膜が端にいるかどうかチェック。いたら終了。mashimo
-	cout << "checking membrane position in geometry..." << endl;
-	checkMemPosition(geoInfoList, Xindex, Yindex, Zindex, dimension);	
+  //mashimo
+	//cout << "checking membrane position in geometry..." << endl;
+	//checkMemPosition(geoInfoList, Xindex, Yindex, Zindex, dimension);
 
   //calc normal unit vector of membrane (for mem diffusion and mem transport)
   normalUnitVector *nuVec = 0;
   voronoiInfo *vorI = 0;
   if (dimension >= 2) {
     //calc normalUnitVector at membrane
+    cout << "set Normal Vector" << endl;
     nuVec = setNormalAngle(geoInfoList, Xsize, Ysize, Zsize, dimension, Xindex, Yindex, Zindex, numOfVolIndexes);
+    // nuVec = setNormalAngle_modify(geoInfoList, Xsize, Ysize, Zsize, dimension, Xindex, Yindex, Zindex, numOfVolIndexes);
     //calc voronoi at membrane
+    cout << "set Voronoi Info" << endl;
     vorI = setVoronoiInfo(nuVec, xInfo, yInfo, zInfo, geoInfoList, Xsize, Ysize, Zsize, dimension, Xindex, Yindex, Zindex, numOfVolIndexes);
+    //vorI = setVoronoiInfo_modify(nuVec, xInfo, yInfo, zInfo, geoInfoList, Xsize, Ysize, Zsize, dimension, Xindex, Yindex, Zindex, numOfVolIndexes);
   }
   //set boundary type
   setBoundaryType(model, varInfoList, geoInfoList, Xindex, Yindex, Zindex, dimension);
@@ -1159,6 +1197,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     }
   }
 
+  cout << "finished" << endl;
   //simulation
   cout << "simulation starts" << endl;
   //FILE *gp = popen("/opt/local/bin/gnuplot -persist", "w");
@@ -1239,17 +1278,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
         //membane diffusion
         if (sInfo->diffCInfo != 0 && !sInfo->geoi->isVol) {
           calcMemDiffusion(sInfo, vorI, Xindex, Yindex, Zindex, m, dt, dimension);
-          // for(Y = 0; Y < Yindex; Y++) {
-          //   for(X = 0; X < Xindex; X++) {
-          //     if(X == 76 && Y == 7) {
-          //       cout << 3 << " " << flush;
-          //     }
-          //     else {                                              
-          //       cout << sInfo->geoi->isDomain[Y*Xindex+X] << " " << flush;
-          //     }
-          //   }
-          //   cout << endl;
-          // }//mashimo's crazy
         }
         diff_end = clock();
         diff_time += diff_end - diff_start;
@@ -1341,8 +1369,15 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       bool isAllArea = (info->sp != 0)? false: true;
       if (info->sp != 0) {
         info->geoi = searchAvolInfoByCompartment(geoInfoList, info->sp->getCompartment().c_str());
+        reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
+      } else {//parameter mashimo
+        if ((static_cast<SpatialParameterPlugin*>(info->para->getPlugin(spatialPrefix)))->isSpatialParameter()) {
+          //reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
+          reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, false);
+        } else {
+          reversePolishInitial(allAreaInfo->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
+        }
       }
-      reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
       /*
         double tmp_x, tmp_y, tmp_z, tmp_len;
         double tmp_phi, tmp_theta;
@@ -1458,6 +1493,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   delete sim_time;
   delete[] nuVec;
   delete[] vorI;
+  delete allAreaInfo->isDomain;//mashimo
+  delete allAreaInfo;//mashimo
 }
 
 bool isResolvedAll(vector<variableInfo*> &dependence)
