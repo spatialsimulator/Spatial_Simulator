@@ -213,7 +213,7 @@ void makeValueMat(Mat* mat, double* value, int Xindex, int Yindex, double range_
   for (Y = 0; Y < mat->rows; ++Y) {
     for (X = 0; X < mat->cols; ++X) {
       index = (Yindex - 1 - Y * 2) * Xindex + X * 2;//疎行列用 なんかこうしないと逆になっちゃう
-      value_level = (value[index] - range_min) / (range_max - range_min);
+      value_level = (value[index] - range_min) / (range_max - range_min) * 5;
       if(value_level < 0) {//~0
         mat->at<Vec3b>(Y, X) = Vec3b(139.0, 0, 0);//BGR
       }
@@ -230,7 +230,8 @@ void makeValueMat(Mat* mat, double* value, int Xindex, int Yindex, double range_
         mat->at<Vec3b>(Y, X) = Vec3b(0, 255.0 - (value_level - 4.0) * 255.0, 255);
       }
       else if (5 < value_level){//~5
-        mat->at<Vec3b>(Y, X) = Vec3b(0, 255, 255);
+        //mat->at<Vec3b>(Y, X) = Vec3b(0, 255, 255);
+        mat->at<Vec3b>(Y, X) = Vec3b(0, 0, 255);
       }
       else if (isnan(value[index])) {//nan
         mat->at<Vec3b>(Y, X) = nanVec;
@@ -253,7 +254,7 @@ void makeValueMat_slice(Mat* mat, double* value, int Xindex, int Yindex, int Zin
       if (slicedim == 'x') index = (Zindex - 1 - y * 2) * Xindex * Yindex + (x * 2) * Xindex + slice;
       if (slicedim == 'y') index = (Zindex - 1 - y * 2) * Xindex * Yindex + slice * Xindex + x * 2;
       if (slicedim == 'z') index = slice * Xindex * Yindex + (Yindex - 1 - y * 2) * Xindex + x * 2;
-      value_level = (value[index] - range_min) / (range_max - range_min);
+      value_level = (value[index] - range_min) / (range_max - range_min) * 5;
       if(value_level < 0) {//~0
         mat->at<Vec3b>(y, x) = Vec3b(139.0, 0, 0);//BGR
       }
@@ -292,7 +293,7 @@ void makeMemValueMat(Mat* mat, double* value, int* geo_edge, int Xindex, int Yin
     for (X = 0; X < Xindex; ++X) {
       index = (Yindex - 1 - Y) * Xindex + X;//疎行列用 なんかこうしないと逆になっちゃう
       if (geo_edge[index] == 1 || geo_edge[index] == 2) {
-        value_level = (value[index] - range_min) / (range_max - range_min);
+        value_level = (value[index] - range_min) / (range_max - range_min) * 5;
         if(value_level < 0) {//~0
           mat->at<Vec3b>(Y, X) = Vec3b(139.0, 0, 0);//BGR
         }
@@ -330,11 +331,11 @@ void makeMemValueMat_slice(Mat* mat, double* value, int* geo_edge, int Xindex, i
   double value_level = 0;
   for (y = 0; y < mat->rows; ++y) {
     for (x = 0; x < mat->cols; ++x) {
-      if (slicedim == 'x') index = (Zindex - 1 - y * 2) * Xindex * Yindex + x * Xindex + slice;
-      if (slicedim == 'y') index = (Zindex - 1 - y * 2) * Xindex * Yindex + slice * Xindex + x;
-      if (slicedim == 'z') index = slice * Xindex * Yindex + (Yindex - 1 - y * 2) * Xindex + x;
+      if (slicedim == 'x') index = (Zindex - 1 - y) * Xindex * Yindex + x * Xindex + slice;
+      if (slicedim == 'y') index = (Zindex - 1 - y) * Xindex * Yindex + slice * Xindex + x;
+      if (slicedim == 'z') index = slice * Xindex * Yindex + (Yindex - 1 - y) * Xindex + x;
       if (geo_edge[index] == 1 || geo_edge[index] == 2) {
-        value_level = (value[index] - range_min) / (range_max - range_min);
+        value_level = (value[index] - range_min) / (range_max - range_min) * 5;
         if(value_level < 0) {//~0
           mat->at<Vec3b>(y, x) = Vec3b(139.0, 0, 0);//BGR
         }

@@ -43,7 +43,6 @@ void outputValueData(vector<variableInfo*>&varInfoList, ListOfSpecies* los, int 
   string s_id;
   stringstream ss;
   ss << file_num;
-  //double value[Zdiv][Ydiv][Xdiv];//疎行列だから出力用に配列を定義。もう疎行列やめたい by mashimo
   hsize_t dim[dimension];
   H5File file("./result/" + fname + "/HDF5/" + FILENAME, H5F_ACC_RDWR);
   DataSpace *dataspace;
@@ -55,7 +54,7 @@ void outputValueData(vector<variableInfo*>&varInfoList, ListOfSpecies* los, int 
     sInfo = searchInfoById(varInfoList, s_id.c_str());
     spGroup = file.openGroup(s_id);
     if(sInfo->inVol) {//volume
-      double value[Zdiv][Ydiv][Xdiv];
+      double *value = new double[Zdiv * Ydiv * Xdiv];
       dim[0] = Xdiv;
       if (2 <= dimension) dim[1] = Ydiv;
       if (3 == dimension) dim[2] = Zdiv;
@@ -63,9 +62,10 @@ void outputValueData(vector<variableInfo*>&varInfoList, ListOfSpecies* los, int 
       for (Z = 0; Z < Zindex; Z += 2)
         for (Y = 0; Y < Yindex; Y += 2)
           for (X = 0; X < Xindex; X += 2)
-            value[Z / 2][Y / 2][X / 2] = sInfo->value[Z * Yindex * Xindex + Y * Xindex + X];
+            value[Z / 2 * Ydiv * Xdiv + Y / 2 * Xdiv + X / 2] = sInfo->value[Z * Yindex * Xindex + Y * Xindex + X];
       dataset = new DataSet(spGroup.createDataSet(ss.str(), PredType::NATIVE_DOUBLE, *dataspace));
       dataset->write(value, PredType::NATIVE_DOUBLE);
+      delete value;
       delete dataset;
       delete dataspace;
     }
@@ -84,11 +84,17 @@ void outputValueData(vector<variableInfo*>&varInfoList, ListOfSpecies* los, int 
 
 void output3D_uint8 (vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xindex, int Yindex, int Zindex, int file_num, string fname, double range_max) {
   int i, X, Y, Z, index;
-  uint8_t value[Xindex][Yindex][Zindex];
-  for (Z = 0; Z < Zindex; Z++) 
-    for (Y = 0; Y < Yindex; Y++)
-      for (X = 0; X < Xindex; X++)
+  uint8_t ***value;
+  value = new uint8_t**[Xindex];
+  for (X = 0; X < Xindex; X++) {
+    value[X] = new uint8_t*[Yindex];
+    for (Y = 0; Y < Yindex; Y++) {
+      value[X][Y] = new uint8_t[Zindex];
+      for (Z = 0; X < Zindex; Z++) {
         value[X][Y][Z] = 0;
+      }
+    }
+  }
   string s_id;
   stringstream ss;
   ss << file_num;
@@ -122,4 +128,12 @@ void output3D_uint8 (vector<variableInfo*>&varInfoList, ListOfSpecies* los, int 
     dataset->write(value, PredType::INTEL_U8);
     delete dataset;
   }
+  //free value array
+  for (X = 0; X < Xindex; X++) {
+    for (Y = 0; Y < Yindex; Y++) {
+      delete value[X][Y];
+    }
+    delete value[X];
+  }
+  delete value;
 }
