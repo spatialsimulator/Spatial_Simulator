@@ -12,10 +12,10 @@
 #include "searchFunction.h"
 using namespace std;
 //opencv 
-//#include <cv.h>
-//#include <highgui.h>
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui.hpp>
+#include <cv.h>
+#include <highgui.h>
+//#include <opencv2/opencv.hpp>
+//#include <opencv2/highgui.hpp>
 #define barSizeX 20
 #define barSizeY 400
 #define cbAreaX 100
