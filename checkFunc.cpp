@@ -40,16 +40,16 @@ void checkMemPosition(vector<GeometryInfo*> geoInfoList, int Xindex, int Yindex,
       }
     }
 	}
-  if(badX == -1 || badY == -1 || badZ == -1){
-    cerr << "Warning: bad geometry at";
-      if(badX == -1){
-        cerr << " X boundary";
-      }
-      if(badY == -1){
-        cerr << " Y boundary";
-      }
-      if(badZ == -1){
-        cerr << " Z boundary";
-      }
-  }
+if(badX == -1 || badY == -1 || badZ == -1){
+  cerr << "Warning: bad geometry at";
+    if(badX == -1){
+      cerr << " X boundary";
+    }
+    if(badY == -1){
+      cerr << " Y boundary";
+    }
+    if(badZ == -1){
+      cerr << " Z boundary";
+    }
+}
 }

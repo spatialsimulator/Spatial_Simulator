@@ -10,7 +10,7 @@
 variableInfo* searchInfoById(vector<variableInfo*> &varInfoList, const char *varName)
 {
 	vector<variableInfo*>::iterator it = varInfoList.begin();
-	while (it != varInfoList.end()) {          
+	while (it != varInfoList.end()) {
           if (strcmp((*it)->id, varName) == 0) {
             return *it;
           }
@@ -22,7 +22,7 @@ variableInfo* searchInfoById(vector<variableInfo*> &varInfoList, const char *var
 GeometryInfo* searchAvolInfoByDomainType(vector<GeometryInfo*> &geoInfoList, const char *dtId)
 {
 	vector<GeometryInfo*>::iterator it = geoInfoList.begin();
-	while (it != geoInfoList.end()) {          
+	while (it != geoInfoList.end()) {
           if (strcmp((*it)->domainTypeId, dtId) == 0) {
 			return *it;
 		}

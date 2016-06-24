@@ -53,6 +53,7 @@ void printErrorMessage()
   cout << "-d #(double or int): delta t (ex. -d 0.01)" << endl;
   cout << "-o #(int): output results every # step(ex. -o 10)" << endl;
   cout << "-c #(double or int): max of color bar range # (ex. -c 1)" << endl;
+  cout << "-C #(double or int): min of color bar range # (ex. -c 1)" << endl;
   cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;//added by mashimo
   exit(1);
 }
@@ -74,7 +75,8 @@ int main(int argc, char *argv[])
   if(stat("./result", &st) != 0) system("mkdir ./result");
   //cout << doc->getNamespaces() << endl;
   //XMLNamespaces *x = doc->getNamespaces();
-  if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial") && doc->getPkgRequired("req")) {//PDE
+  //if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial") && doc->getPkgRequired("req")) {//PDE
+  if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial")) {//PDE
     spatialSimulator(doc, argc, argv);
   } else {//ODE
   }

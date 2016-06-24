@@ -39,7 +39,7 @@ void setCompartmentInfo(Model *model, vector<variableInfo*> &varInfoList)
 
 void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
 {
-  
+
   Model *model = doc->getModel();
   XMLNamespaces *xns = doc->getNamespaces();
   string spatialPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/spatial/version1");
@@ -53,7 +53,7 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
     Species *s = los->get(i);
     ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(reqPrefix));
     SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(spatialPrefix));
-    //species have spatial extension             
+    //species have spatial extension
     if (splugin->getIsSpatial()) {
       variableInfo *info = new variableInfo;
       InitializeVarInfo(info);
@@ -68,9 +68,9 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
       }
       //species value is specified by initial amount, initial value, rule or initial assignment
       //species is spatially defined
-                       
+
       ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
-                        
+
       if (cm -> getViableWithoutChange()) {
         if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
           info->value = new double[numOfVolIndexes];
@@ -163,7 +163,7 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           sInfo->diffCInfo = new variableInfo*[3];
           fill_n(sInfo->diffCInfo, 3, reinterpret_cast<variableInfo*>(0));
         }
-                                
+
         DiffusionCoefficient* dc = pPlugin -> getDiffusionCoefficient();
         switch (dc -> getType()){
         case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
@@ -171,11 +171,11 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           sInfo->diffCInfo[1] = info;
           if(Zindex > 1)sInfo->diffCInfo[2] = info;
           break;
-                                  
+
         case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
           sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
           break;
-                                  
+
         case SPATIAL_DIFFUSIONKIND_TENSOR:
           sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
           sInfo->diffCInfo[dc->getCoordinateReference2()] = info;
@@ -195,11 +195,11 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
             sInfo->diffCInfo[1]  -> value = new double(p->getValue());
             if(Zindex  < 1)   sInfo->diffCInfo[2]  -> value = new double(p->getValue());
             break;
-                                    
+
           case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
             sInfo->diffCInfo[dc->getCoordinateReference1()]  -> value = new double(p->getValue());
             break;
-                                  
+
           case SPATIAL_DIFFUSIONKIND_TENSOR:
             sInfo->diffCInfo[dc->getCoordinateReference1()]  -> value = new double(p->getValue());
             sInfo->diffCInfo[dc->getCoordinateReference2()]  -> value = new double(p->getValue());
@@ -608,7 +608,7 @@ normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsiz
                   break;
                 }
               }
-            }                                                
+            }
             X = startX;
             Y = startY;
             Z = startZ;
@@ -837,6 +837,7 @@ normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsiz
 
 void stepSearch(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane)
 {
+
   if (step_count == step_k) return;
   int Nindex1 = 0, Nindex2 = 0;
   int Sindex1 = 0, Sindex2 = 0;
@@ -1003,7 +1004,7 @@ void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, 
     Windex2 = Z * Yindex * Xindex + Y * Xindex + (X - 2);
     NWindex = (Z + 1) * Yindex * Xindex + Y * Xindex + (X - 1);
   }
-  while (i < 2) {          
+  while (i < 2) {
     if (indexMax > Nindex2 && isD[Nindex2] == 1 && isD[Nindex1] == 2) {//north
       horComponent[i] = hor;
       verComponent[i] = ver + 2;
@@ -1065,7 +1066,7 @@ void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, 
       if (plane == "yz") stepSearch(i, W, step_count, step_k, X, hor - 2, ver, Xindex, Yindex, Zindex, horComponent, verComponent, isD, plane);
       if (plane == "xz") stepSearch(i, W, step_count, step_k, hor - 2, Y, ver, Xindex, Yindex, Zindex, horComponent, verComponent, isD, plane);
       if (i == 0) i++;
-      else return;               
+      else return;
     }
     if (indexMax > NWindex && indexMin < NWindex && isD[NWindex] == 1) {//northwest
       horComponent[i] = hor - 1;
@@ -1076,9 +1077,8 @@ void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, 
       if (i == 0) i++;
       else return;
     }
-                
   }
-        
+
 }
 
 /*
