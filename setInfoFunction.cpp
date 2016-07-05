@@ -98,7 +98,8 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
             }
           }
        // }
-   //   }
+  //      }
+  //    }
     }
   }
 }
