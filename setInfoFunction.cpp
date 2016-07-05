@@ -51,10 +51,10 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
   int numOfVolIndexes = Xindex * Yindex * Zindex;
   for (i = 0; i < numOfSpecies; i++) {
     Species *s = los->get(i);
-    ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(reqPrefix));
-    SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(spatialPrefix));
+    //ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(reqPrefix));
+    //SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(spatialPrefix));
     //species have spatial extension
-    if (splugin->getIsSpatial()) {
+//    if (splugin->getIsSpatial()) {
       variableInfo *info = new variableInfo;
       InitializeVarInfo(info);
       varInfoList.push_back(info);
@@ -69,9 +69,9 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
       //species value is specified by initial amount, initial value, rule or initial assignment
       //species is spatially defined
 
-      ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
+      //ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
 
-      if (cm -> getViableWithoutChange()) {
+      //if (cm -> getViableWithoutChange()) {
         if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
           info->value = new double[numOfVolIndexes];
           fill_n(info->value, numOfVolIndexes, 0);
@@ -97,8 +97,8 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
               }
             }
           }
-        }
-      }
+       // }
+   //   }
     }
   }
 }
