@@ -52,7 +52,7 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
   for (i = 0; i < numOfSpecies; i++) {
     Species *s = los->get(i);
     //ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(reqPrefix));
-    //SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(spatialPrefix));
+    SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(spatialPrefix));
     //species have spatial extension
     if (splugin->getIsSpatial()) {
       variableInfo *info = new variableInfo;

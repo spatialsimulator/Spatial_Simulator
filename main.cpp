@@ -37,26 +37,12 @@
 #include "checkStability.h"
 #include "checkFunc.h"
 #include <zlib.h>
+#include "options.h"
 
 using namespace std;
 
 void spatialSimulator(SBMLDocument *doc, int argc, char *argv[]);
 bool isResolvedAll(vector<variableInfo*> &dependence);
-void printErrorMessage()
-{
-  cout << "illegal option" << endl;
-  cout << "how to use" << endl;
-  cout << "-x #(int): the number of points at x coordinate (ex. -x 100)" << endl;
-  cout << "-y #(int): the number of points at y coordinate (ex. -y 100)" << endl;
-  cout << "-z #(int): the number of points at z coordinate (ex. -z 100)" << endl;
-  cout << "-t #(double or int): simulation time (ex. -t 10)" << endl;
-  cout << "-d #(double or int): delta t (ex. -d 0.01)" << endl;
-  cout << "-o #(int): output results every # step(ex. -o 10)" << endl;
-  cout << "-c #(double or int): max of color bar range # (ex. -c 1)" << endl;
-  cout << "-C #(double or int): min of color bar range # (ex. -c 1)" << endl;
-  cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;//added by mashimo
-  exit(1);
-}
 
 int main(int argc, char *argv[])
 {
@@ -101,9 +87,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
 {
   struct stat st;
   unsigned int i, j, k, m;
-  int X = 0, Y = 0, Z = 0, index = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0, out_step = 1;
-  int Xdiv = 101, Ydiv = 101, Zdiv = 101;//num of reaction diffsion mesh
-  double end_time = 1.0, dt = 0.01, out_time = 1.0;
+  int X = 0, Y = 0, Z = 0, index = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0;
   double *sim_time = new double(0.0);
   double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
   double Xsize = 0.0, Ysize = 0.0, Zsize = 0.0;
@@ -156,78 +140,18 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   int Xplus1 = 0, Xminus1 = 0, Yplus1 = 0, Yminus1 = 0, Zplus1 = 0, Zminus1 = 0;
 
   //option
-  double range_max = 1.0;
-  double range_min = 0.0;
-  int opt_result = 0;
-  extern char	*optarg;
-  extern int optind;
-  int slice = 0;
-  char slicedim = 'z';
-  bool sliceFlag = false;
-  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:")) != -1) {
-    switch(opt_result) {
-    case 'x':
-      for (i = 0; i < string(optarg).size(); i++) {
-        if (!isdigit(optarg[i])) printErrorMessage();
-      }
-      Xdiv = atoi(optarg) + 1;
-      break;
-    case 'y':
-      for (i = 0; i < string(optarg).size(); i++) {
-        if (!isdigit(optarg[i])) printErrorMessage();
-      }
-      Ydiv = atoi(optarg) + 1;
-      break;
-    case 'z':
-      for (i = 0; i < string(optarg).size(); i++) {
-        if (!isdigit(optarg[i])) printErrorMessage();
-      }
-      Zdiv = atoi(optarg) + 1;
-      break;
-    case 't':
-      for (i = 0; i < string(optarg).size(); i++) {
-        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
-      }
-      end_time = atof(optarg);
-      break;
-    case 'd':
-      for (i = 0; i < string(optarg).size(); i++) {
-        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
-      }
-      dt = atof(optarg);
-    case 'o':
-      for (i = 0; i < string(optarg).size(); i++) {
-        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
-      }
-      out_step = atoi(optarg);
-      break;
-    case 'c':
-      for (i = 0; i < string(optarg).size(); i++) {
-        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
-      }
-      range_max = atof(optarg);
-      break;
-    case 'C':
-      for (i = 0; i < string(optarg).size(); i++) {
-        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
-      }
-      range_min = atof(optarg);
-      break;
-    case 's':
-      if (optarg[0] != 'x' && optarg[0] != 'y' && optarg[0] != 'z') printErrorMessage();
-      else slicedim = optarg[0];
-      for (i = 1; i < string(optarg).size(); i++) {
-        if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
-      }
-      sliceFlag = true;
-      slice = atoi(optarg + 1) * 2;
-      if (sliceFlag == true && dimension != 3) printErrorMessage();
-      break;
-    default:
-      printErrorMessage();
-      break;
-    }
-  }
+  optionList options = getOptionList(argc, argv, dimension);
+  int Xdiv = options.Xdiv;
+  int Ydiv = options.Ydiv;
+  int Zdiv = options.Zdiv;
+  double range_max = options.range_max;
+  double range_min = options.range_min;
+  double end_time = options.end_time;
+  double dt = options.dt;
+  int out_step = options.out_step;
+  int slice = options.slice;
+  char slicedim = options.slicedim;
+  bool sliceFlag = options.sliceFlag;
 
   //div
   if (dimension <= 1) {
@@ -256,7 +180,6 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       Zdiv = samField->getNumSamples3();
     }
   }
-  out_time = (double)out_time * dt;
   cout << "x mesh num: " << ((isImageBased)? Xdiv: Xdiv - 1) << endl;
   if (dimension >= 2) cout << "y mesh num: " << ((isImageBased)? Ydiv: Ydiv - 1) << endl;
   if (dimension == 3) cout << "z mesh num: " << ((isImageBased)? Zdiv: Zdiv - 1) << endl;
