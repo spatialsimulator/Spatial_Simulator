@@ -144,6 +144,7 @@ typedef struct _optionList{
   bool sliceFlag;
   int slice;
   char slicedim;
+  char *fname;
 }optionList;
 
 #endif /* MYSTRUCT_H_ */

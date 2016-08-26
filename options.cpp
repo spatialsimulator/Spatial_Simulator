@@ -7,6 +7,7 @@
 #include "sbml/packages/spatial/extension/SpatialExtension.h"
 #include "mystruct.h"
 #include <getopt.h>
+#include <string.h>
 
 void printErrorMessage()
 {
@@ -43,7 +44,8 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .range_min = 0.0,
     .sliceFlag = false,
     .slice = 0,
-    .slicedim = 'z'
+    .slicedim = 'z',
+    .fname = 0
   };
   int opt_result;
 
@@ -111,6 +113,10 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
         break;
     }
   }
+
+  char *fname = argv[optind];
+  options.fname = (char*) malloc(sizeof(char) * strlen(fname));
+  strncpy(options.fname, fname, strlen(fname));
 
   return options;
 }

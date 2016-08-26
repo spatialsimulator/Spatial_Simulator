@@ -41,7 +41,7 @@
 
 using namespace std;
 
-void spatialSimulator(SBMLDocument *doc, char *argv[], optionList options);
+void spatialSimulator(SBMLDocument *doc, optionList options);
 bool isResolvedAll(vector<variableInfo*> &dependence);
 
 int main(int argc, char *argv[])
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
   struct stat st;
   if(stat("./result", &st) != 0) system("mkdir ./result");
   if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial")) {//PDE
-    spatialSimulator(doc, argv, getOptionList(argc, argv, doc));
+    spatialSimulator(doc, getOptionList(argc, argv, doc));
   } else {//ODE
   }
   SBMLDocument_free(doc);
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 // 	return ret;
 // }
 
-void spatialSimulator(SBMLDocument *doc, char *argv[], optionList options)
+void spatialSimulator(SBMLDocument *doc, optionList options)
 {
   struct stat st;
   unsigned int i, j, k, m;
@@ -156,7 +156,7 @@ void spatialSimulator(SBMLDocument *doc, char *argv[], optionList options)
   }
 
   //filename
-  string fname(argv[optind]);
+  string fname(options.fname);
   fname = fname.substr((int)fname.find_last_of("/") + 1, (int)fname.find_last_of(".") - (int)fname.find_last_of("/") - 1);
   if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir result/" + fname).c_str());
 
