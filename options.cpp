@@ -20,13 +20,17 @@ void printErrorMessage()
   cout << "-o #(int): output results every # step(ex. -o 10)" << endl;
   cout << "-c #(double or int): max of color bar range # (ex. -c 1)" << endl;
   cout << "-C #(double or int): min of color bar range # (ex. -c 1)" << endl;
-  cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;//added by mashimo
+  cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;
   exit(1);
 }
 
-optionList getOptionList(int argc, char **argv, unsigned int dimension){
+optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
   extern char *optarg;
   extern int optind;
+  Model *model = doc -> getModel();
+  SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin("spatial"));
+  Geometry *geometry = spPlugin->getGeometry();
+  unsigned int dimension = geometry->getNumCoordinateComponents();
 
   optionList options = {
     .Xdiv = 101,

@@ -28,7 +28,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
     if (sInfo != 0 && !sInfo->inVol) {
       memFlag = true;
     }
-  }    
+  }
   dir_txt = "./result/" + fname + "/txt";
   string filename_vol = "", filename_mem = "";
   filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
@@ -174,7 +174,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
       if (Z != Zindex - 1) {//mashimo
         ofs_vol << endl;
         //cout << endl;
-      }        
+      }
     }
     if (memFlag) {
       bool flag = false;
@@ -255,7 +255,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
         fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
       }
       if (dimension == 2) {//2D
-                          
+
         fprintf(gp, "set terminal png truecolor size 2560,2560\n");
         //fprintf(gp, "set terminal png truecolor size 500,500\n");
         fprintf(gp, "set output \"/dev/null\"\n");
@@ -300,7 +300,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
           fprintf(gp, "set mztics\n");
           fprintf(gp, "set terminal png truecolor size 640,640\n");
           fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-          fprintf(gp, "splot \"%s\" u 1:2:3:%d with points palette\n", filename_vol.c_str(), dimension + vol_count);          
+          fprintf(gp, "splot \"%s\" u 1:2:3:%d with points palette\n", filename_vol.c_str(), dimension + vol_count);
         }
       }
     }
@@ -323,7 +323,7 @@ void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varI
     if (sInfo != 0 && !sInfo->inVol) {
       memFlag = true;
     }
-  }    
+  }
   dir_txt = "./result/" + fname + "/txt";
   string filename_vol = "", filename_mem = "";
   filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
@@ -483,7 +483,7 @@ void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varI
     if (sInfo != 0 && !sInfo->inVol) {
       memFlag = true;
     }
-  }    
+  }
   dir_txt = "./result/" + fname + "/txt";
   string filename_vol = "", filename_mem = "";
   filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
@@ -616,7 +616,7 @@ void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varI
             fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:(($%d > 0)? 0: 1):(0):(0):(0):(($%d > 0)? 0: 200) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
           }
         }
-      }       
+      }
     }
   }
 }
@@ -637,7 +637,7 @@ void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varI
     if (sInfo != 0 && !sInfo->inVol) {
       memFlag = true;
     }
-  }    
+  }
   dir_txt = "./result/" + fname + "/txt";
   string filename_vol = "", filename_mem = "";
   filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
@@ -749,7 +749,7 @@ void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varI
       } else if (dimension == 3 && !sInfo->inVol) {
         dir_img = "./result/" + fname + "/img/" + s->getId();
       }
-      if (dimension == 2) {//2D                          
+      if (dimension == 2) {//2D
         //fprintf(gp, "set terminal png size 2560,2560\n");
         fprintf(gp, "set terminal png truecolor size 500,500\n");
         fprintf(gp, "set output \"/dev/null\"\n");
@@ -774,7 +774,7 @@ void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varI
             }
           }
         }
-      } 
+      }
     }
   }
 }
