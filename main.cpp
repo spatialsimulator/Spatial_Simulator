@@ -77,7 +77,8 @@ int main(int argc, char *argv[])
 
   //cout << doc->getNamespaces() << endl;
   //XMLNamespaces *x = doc->getNamespaces();
-  if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial") && doc->getPkgRequired("req")) {//PDE
+  //if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial") && doc->getPkgRequired("req")) {//PDE
+  if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial") ) {//PDE
     spatialSimulator(doc, argc, argv);
   } else {//ODE
   }
@@ -222,7 +223,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
       sliceFlag = true;
       slice = atoi(optarg + 1) * 2;
       if (sliceFlag == true && dimension != 3) printErrorMessage();
-      break;      
+      break;
     default:
       printErrorMessage();
       break;
@@ -242,7 +243,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
   string fname(argv[optind]);
   fname = fname.substr((int)fname.find_last_of("/") + 1, (int)fname.find_last_of(".") - (int)fname.find_last_of("/") - 1);
   if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir result/" + fname).c_str());
-        
+
   bool isImageBased = false;
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
     if (geometry->getGeometryDefinition(i)->isSampledFieldGeometry()) {
@@ -321,8 +322,8 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
     for (Y = 0; Y < Yindex; ++Y) {
       for (X = 0; X < Xindex; ++X) {
         aaIndex = Z * Xindex * Yindex + Y * Xindex + X;
-        allAreaInfo->isDomain[aaIndex] = 1; 
-        allAreaInfo->domainIndex.push_back(aaIndex); 
+        allAreaInfo->isDomain[aaIndex] = 1;
+        allAreaInfo->domainIndex.push_back(aaIndex);
       }
     }
   }
@@ -448,7 +449,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
               compr = uncompr;
               uncompr = temp;
             }
- 
+
             GeometryInfo *geoInfo = new GeometryInfo;
             InitializeAVolInfo(geoInfo);
             geoInfo->compartmentId = c->getId().c_str();
@@ -1113,7 +1114,7 @@ void spatialSimulator(SBMLDocument *doc, int argc, char *argv[])
         }//omihsam
         info->isResolved = true;
         if (info->hasAssignmentRule) orderedARule.push_back(info);
-      } 
+      }
       if (i == notOrderedInfo.size() - 1) {
         for (j = 0, resolved_count = 0; j < notOrderedInfo.size(); j++) {
           if (notOrderedInfo[j]->isResolved == true) resolved_count++;

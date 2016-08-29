@@ -11,7 +11,7 @@
 #include "mystruct.h"
 #include "searchFunction.h"
 using namespace std;
-//opencv 
+//opencv
 //#include <cv.h>
 //#include <highgui.h>
 #include <opencv2/opencv.hpp> //K40
@@ -79,7 +79,7 @@ void outputImg(Model *model, vector<variableInfo*> &varInfoList, int* geo_edge, 
     sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
     s_id = los->get(i)->getId();
     Mat* image = new Mat(Size(imageSize[0], imageSize[1]), CV_8UC3, Scalar(255, 255, 255));
-    //================== value area =====================  
+    //================== value area =====================
     Mat* valueMat = new Mat(Size(Xdiv, Ydiv), CV_8UC3, Scalar(0, 0, 0));
     Mat* valueMat_sparse = new Mat(Size(Xindex, Yindex), CV_8UC3, Scalar(0, 0, 0));
     if (sInfo->inVol) {
@@ -123,7 +123,7 @@ void outputImg_slice(Model *model, vector<variableInfo*> &varInfoList, int* geo_
     index[1] = Zindex;
     division[0] = Ydiv;
     division[1] = Zdiv;
-  } 
+  }
   else if (slicedim == 'y') {
     index[0] = Xindex;
     index[1] = Zindex;
@@ -172,7 +172,7 @@ void outputImg_slice(Model *model, vector<variableInfo*> &varInfoList, int* geo_
     sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
     s_id = los->get(i)->getId();
     Mat* image = new Mat(Size(imageSize[0], imageSize[1]), CV_8UC3, Scalar(255, 255, 255));
-    //================== value area =====================  
+    //================== value area =====================
     Mat* valueMat = new Mat(Size(division[0], division[1]), CV_8UC3, Scalar(0, 0, 0));
     Mat* valueMat_sparse = new Mat(Size(index[0], index[1]), CV_8UC3, Scalar(0, 0, 0));
     if (sInfo->inVol) {
@@ -536,8 +536,8 @@ void setDetail(Mat* image, int* indent, int* areaSize, double t, double minX, do
   textSize = getTextSize("x", FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
   fix[0] = ceil(textSize.width / 2.0);
   fix[1] = ceil(textSize.height / 2.0) + ltics + textSize.height * 3;
-  putText(*image, "x", Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA); 
-  putText(*image, "y", Point(indent[0] / 2 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA); 
+  putText(*image, "x", Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  putText(*image, "y", Point(indent[0] / 2 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   //=============== X scale ======================
   stringstream ss;
   for (i = 0; i < 6; ++i) {
@@ -615,7 +615,7 @@ void setDetail_slice(Mat* image, int* indent, int* areaSize, double t, double mi
   int baseline;
   Size textSize;
   string axis[2];
-  if (slicedim == 'x') { 
+  if (slicedim == 'x') {
     axis[0] = "y";
     axis[1] = "z";
   }
@@ -630,8 +630,8 @@ void setDetail_slice(Mat* image, int* indent, int* areaSize, double t, double mi
   textSize = getTextSize(axis[0], FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
   fix[0] = textSize.width / 2;
   fix[1] = textSize.height / 2 + ltics + textSize.height * 3;
-  putText(*image, axis[0], Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA); 
-  putText(*image, axis[1], Point(indent[0] / 2 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA); 
+  putText(*image, axis[0], Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  putText(*image, axis[1], Point(indent[0] / 2 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   //=============== X scale ======================
   stringstream ss;
   for (i = 0; i < 6; ++i) {
@@ -691,7 +691,7 @@ int calcMagnification(int Xdiv, int Ydiv) {
   if (base % Ydiv == 0) m2 = base / Ydiv;
   else m2 = base / Ydiv + 1;
   return max(m1, m2);
-}  
+}
 
 string getCurrentTime() {
   time_t now = time(NULL);

@@ -34,7 +34,7 @@ void make3DHDF(string fname, ListOfSpecies* los) {//シミュレーション開�
 void outputGeoData() {
   //H5File file("./result/" + fname + "/HDF5/" + IMGFILENAME, H5F_ACC_RDWR);
   //file.createGroup("geometry");
-  
+
 }
 
 void outputValueData(vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int dimension, int file_num, string fname) {
