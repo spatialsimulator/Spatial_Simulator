@@ -68,9 +68,9 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
       }
       //species value is specified by initial amount, initial value, rule or initial assignment
       //species is spatially defined
-                       
-      ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
-      if (cm -> getViableWithoutChange()) {
+
+      //ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
+      //if (cm -> getViableWithoutChange()) {
         if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
           info->value = new double[numOfVolIndexes];
           fill_n(info->value, numOfVolIndexes, 0);
@@ -98,7 +98,7 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
           }
           info->isResolved = true; //mashimo 2016/1/23
         }
-      }
+     // }
     }
   }
 }
@@ -163,7 +163,7 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           sInfo->diffCInfo = new variableInfo*[3];
           fill_n(sInfo->diffCInfo, 3, reinterpret_cast<variableInfo*>(0));
         }
-                                
+
         DiffusionCoefficient* dc = pPlugin -> getDiffusionCoefficient();
         switch (dc -> getType()){
         case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
@@ -171,11 +171,11 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           sInfo->diffCInfo[1] = info;
           if(Zindex > 1)sInfo->diffCInfo[2] = info;
           break;
-                                  
+
         case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
           sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
           break;
-                                  
+
         case SPATIAL_DIFFUSIONKIND_TENSOR:
           sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
           sInfo->diffCInfo[dc->getCoordinateReference2()] = info;
@@ -195,11 +195,11 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
             sInfo->diffCInfo[1]  -> value = new double(p->getValue());
             if(Zindex > 1)   sInfo->diffCInfo[2]  -> value = new double(p->getValue());
             break;
-                                    
+
           case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
             sInfo->diffCInfo[dc->getCoordinateReference1()]  -> value = new double(p->getValue());
             break;
-                                  
+
           case SPATIAL_DIFFUSIONKIND_TENSOR:
             sInfo->diffCInfo[dc->getCoordinateReference1()]  -> value = new double(p->getValue());
             sInfo->diffCInfo[dc->getCoordinateReference2()]  -> value = new double(p->getValue());
@@ -621,7 +621,7 @@ normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsiz
                   break;
                 }
               }
-            }                                                
+            }
             X = startX;
             Y = startY;
             Z = startZ;
@@ -938,7 +938,7 @@ normalUnitVector* setNormalAngle_modify(vector<GeometryInfo*> &geoInfoList, doub
           Y = startY;
           Z = startZ;
           preD = -1;
-  
+
           /* calc local radius of curvature */
           //calc tmp step_k to calc local radius of curvature
           step_kXY = static_cast<int>(pow(hXY, -(2.0 / 3.0)) + 0.5);
@@ -1090,7 +1090,7 @@ normalUnitVector* setNormalAngle_modify(vector<GeometryInfo*> &geoInfoList, doub
                 break;
               }
             }
-          } 
+          }
           X = startX;
           Y = startY;
           Z = startZ;
@@ -1425,10 +1425,10 @@ void stepSearch_no_recursive(int l, int preD, int step_count, int step_k, int X,
         Y = hor;
         Z = ver + 2;
       }
-      else if (plane == "xz") { 
+      else if (plane == "xz") {
         X = hor;
         Z = ver + 2;
-      } 
+      }
     }
     else if (indexMax > NEindex && isD[NEindex] == 1 && preD != SW) {//northeast
       horComponent[l] = hor + 1;
@@ -1501,7 +1501,7 @@ void stepSearch_no_recursive(int l, int preD, int step_count, int step_k, int X,
         X = hor;
         Z = ver - 2;
       }
-    } 
+    }
     else if (indexMin < SWindex && isD[SWindex] == 1 && preD != NE) {//southwest
       horComponent[l] = hor - 1;
       verComponent[l] = ver - 1;
@@ -1519,7 +1519,7 @@ void stepSearch_no_recursive(int l, int preD, int step_count, int step_k, int X,
         X = hor - 1;
         Z = ver - 1;
       }
-    } 
+    }
     else if (indexMin < Windex2 && isD[Windex2] == 1 && isD[Windex1] == 2 && preD != E) {//west
       horComponent[l] = hor - 2;
       verComponent[l] = ver;
@@ -1537,7 +1537,7 @@ void stepSearch_no_recursive(int l, int preD, int step_count, int step_k, int X,
         X = hor - 2;
         Z = ver;
       }
-    } 
+    }
     else if (indexMax > NWindex && indexMin < NWindex && isD[NWindex] == 1 && preD != SE) {//northwest
       horComponent[l] = hor - 1;
       verComponent[l] = ver + 1;
@@ -1621,7 +1621,7 @@ void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, 
     Windex2 = Z * Yindex * Xindex + Y * Xindex + (X - 2);
     NWindex = (Z + 1) * Yindex * Xindex + Y * Xindex + (X - 1);
   }
-  while (i < 2) { 
+  while (i < 2) {
     if (indexMax > Nindex2 && isD[Nindex2] == 1 && isD[Nindex1] == 2) {//north
       horComponent[i] = hor;
       verComponent[i] = ver + 2;
@@ -1683,7 +1683,7 @@ void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, 
       if (plane == "yz") stepSearch_no_recursive(i, W, step_count, step_k, X, hor - 2, ver, Xindex, Yindex, Zindex, horComponent, verComponent, isD, plane);
       if (plane == "xz") stepSearch_no_recursive(i, W, step_count, step_k, hor - 2, Y, ver, Xindex, Yindex, Zindex, horComponent, verComponent, isD, plane);
       if (i == 0) i++;
-      else return;               
+      else return;
     }
     if (indexMax > NWindex && indexMin < NWindex && isD[NWindex] == 1) {//northwest
       horComponent[i] = hor - 1;
