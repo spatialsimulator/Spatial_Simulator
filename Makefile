@@ -1,7 +1,9 @@
-PROG = main
-CFLAGS = -Wall -Wextra -g -c -O2
+PROG = spatialsimulator
+MYLIB = libspatialsimulator.dylib
+CFLAGS = -Wall -Wextra -Weverything -g -c -O2 -fno-common -fPIC
 CC = g++
-OBJS = main.o setInfoFunction.o initializeFunction.o boundaryFunction.o astFunction.o freeFunction.o searchFunction.o calcPDE.o outputFunction.o checkStability.o checkFunc.o options.o
+OBJS = main.o setInfoFunction.o initializeFunction.o boundaryFunction.o astFunction.o freeFunction.o searchFunction.o calcPDE.o outputFunction.o checkStability.o checkFunc.o options.o spatialsimulator.o
+MYLIBFLAGS = -dynamiclib -install_name $(MYLIB) -compatibility_version 1.0 -current_version 1.0.0
 
 $(PROG): $(OBJS)
 	$(CC) -L/usr/local/lib -lsbml -lz -o $(PROG) $(OBJS)
@@ -30,6 +32,8 @@ checkFunc.o: checkFunc.cpp
 	$(CC) $(CFLAGS) checkFunc.cpp
 options.o: options.cpp
 	$(CC) $(CFLAGS) options.cpp
+spatialsimulator.o: spatialsimulator.cpp
+	$(CC) $(CFLAGS) spatialsimulator.cpp
 
 .PHONY: clean
 clean:

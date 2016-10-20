@@ -115,8 +115,8 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
   }
 
   char *fname = argv[optind];
-  options.fname = (char*) malloc(sizeof(char) * strlen(fname));
-  strncpy(options.fname, fname, strlen(fname));
+  options.fname = (char*) malloc(sizeof(char) * strlen(fname) + 1);
+  strncpy(options.fname, fname, strlen(fname) + 1);
 
   return options;
 }
