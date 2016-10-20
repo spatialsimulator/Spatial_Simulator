@@ -3,7 +3,7 @@ MYLIB = libspatialsim.dylib
 HEADERS = $(wildcard *.h)
 ALL_SRCS := $(wildcard *.cpp)
 SRCS := $(filter-out main.cpp, $(ALL_SRCS))
-OBJS = $(patsubst %.cpp, %.o, $(wildcard *.cpp))
+OBJS = $(SRCS:.cpp=.o)
 CC = g++
 CFLAGS = -Wall -Wextra -Weverything -g -c -O2 -fno-common -fPIC
 LDFLAGS = -L/usr/local/lib -lsbml -lz -L.
