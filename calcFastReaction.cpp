@@ -1,3 +1,13 @@
+#include "sbml/SBMLTypes.h"
+#include "sbml/extension/SBMLExtensionRegistry.h"
+#include "sbml/packages/req/common/ReqExtensionTypes.h"
+#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
+#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
+#include "sbml/packages/spatial/extension/SpatialExtension.h"
+#include <vector>
+#include "mystruct.h"
+
+
 void calcFastReaction(reactionInfo *rInfo, variableInfo *sInfo, int Xindex, int Yindex, int Zindex, double dt, int m, materialType mType, double stoichimetry)
 {
 	int X, Y, Z, i;
