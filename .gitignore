@@ -1,3 +1,5 @@
 main
 result/
 *.o
+libspatialsim.dylib
+spatialsimulator
