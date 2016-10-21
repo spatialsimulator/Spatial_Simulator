@@ -8,9 +8,12 @@ CC = g++
 CFLAGS = -Wall -Wextra -Weverything -g -c -O2 -fno-common -fPIC
 LDFLAGS = -L/usr/local/lib -lsbml -lz -L.
 MYLIBFLAGS = -dynamiclib -install_name $(MYLIB) -compatibility_version 1.0 -current_version 1.0.0
+MYLIBDIR = darwin/
+MYJAR = libspatialsimj.jar
 
 .PHONY: all
 all: $(PROG)
+	@$(MAKE) deploy
 
 %.o: %.cpp $(HEADERS)
 	$(CC) $(CFLAGS) -c $<
@@ -23,4 +26,12 @@ $(PROG): main.o $(MYLIB)
 
 .PHONY: clean
 clean:
-	rm -f $(PROG) $(OBJS)
+	rm -rf $(PROG) $(OBJS) main.o $(MYLIB) $(MYJAR) $(MYLIBDIR)
+
+.PHONY: deploy
+deploy:
+	if [ ! -d $(MYLIBDIR) ]; then\
+		mkdir $(MYLIBDIR);\
+	fi
+	cp $(MYLIB) $(MYLIBDIR)
+	jar cvf $(MYJAR) $(MYLIB)
