@@ -1,6 +1,9 @@
 #ifndef CALCPDE_H_
 #define CALCPDE_H_
 
+#include "mystruct.h"
+#include<vector>
+
 void reversePolishInitial(vector<int> &indexList, reversePolishInfo *rpInfo, double *value, int numOfASTNodes, int Xindex, int Yindex, int Zindex, bool isAllArea);
 void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int Yindex, int Zindex, double dt, int m, int numOfReactants, bool isReaction);
 //void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoi, Model *model, vector<variableInfo*> &varInfoList, int Xindex, int Yindex, int Zindex, double dt, int m);

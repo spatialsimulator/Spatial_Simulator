@@ -1,6 +1,10 @@
 #ifndef MYSTRUCT_H_
 #define MYSTRUCT_H_
 
+#include "sbml/SBMLTypes.h"
+#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
+#include <vector>
+
 using namespace std;
 
 typedef enum _materialTYpe {

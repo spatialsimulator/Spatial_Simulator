@@ -1,17 +1,13 @@
-#include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
-#include <vector>
-#include <iostream>
-#include <sstream>
-#include <fstream>
+#include "setInfoFunction.h"
 #include "mystruct.h"
 #include "initializeFunction.h"
 #include "searchFunction.h"
 #include "astFunction.h"
+#include "sbml/SBMLTypes.h"
+#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
+#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
+#include <vector>
+#include <iostream>
 
 void stepSearch(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane);
 void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane);

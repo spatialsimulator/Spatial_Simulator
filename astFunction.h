@@ -1,6 +1,9 @@
 #ifndef ASTFUNCTION_H_
 #define ASTFUNCTION_H_
 
+#include "mystruct.h"
+#include "sbml/SBMLTypes.h"
+
 void rearrangeAST(ASTNode *ast);
 void countAST(ASTNode *ast, int &numOfASTNode);
 void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &varInfoList, int index_max, vector<double*> &freeConstList);

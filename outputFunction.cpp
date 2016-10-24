@@ -1,17 +1,11 @@
-#include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
-#include <sys/stat.h>
-#include <vector>
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <cmath>
+#include "outputFunction.h"
 #include "mystruct.h"
 #include "searchFunction.h"
+#include "sbml/SBMLTypes.h"
+#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
+#include <vector>
+#include <iostream>
+#include <fstream>
 
 void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, string fname)
 {

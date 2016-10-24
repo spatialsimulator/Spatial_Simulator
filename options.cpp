@@ -1,13 +1,12 @@
-#include <vector>
-#include <iostream>
-#include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
+#include "options.h"
 #include "mystruct.h"
+#include "sbml/SBMLTypes.h"
+#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include <getopt.h>
 #include <string.h>
+#include <iostream>
+
+using namespace std;
 
 void printErrorMessage()
 {

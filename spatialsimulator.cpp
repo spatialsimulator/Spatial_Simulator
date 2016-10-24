@@ -6,24 +6,6 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-#include <sbml/xml/XMLError.h>
-#include <cstdlib>
-#include <getopt.h>
-#include <cstring>
-#include <cmath>
-#include <ctime>
-#include <sys/stat.h>
-#include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <vector>
-#include <algorithm>
 #include "mystruct.h"
 #include "initializeFunction.h"
 #include "freeFunction.h"
@@ -35,8 +17,15 @@
 #include "outputFunction.h"
 #include "checkStability.h"
 #include "checkFunc.h"
-#include <zlib.h>
 #include "options.h"
+#include "sbml/SBMLTypes.h"
+#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
+#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <zlib.h>
+#include <sys/stat.h>
 
 using namespace std;
 

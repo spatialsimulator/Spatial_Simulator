@@ -6,38 +6,16 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-#include <sbml/xml/XMLError.h>
-#include <cstdlib>
-#include <getopt.h>
-#include <cstring>
-#include <cmath>
-#include <ctime>
-#include <sys/stat.h>
-#include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include <vector>
-#include <algorithm>
 #include "mystruct.h"
-#include "initializeFunction.h"
-#include "freeFunction.h"
-#include "searchFunction.h"
-#include "astFunction.h"
-#include "calcPDE.h"
-#include "setInfoFunction.h"
-#include "boundaryFunction.h"
-#include "outputFunction.h"
-#include "checkStability.h"
-#include "checkFunc.h"
-#include <zlib.h>
 #include "options.h"
 #include "spatialsimulator.h"
+#include <sbml/xml/XMLError.h>
+#include "sbml/SBMLTypes.h"
+#include "sbml/extension/SBMLExtensionRegistry.h"
+#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
+#include "sbml/packages/spatial/extension/SpatialExtension.h"
+#include <iostream>
+#include <sys/stat.h>
 
 int main(int argc, char *argv[])
 {

@@ -1,5 +1,10 @@
 #ifndef SPATIALSIMULATOR_H_
 #define SPATIALSIMULATOR_H_
+
+#include "mystruct.h"
+#include <vector>
+#include <iostream>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

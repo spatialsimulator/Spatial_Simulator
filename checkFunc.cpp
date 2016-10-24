@@ -1,12 +1,9 @@
+#include "checkFunc.h"
+#include "mystruct.h"
+#include "sbml/SBMLTypes.h"
+#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include <iostream>
 #include <vector>
-#include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
-#include "mystruct.h"
 
 #define CHECK(A, Aindex) (A == 0 || A == Aindex - 1)
 
