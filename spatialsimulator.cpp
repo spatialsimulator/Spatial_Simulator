@@ -40,6 +40,10 @@
 
 using namespace std;
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 bool isResolvedAll(vector<variableInfo*> &dependence);
 
 void spatialSimulator(optionList options)
@@ -1509,3 +1513,7 @@ bool isResolvedAll(vector<variableInfo*> &dependence)
   }
   return true;
 }
+
+#ifdef __cplusplus
+}
+#endif
