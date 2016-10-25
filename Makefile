@@ -30,8 +30,9 @@ clean:
 
 .PHONY: deploy
 deploy:
-	if [ ! -d $(MYLIBDIR) ]; then\
-		mkdir $(MYLIBDIR);\
+	@echo "Creating jar"
+	@if [ ! -d $(MYLIBDIR) ]; then\
+	 @mkdir $(MYLIBDIR);\
 	fi
-	cp $(MYLIB) $(MYLIBDIR)
-	jar cvf $(MYJAR) $(MYLIB)
+	@cp $(MYLIB) $(MYLIBDIR)
+	@jar cvf $(MYJAR) $(MYLIB)
