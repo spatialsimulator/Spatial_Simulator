@@ -1,8 +1,11 @@
-#include "mystruct.h"
+#include "spatialsim/freeFunction.h"
+#include "spatialsim/mystruct.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/extension/SBMLExtensionRegistry.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include <vector>
+
+using namespace std;
 
 void freeVarInfo(vector<variableInfo*> &varInfoList)
 {

@@ -1,9 +1,10 @@
-#include "checkStability.h"
-#include "mystruct.h"
+#include "spatialsim/checkStability.h"
+#include "spatialsim/mystruct.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include <vector>
 #include <cmath>
+
+using namespace std;
 
 double checkDiffusionStab(variableInfo* sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, double dt)
 {

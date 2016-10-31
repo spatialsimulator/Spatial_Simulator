@@ -1,8 +1,10 @@
-#include "astFunction.h"
-#include "mystruct.h"
-#include "searchFunction.h"
-#include <vector>
+#include "spatialsim/astFunction.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/searchFunction.h"
 #include "sbml/SBMLTypes.h"
+#include <vector>
+
+using namespace std;
 
 void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &varInfoList, int index_max, vector<double*> &freeConstList)
 {
@@ -25,7 +27,7 @@ void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &va
 		freeConstList.push_back(rpInfo->constList[index]);
 	} else if (ast->isInteger()) {//ast is integer
 		rpInfo->varList[index] = 0;
-		rpInfo->constList[index] = new double((double)ast->getInteger());
+		rpInfo->constList[index] = new double(ast->getInteger());
 		rpInfo->opfuncList[index] = 0;
 		if (rpInfo->deltaList != 0) rpInfo->deltaList[index] = 0;
 		freeConstList.push_back(rpInfo->constList[index]);

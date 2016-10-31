@@ -1,4 +1,5 @@
-#include "mystruct.h"
+#include "spatialsim/initializeFunction.h"
+#include "spatialsim/mystruct.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 

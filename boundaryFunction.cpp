@@ -1,8 +1,10 @@
-#include "boundaryFunction.h"
-#include "mystruct.h"
-#include "searchFunction.h"
+#include "spatialsim/boundaryFunction.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/searchFunction.h"
 #include "sbml/SBMLTypes.h"
 #include <vector>
+
+using namespace std;
 
 void setBoundaryType(Model *model, vector<variableInfo*> &varInfoList, vector<GeometryInfo*> &geoInfoList, int Xindex, int Yindex, int Zindex, int dimension)
 {

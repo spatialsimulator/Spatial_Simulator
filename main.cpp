@@ -6,9 +6,7 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-#include "mystruct.h"
-#include "options.h"
-#include "spatialsimulator.h"
+#include "spatialsim/spatialsim.h"
 #include <sbml/xml/XMLError.h>
 #include "sbml/SBMLTypes.h"
 #include "sbml/extension/SBMLExtensionRegistry.h"
@@ -17,8 +15,11 @@
 #include <iostream>
 #include <sys/stat.h>
 
+using namespace std;
+
 int main(int argc, char *argv[])
 {
+
   clock_t start = clock();
   if (argc == 1) printErrorMessage();
 

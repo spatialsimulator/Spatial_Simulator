@@ -1,5 +1,5 @@
-#include "options.h"
-#include "mystruct.h"
+#include "spatialsim/options.h"
+#include "spatialsim/mystruct.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include <getopt.h>
@@ -21,6 +21,7 @@ void printErrorMessage()
   cout << "-c #(double or int): max of color bar range # (ex. -c 1)" << endl;
   cout << "-C #(double or int): min of color bar range # (ex. -c 1)" << endl;
   cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;
+  cout << "-p: surpress creating simulation image" << endl;
   exit(1);
 }
 
@@ -33,22 +34,25 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
   unsigned int dimension = geometry->getNumCoordinateComponents();
 
   optionList options = {
-    .Xdiv = 101,
-    .Ydiv = 101,
-    .Zdiv = 101,
+    .Xdiv = 100,
+    .Ydiv = 100,
+    .Zdiv = 100,
     .end_time = 1.0,
     .dt = 0.01,
     .out_step = 1,
     .range_max = 1.0,
     .range_min = 0.0,
-    .sliceFlag = false,
+    .sliceFlag = 1,
     .slice = 0,
     .slicedim = 'z',
-    .fname = 0
+    .fname = 0,
+    .docFlag = 0,
+    .document = "",
+    .outputFlag=1
   };
   int opt_result;
 
-  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:")) != -1) {
+  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:p:")) != -1) {
     switch(opt_result) {
       case 'x':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
@@ -106,6 +110,9 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
         options.sliceFlag = true;
         options.slice = atoi(optarg + 1) * 2;
         if (dimension != 3) printErrorMessage();
+        break;
+      case 'p':
+        options.outputFlag = 0;
         break;
       default:
         printErrorMessage();

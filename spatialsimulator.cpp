@@ -6,18 +6,19 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-#include "mystruct.h"
-#include "initializeFunction.h"
-#include "freeFunction.h"
-#include "searchFunction.h"
-#include "astFunction.h"
-#include "calcPDE.h"
-#include "setInfoFunction.h"
-#include "boundaryFunction.h"
-#include "outputFunction.h"
-#include "checkStability.h"
-#include "checkFunc.h"
-#include "options.h"
+#include "spatialsim/spatialsimulator.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/initializeFunction.h"
+#include "spatialsim/freeFunction.h"
+#include "spatialsim/searchFunction.h"
+#include "spatialsim/astFunction.h"
+#include "spatialsim/calcPDE.h"
+#include "spatialsim/setInfoFunction.h"
+#include "spatialsim/boundaryFunction.h"
+#include "spatialsim/outputFunction.h"
+#include "spatialsim/checkStability.h"
+#include "spatialsim/checkFunc.h"
+#include "spatialsim/options.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
@@ -33,11 +34,15 @@ using namespace std;
 extern "C"{
 #endif
 
-bool isResolvedAll(vector<variableInfo*> &dependence);
-
 void spatialSimulator(optionList options)
 {
-  SBMLDocument *doc = readSBML(options.fname);
+SBMLDocument *doc;
+if( options.docFlag != 0){
+  //doc = readSBMLFromString(options.document);
+  doc = readSBML("/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml");
+} else {
+  doc = readSBML(options.fname);
+}
   struct stat st;
   unsigned int i, j, k, m;
   int X = 0, Y = 0, Z = 0, index = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0;
@@ -47,6 +52,11 @@ void spatialSimulator(optionList options)
   int numOfASTNodes = 0;
   //int numOfIndexes = 0;
   char *xaxis = 0, *yaxis = 0, *zaxis = 0;
+
+  cout << "validating model..." << endl;
+  doc -> checkConsistency();
+  doc -> printErrors();
+  cout << "finished" << endl;
 
   //sbml core
   Model *model = doc->getModel();
@@ -104,7 +114,8 @@ void spatialSimulator(optionList options)
   int out_step = options.out_step;
   int slice = options.slice;
   char slicedim = options.slicedim;
-  bool sliceFlag = options.sliceFlag;
+  bool sliceFlag = (options.sliceFlag != 0);
+  bool outputImageFlag = (options.outputFlag != 0);
 
   //div
   if (dimension <= 1) {
@@ -117,7 +128,7 @@ void spatialSimulator(optionList options)
   //filename
   string fname(options.fname);
   fname = fname.substr((int)fname.find_last_of("/") + 1, (int)fname.find_last_of(".") - (int)fname.find_last_of("/") - 1);
-  if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir result/" + fname).c_str());
+  if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir -p result/" + fname).c_str());
 
   bool isImageBased = false;
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
@@ -180,7 +191,7 @@ void spatialSimulator(optionList options)
   t_info->isUniform = true;
 
   //volume index
-  vector<int> volumeIndexList;
+  vector<unsigned int> volumeIndexList;
   for (Z = 0; Z < Zindex; Z += 2) {
     for (Y = 0; Y < Yindex; Y += 2) {
       for (X = 0; X < Xindex; X += 2) {
@@ -242,18 +253,12 @@ void spatialSimulator(optionList options)
             //judge if the coordinate point is inside the analytic volume
             fill_n(tmp_isDomain, numOfVolIndexes, 0);
             reversePolishInitial(volumeIndexList, geoInfo->rpInfo, tmp_isDomain, numOfASTNodes, Xindex, Yindex, Zindex, false);
-            //cout << geoInfo->domainTypeId << endl;
             for (k = 0; k < (unsigned int)numOfVolIndexes; k++) {
               index = k;
               geoInfo->isDomain[k] = (int)tmp_isDomain[k];
               Z = index / (Xindex * Yindex);
               Y = (index - Z * Xindex * Yindex) / Xindex;
               X = index - Z * Xindex * Yindex - Y * Xindex;
-              if (geoInfo->isDomain[k] == 1 && string(geoInfo->domainTypeId) == "nucleus") {
-                //cerr << X << ", " << Y << ", " << Z << ", " << geoInfo->isDomain[k] << endl;
-              } else {
-                //cout << geoInfo->domainTypeId << endl;
-              }
             }
             geoInfoList.push_back(geoInfo);
           }
@@ -274,19 +279,6 @@ void spatialSimulator(optionList options)
                 samVol = sfGeo->getSampledVolume(k);
               }
             }
-            //uLong uncomprLen = 0;
-            //switch (dimension) {
-            //case 1:
-            //  uncomprLen = samField->getNumSamples1();
-            //  break;
-            //case 2:
-            //  uncomprLen = samField->getNumSamples1() * samField->getNumSamples2();
-            //  break;
-            //case 3:
-            //  uncomprLen = samField->getNumSamples1() * samField->getNumSamples2() * samField->getNumSamples3();
-            //default:
-            //  break;
-            //}
             uLong uncomprLen = samField->getUncompressedLength();
             uLong comprLen = samField->getSamplesLength();
             Byte *compr = (Byte*)calloc(sizeof(Byte), comprLen);
@@ -296,33 +288,19 @@ void spatialSimulator(optionList options)
             for (k = 0; k < comprLen; k++) {
               compr[k] = (Byte)(compr_int[k]);
             }
-            /*
-#define Z_OK            0
-171 #define Z_STREAM_END    1
-172 #define Z_NEED_DICT     2
-173 #define Z_ERRNO        (-1)
-174 #define Z_STREAM_ERROR (-2)
-175 #define Z_DATA_ERROR   (-3)
-176 #define Z_MEM_ERROR    (-4)
-177 #define Z_BUF_ERROR    (-5)
-178 #define Z_VERSION_ERROR (-6)
-*/
             // isdeflated
             if(uncomprLen > comprLen){
               int err = uncompress(uncompr, &uncomprLen, (const Byte*)compr, comprLen);
               if (err != Z_OK) {
-                cout << "err with uncompress" << endl;
+                cout << "err with uncompression" << endl;
                 cout << err << endl;
-                exit(1);
+              return;
               }
             }else{
               Byte *temp = compr;
               compr = uncompr;
               uncompr = temp;
             }
-            //ofstream sam_ofs;
-            //string sam_fname = "/Users/matsui/Documents/SBMLSimulator/build/Debug/sample.csv";
-            //sam_ofs.open(sam_fname.c_str());
             GeometryInfo *geoInfo = new GeometryInfo;
             InitializeAVolInfo(geoInfo);
             geoInfo->compartmentId = c->getId().c_str();
@@ -968,6 +946,7 @@ void spatialSimulator(optionList options)
     //膜が端にいるかどうかチェック。いたら終了。mashimo
     cout << "checking membrane position in geometry..." << endl;
     checkMemPosition(geoInfoList, Xindex, Yindex, Zindex, dimension);
+    cout << "finished" << endl;
 
     //calc normal unit vector of membrane (for mem diffusion and mem transport)
     normalUnitVector *nuVec = 0;
@@ -1002,7 +981,7 @@ void spatialSimulator(optionList options)
     cout << "finished" << endl;
     if (dt > min_dt) {
       cout << "dt must be less than " << min_dt << endl;
-      exit(1);
+    return;
     }
 
     //reaction information
@@ -1188,26 +1167,14 @@ void spatialSimulator(optionList options)
       out_start = clock();
       //         double maxam = 0, minmin=10;
       if (count % out_step == 0) {
-        //   variableInfo *sInfo = searchInfoById(varInfoList, "s1_cyt");
-        //   GeometryInfo *geoInfo = sInfo->geoi;
-        //   for (j = 0; j < geoInfo->domainIndex.size(); j++) {
-        //     index = geoInfo->domainIndex[j];
-        //     if(maxam < sInfo->value[index]) {
-        //       maxam = sInfo->value[index];
-        //     }
-        //     if(minmin > sInfo->value[index]) {
-        //       minmin = sInfo->value[index];
-        //    }
-        //   }
-        //   cout << maxam - minmin << endl; //for ii thesis to obtain quantitative analysis
         if (!sliceFlag) {
-          outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname);
+          outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname, outputImageFlag);
         } else if (slicedim == 'z') {
-          outputTimeCource_zslice(gp, model, varInfoList, memList, xInfo, yInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Xsize, Ysize, file_num, fname, slice);
+          outputTimeCource_zslice(gp, model, varInfoList, memList, xInfo, yInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Xsize, Ysize, file_num, fname, slice, outputImageFlag);
         } else if (slicedim == 'y') {
-          outputTimeCource_yslice(gp, model, varInfoList, memList, xInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Zsize, file_num, fname, slice);
+          outputTimeCource_yslice(gp, model, varInfoList, memList, xInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Zsize, file_num, fname, slice, outputImageFlag);
         } else if (slicedim == 'x') {
-          outputTimeCource_xslice(gp, model, varInfoList, memList, yInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Ysize, Zsize, file_num, fname, slice);
+          outputTimeCource_xslice(gp, model, varInfoList, memList, yInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Ysize, Zsize, file_num, fname, slice, outputImageFlag);
         }
         file_num++;
       }
@@ -1222,22 +1189,7 @@ void spatialSimulator(optionList options)
         variableInfo *sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
         //advection
         if (sInfo->adCInfo != 0) {
-          if (t == 0) {//initialize differentiation
-          }
           cipCSLR(sInfo, deltaX, deltaY, deltaZ, dt, Xindex, Yindex, Zindex, dimension);
-          //cip
-          switch (dimension) {
-            case 1:
-              //cip1D(sInfo, deltaX, dt, Xindex);
-              break;
-            case 2:
-              //cip2D(sInfo, deltaX, deltaY, dt, Xindex, Yindex);
-              break;
-            case 3:
-              break;
-            default:
-              break;
-          }
         }//end of advection
       }
       ad_end = clock();

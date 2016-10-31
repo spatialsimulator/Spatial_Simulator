@@ -1,6 +1,8 @@
-#include "searchFunction.h"
-#include "mystruct.h"
+#include "spatialsim/searchFunction.h"
+#include "spatialsim/mystruct.h"
 #include <vector>
+
+using namespace std;
 
 variableInfo* searchInfoById(vector<variableInfo*> &varInfoList, const char *varName)
 {

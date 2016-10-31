@@ -1,13 +1,15 @@
-#include "outputFunction.h"
-#include "mystruct.h"
-#include "searchFunction.h"
+#include "spatialsim/outputFunction.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/searchFunction.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include <vector>
 #include <iostream>
 #include <fstream>
 
-void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, string fname)
+using namespace std;
+
+void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, string fname, bool outputImageFlag)
 {
   int X = 0, Y = 0, Z = 0, index = 0, tmp_u;
   unsigned int i, j;
@@ -204,6 +206,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
   }
   ofs_vol.close();
   if (memFlag) ofs_mem.close();
+  if(!outputImageFlag) return;
   int vol_count = 0, mem_count = 0;
   //output image file
   //calc tics
@@ -301,7 +304,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
   }
 }
 
-void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, double Xsize, double Ysize, int file_num, string fname, int zslice)
+void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, double Xsize, double Ysize, int file_num, string fname, int zslice, bool outputImageFlag)
 {
   dimension = 2;
   int X = 0, Y = 0, index = 0, tmp_u;
@@ -397,6 +400,7 @@ void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
   ofs_vol.close();
   if (memFlag) ofs_mem.close();
+  if(!outputImageFlag) return;
   int vol_count = 0, mem_count = 0;
   //output image file
   //calc tics
@@ -461,7 +465,7 @@ void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
 }
 
-void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Zsize, int file_num, string fname, int yslice)
+void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Zsize, int file_num, string fname, int yslice, bool outputImageFlag)
 {
   dimension = 2;
   int X = 0, Z = 0, index = 0, tmp_u;
@@ -552,6 +556,7 @@ void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
   ofs_vol.close();
   if (memFlag) ofs_mem.close();
+  if(!outputImageFlag) return;
   int vol_count = 0, mem_count = 0;
   //output image file
   //calc tics
@@ -615,7 +620,7 @@ void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
 }
 
-void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Ysize, double Zsize, int file_num, string fname, int xslice)
+void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Ysize, double Zsize, int file_num, string fname, int xslice, bool outputImageFlag)
 {
   dimension = 2;
   int Y = 0, Z = 0, index = 0, tmp_u;
@@ -706,6 +711,7 @@ void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
   ofs_vol.close();
   if (memFlag) ofs_mem.close();
+  if(!outputImageFlag) return;
   int vol_count = 0, mem_count = 0;
   //output image file
   //calc tics

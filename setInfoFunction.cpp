@@ -1,16 +1,15 @@
-#include "setInfoFunction.h"
-#include "mystruct.h"
-#include "initializeFunction.h"
-#include "searchFunction.h"
-#include "astFunction.h"
+#include "spatialsim/setInfoFunction.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/initializeFunction.h"
+#include "spatialsim/searchFunction.h"
+#include "spatialsim/astFunction.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include <vector>
 #include <iostream>
 
-void stepSearch(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane);
-void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane);
+using namespace std;
 
 void setCompartmentInfo(Model *model, vector<variableInfo*> &varInfoList)
 {

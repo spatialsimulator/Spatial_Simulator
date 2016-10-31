@@ -1,6 +1,6 @@
-#include "calcPDE.h"
-#include "mystruct.h"
-#include "searchFunction.h"
+#include "spatialsim/calcPDE.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/searchFunction.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
@@ -10,7 +10,9 @@
 
 #define stackMax 50
 
-void reversePolishInitial(vector<int> &indexList, reversePolishInfo *rpInfo, double *value, int numOfASTNodes, int Xindex, int Yindex, int Zindex, bool isAllArea)
+using namespace std;
+
+void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rpInfo, double *value, int numOfASTNodes, int Xindex, int Yindex, int Zindex, bool isAllArea)
 {
   int X, Y, Z, i, j, it_end = 0;
   int st_index = 0, index = 0;
