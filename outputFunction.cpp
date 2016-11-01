@@ -9,10 +9,10 @@
 
 using namespace std;
 
-void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, string fname, bool outputImageFlag)
+void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname)
 {
-  int X = 0, Y = 0, Z = 0, index = 0, tmp_u;
-  unsigned int i, j;
+  int X = 0, Y = 0, Z = 0, index = 0;
+  unsigned int i;
   string dir_txt = "", dir_img = "";
   unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
   ListOfSpecies *los = model->getListOfSpecies();
@@ -97,7 +97,7 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
     }
     ofs_mem << endl;
   }
-  //out put results to text files
+  //output results to text files
   switch(dimension) {
   case 1:
     for (X = 0; X < Xindex; X += 2) {
@@ -206,105 +206,9 @@ void outputTimeCource(FILE *gp, Model *model, vector<variableInfo*> &varInfoList
   }
   ofs_vol.close();
   if (memFlag) ofs_mem.close();
-  if(!outputImageFlag) return;
-  int vol_count = 0, mem_count = 0;
-  //output image file
-  //calc tics
-  //set gnuplot environment
-  fprintf(gp, "set ticslevel 0\n");
-  fprintf(gp, "set size ratio -1\n");
-  fprintf(gp, "unset key\n");
-  if (dimension == 2) fprintf(gp, "set pm3d map corners2color c1\n");
-  //fprintf(gp, "set pm3d map\n");
-  //fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], Xsize);
-  fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], xInfo->value[Xindex - 1]);
-  //if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], Ysize);
-  if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], yInfo->value[Yindex * Xindex - 1]);
-  fprintf(gp, "set tics out\n");
-  fprintf(gp, "set tics font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  fprintf(gp, "set xtics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
-  fprintf(gp, "set mxtics\n");
-  fprintf(gp, "set ytics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
-  fprintf(gp, "set mytics\n");
-  //fprintf(gp, "set grid lw 0.5\n");
-  //fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
-  fprintf(gp, "set cbrange[%lf:%lf]\n", range_min, range_max);
-  fprintf(gp, "set palette defined (0 \"dark-blue\", 2 \"blue\", 4 \"green\", 8 \"yellow\", 10 \"red\")\n");
-  fprintf(gp, "set xlabel \"x\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  if (dimension >= 2) fprintf(gp, "set ylabel \"y\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  else fprintf(gp, "set ylabel \"value\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  if (dimension == 3) fprintf(gp, "set zlabel \"z\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  fprintf(gp, "set title \"t=%lf\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n", *sim_time);
-
-  for (i = 0; i < numOfSpecies; i++) {
-    Species *s = los->get(i);
-    variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
-    if (sInfo != 0) {
-      if (sInfo->inVol) vol_count++;
-      else mem_count++;
-      if (dimension <= 2 || (dimension == 3 && sInfo->inVol)) {
-        dir_img = "./result/" + fname + "/img/" + s->getId();
-      } else if (dimension == 3 && !sInfo->inVol) {
-        dir_img = "./result/" + fname + "/img/" + s->getId();
-      }
-      if (dimension == 1) {
-        fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-        fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
-      }
-      if (dimension == 2) {//2D
-
-        fprintf(gp, "set terminal png truecolor size 2560,2560\n");
-        //fprintf(gp, "set terminal png truecolor size 500,500\n");
-        fprintf(gp, "set output \"/dev/null\"\n");
-        if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
-        else fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
-        if (sInfo->inVol) {//replot all membrane
-          fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-          fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:3:(255):(255):(255):(($3 > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str());
-        } else {
-          for (j = 0; j < memList.size(); j++) {
-            if (strcmp(sInfo->geoi->domainTypeId, memList[j]) != 0) {
-              fprintf(gp, "set output \"/dev/null\"\n");
-              tmp_u = dimension + j + 2;
-              fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:%d:(255):(255):(255):(($%d > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
-            }
-          }
-          for (j = 0; j < memList.size(); j++) {
-            if (strcmp(sInfo->geoi->domainTypeId, memList[j]) == 0) {
-              fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-              tmp_u = dimension + j + 2;
-              fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:(($%d > 0)? 0: 1):(0):(0):(0):(($%d > 0)? 0: 200) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
-            }
-          }
-        }
-      } else if (dimension == 3) {
-        if (!sInfo->inVol) {
-          fprintf(gp, "set view equal xyz\n");
-          fprintf(gp, "set zrange[%lf:%lf]\n", zInfo->value[0], Zsize);
-          //fprintf(gp, "set ztics %lf font \"/System/Library/Fonts/LucidaGrande.ttc,16\"\n", pow(10.0, digitZ - 1));
-          fprintf(gp, "set ztics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-          fprintf(gp, "set mztics\n");
-          fprintf(gp, "set terminal png truecolor size 640,640\n");
-          //fprintf(gp, "set output \"/dev/null\"\n");
-          fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-          //fprintf(gp, "splot \"%s\" with image failsafe\n", filename.c_str());
-          fprintf(gp, "splot \"%s\" u 1:2:3:(($%d == 1)? $%d: 1/0) with points palette\n", filename_mem.c_str(), 3 + 2 * mem_count - 1, 3 + 2 * mem_count);
-          //fprintf(gp, "splot \"%s\" u 1:2:3:%d with points palette\n", filename_mem.c_str(), 3 + mem_count);
-        } else if (sInfo->inVol) { // 未完
-          fprintf(gp, "set view equal xyz\n");
-          fprintf(gp, "set zrange[%lf:%lf]\n", zInfo->value[0], zInfo->value[Zindex * Yindex * Xindex - 1]);
-          fprintf(gp, "set ztics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-          fprintf(gp, "set mztics\n");
-          fprintf(gp, "set terminal png truecolor size 640,640\n");
-          fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-          fprintf(gp, "splot \"%s\" u 1:2:3:%d with points palette\n", filename_vol.c_str(), dimension + vol_count);
-        }
-      }
-    }
-  }
 }
 
-void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, double Xsize, double Ysize, int file_num, string fname, int zslice, bool outputImageFlag)
+void outputTimeCourse_zslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int file_num, string fname, int zslice)
 {
   dimension = 2;
   int X = 0, Y = 0, index = 0, tmp_u;
@@ -400,72 +304,9 @@ void outputTimeCource_zslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
   ofs_vol.close();
   if (memFlag) ofs_mem.close();
-  if(!outputImageFlag) return;
-  int vol_count = 0, mem_count = 0;
-  //output image file
-  //calc tics
-  //set gnuplot environment
-  fprintf(gp, "set ticslevel 0\n");
-  fprintf(gp, "set size ratio -1\n");
-  fprintf(gp, "unset key\n");
-  if (dimension == 2) fprintf(gp, "set pm3d map corners2color c1\n");
-  //fprintf(gp, "set pm3d map\n");
-  //fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], Xsize);
-  fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], xInfo->value[Xindex - 1]);
-  //if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], Ysize);
-  if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], yInfo->value[Yindex * Xindex - 1]);
-  fprintf(gp, "set tics out\n");
-  fprintf(gp, "set tics font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  fprintf(gp, "set xtics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
-  fprintf(gp, "set mxtics\n");
-  fprintf(gp, "set ytics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
-  fprintf(gp, "set mytics\n");
-  //fprintf(gp, "set grid lw 0.5\n");
-  //fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
-  fprintf(gp, "set cbrange[%lf:%lf]\n", range_min, range_max);
-  fprintf(gp, "set palette defined (0 \"dark-blue\", 2 \"blue\", 4 \"green\", 8 \"yellow\", 10 \"red\")\n");
-  fprintf(gp, "set xlabel \"x\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  fprintf(gp, "set ylabel \"y\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  fprintf(gp, "set title \"t=%lf\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n", *sim_time);
+ }
 
-  for (i = 0; i < numOfSpecies; i++) {
-    Species *s = los->get(i);
-    variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
-    if (sInfo != 0) {
-      if (sInfo->inVol) vol_count++;
-      else mem_count++;
-      if (dimension <= 2 || (dimension == 3 && sInfo->inVol)) {
-        dir_img = "./result/" + fname + "/img/" + s->getId();
-      }
-      //fprintf(gp, "set terminal png size 2560,2560\n");
-      fprintf(gp, "set terminal png truecolor size 500,500\n");
-      fprintf(gp, "set output \"/dev/null\"\n");
-      if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
-      else fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
-      if (sInfo->inVol) {//replot all membrane
-        fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-        fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:3:(255):(255):(255):(($3 > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str());
-      } else {
-        for (j = 0; j < memList.size(); j++) {
-          if (strcmp(sInfo->geoi->domainTypeId, memList[j]) != 0) {
-            fprintf(gp, "set output \"/dev/null\"\n");
-            tmp_u = dimension + j + 2;
-            fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:%d:(255):(255):(255):(($%d > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
-          }
-        }
-        for (j = 0; j < memList.size(); j++) {
-          if (strcmp(sInfo->geoi->domainTypeId, memList[j]) == 0) {
-            fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-            tmp_u = dimension + j + 2;
-            fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:(($%d > 0)? 0: 1):(0):(0):(0):(($%d > 0)? 0: 200) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
-          }
-        }
-      }
-    }
-  }
-}
-
-void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Zsize, int file_num, string fname, int yslice, bool outputImageFlag)
+void outputTimeCourse_yslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname, int yslice)
 {
   dimension = 2;
   int X = 0, Z = 0, index = 0, tmp_u;
@@ -556,71 +397,9 @@ void outputTimeCource_yslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
   ofs_vol.close();
   if (memFlag) ofs_mem.close();
-  if(!outputImageFlag) return;
-  int vol_count = 0, mem_count = 0;
-  //output image file
-  //calc tics
-  //set gnuplot environment
-  fprintf(gp, "set ticslevel 0\n");
-  fprintf(gp, "set size ratio -1\n");
-  fprintf(gp, "unset key\n");
-  fprintf(gp, "set pm3d map corners2color c1\n");
-  //fprintf(gp, "set pm3d map\n");
-  //fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], Xsize);
-  fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], xInfo->value[Xindex - 1]);
-  //fprintf(gp, "set yrange[%lf:%lf]\n", zInfo->value[0], Zsize);
-  fprintf(gp, "set yrange[%lf:%lf]\n", zInfo->value[0], zInfo->value[Zindex - 1]);
-  fprintf(gp, "set tics out\n");
-  fprintf(gp, "set tics font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  fprintf(gp, "set xtics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
-  fprintf(gp, "set mxtics\n");
-  fprintf(gp, "set ytics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
-  fprintf(gp, "set mytics\n");
-  //fprintf(gp, "set grid lw 0.5\n");
-  //fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
-  fprintf(gp, "set cbrange[%lf:%lf]\n", range_min, range_max);
-  fprintf(gp, "set palette defined (0 \"dark-blue\", 2 \"blue\", 4 \"green\", 8 \"yellow\", 10 \"red\")\n");
-  fprintf(gp, "set xlabel \"x\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  fprintf(gp, "set ylabel \"z\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  fprintf(gp, "set title \"t=%lf\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n", *sim_time);
-  for (i = 0; i < numOfSpecies; i++) {
-    Species *s = los->get(i);
-    variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
-    if (sInfo != 0) {
-      if (sInfo->inVol) vol_count++;
-      else mem_count++;
-      if (dimension <= 2 || (dimension == 3 && sInfo->inVol)) {
-        dir_img = "./result/" + fname + "/img/" + s->getId();
-      }
-      //fprintf(gp, "set terminal png size 2560,2560\n");
-      fprintf(gp, "set terminal png truecolor size 500,500\n");
-      fprintf(gp, "set output \"/dev/null\"\n");
-      if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
-      else fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
-      if (sInfo->inVol) {//replot all membrane
-        fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-        fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:3:(255):(255):(255):(($3 > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str());
-      } else {
-        for (j = 0; j < memList.size(); j++) {
-          if (strcmp(sInfo->geoi->domainTypeId, memList[j]) != 0) {
-            fprintf(gp, "set output \"/dev/null\"\n");
-            tmp_u = dimension + j + 2;
-            fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:%d:(255):(255):(255):(($%d > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
-          }
-        }
-        for (j = 0; j < memList.size(); j++) {
-          if (strcmp(sInfo->geoi->domainTypeId, memList[j]) == 0) {
-            fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-            tmp_u = dimension + j + 2;
-            fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:(($%d > 0)? 0: 1):(0):(0):(0):(($%d > 0)? 0: 200) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
-          }
-        }
-      }
-    }
-  }
 }
 
-void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Ysize, double Zsize, int file_num, string fname, int xslice, bool outputImageFlag)
+void outputTimeCourse_xslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname, int xslice)
 {
   dimension = 2;
   int Y = 0, Z = 0, index = 0, tmp_u;
@@ -711,34 +490,39 @@ void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varI
   }
   ofs_vol.close();
   if (memFlag) ofs_mem.close();
-  if(!outputImageFlag) return;
-  int vol_count = 0, mem_count = 0;
-  //output image file
-  //calc tics
-  //set gnuplot environment
+}
+
+void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, ListOfSpecies *los, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int dimension, double range_min, double range_max, double *sim_time, int file_num, string fname){
   fprintf(gp, "set ticslevel 0\n");
   fprintf(gp, "set size ratio -1\n");
   fprintf(gp, "unset key\n");
-  fprintf(gp, "set pm3d map corners2color c1\n");
-  //fprintf(gp, "set pm3d map\n");
-  //fprintf(gp, "set xrange[%lf:%lf]\n", yInfo->value[0], Ysize);
-  fprintf(gp, "set xrange[%lf:%lf]\n", yInfo->value[0], yInfo->value[Yindex - 1]);
-  //fprintf(gp, "set yrange[%lf:%lf]\n", zInfo->value[0], Zsize);
-  fprintf(gp, "set yrange[%lf:%lf]\n", zInfo->value[0], zInfo->value[Zindex - 1]);
+  if (dimension == 2) fprintf(gp, "set pm3d map corners2color c1\n");
+  fprintf(gp, "set xrange[%lf:%lf]\n", xInfo->value[0], xInfo->value[Xindex - 1]);
+  if (dimension >= 2) fprintf(gp, "set yrange[%lf:%lf]\n", yInfo->value[0], yInfo->value[Yindex * Xindex - 1]);
   fprintf(gp, "set tics out\n");
   fprintf(gp, "set tics font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
   fprintf(gp, "set xtics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
   fprintf(gp, "set mxtics\n");
   fprintf(gp, "set ytics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
   fprintf(gp, "set mytics\n");
-  //fprintf(gp, "set grid lw 0.5\n");
-  //fprintf(gp, "set cbrange[0.0:%lf]\n", range_max);
   fprintf(gp, "set cbrange[%lf:%lf]\n", range_min, range_max);
   fprintf(gp, "set palette defined (0 \"dark-blue\", 2 \"blue\", 4 \"green\", 8 \"yellow\", 10 \"red\")\n");
-  fprintf(gp, "set xlabel \"y\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
-  fprintf(gp, "set ylabel \"z\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
+  fprintf(gp, "set xlabel \"x\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
+  if (dimension >= 2) fprintf(gp, "set ylabel \"y\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
+  else fprintf(gp, "set ylabel \"value\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
+  if (dimension == 3) fprintf(gp, "set zlabel \"z\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
   fprintf(gp, "set title \"t=%lf\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n", *sim_time);
-  for (i = 0; i < numOfSpecies; i++) {
+
+  stringstream ss;
+  ss << file_num;
+  string dir_img = "";
+  string dir_txt = "./result/" + fname + "/txt";
+  string filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
+  string filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
+
+  int vol_count = 0, mem_count = 0, tmp_u;
+  unsigned int numOfSpecies = los -> size();
+  for (unsigned int i = 0; i < numOfSpecies; i++) {
     Species *s = los->get(i);
     variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
     if (sInfo != 0) {
@@ -749,9 +533,13 @@ void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varI
       } else if (dimension == 3 && !sInfo->inVol) {
         dir_img = "./result/" + fname + "/img/" + s->getId();
       }
+      if (dimension == 1) {
+        fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+        fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
+      }
       if (dimension == 2) {//2D
-        //fprintf(gp, "set terminal png size 2560,2560\n");
-        fprintf(gp, "set terminal png truecolor size 500,500\n");
+
+        fprintf(gp, "set terminal png truecolor size 2560,2560\n");
         fprintf(gp, "set output \"/dev/null\"\n");
         if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
         else fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
@@ -759,19 +547,99 @@ void outputTimeCource_xslice(FILE *gp, Model *model, vector<variableInfo*> &varI
           fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
           fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:3:(255):(255):(255):(($3 > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str());
         } else {
-          for (j = 0; j < memList.size(); j++) {
+          for (unsigned int j = 0; j < memList.size(); j++) {
             if (strcmp(sInfo->geoi->domainTypeId, memList[j]) != 0) {
               fprintf(gp, "set output \"/dev/null\"\n");
               tmp_u = dimension + j + 2;
               fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:%d:(255):(255):(255):(($%d > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
             }
           }
-          for (j = 0; j < memList.size(); j++) {
+          for (unsigned int j = 0; j < memList.size(); j++) {
             if (strcmp(sInfo->geoi->domainTypeId, memList[j]) == 0) {
               fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
               tmp_u = dimension + j + 2;
               fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:(($%d > 0)? 0: 1):(0):(0):(0):(($%d > 0)? 0: 200) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
             }
+          }
+        }
+      } else if (dimension == 3) {
+        if (!sInfo->inVol) {
+          fprintf(gp, "set view equal xyz\n");
+          fprintf(gp, "set zrange[%lf:%lf]\n", zInfo->value[0], Zsize);
+          fprintf(gp, "set ztics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
+          fprintf(gp, "set mztics\n");
+          fprintf(gp, "set terminal png truecolor size 640,640\n");
+          fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+          fprintf(gp, "splot \"%s\" u 1:2:3:(($%d == 1)? $%d: 1/0) with points palette\n", filename_mem.c_str(), 3 + 2 * mem_count - 1, 3 + 2 * mem_count);
+        } else if (sInfo->inVol) { // 未完
+          fprintf(gp, "set view equal xyz\n");
+          fprintf(gp, "set zrange[%lf:%lf]\n", zInfo->value[0], zInfo->value[Zindex * Yindex * Xindex - 1]);
+          fprintf(gp, "set ztics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
+          fprintf(gp, "set mztics\n");
+          fprintf(gp, "set terminal png truecolor size 640,640\n");
+          fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+          fprintf(gp, "splot \"%s\" u 1:2:3:%d with points palette\n", filename_vol.c_str(), dimension + vol_count);
+        }
+      }
+    }
+  }
+}
+
+void createOutputSliceImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *info1, variableInfo *info2, char dim1, char dim2, int index1, int index2, ListOfSpecies *los, int dimension, double range_min, double range_max, double *sim_time, int file_num, string fname){
+  stringstream ss;
+  ss << file_num;
+  string dir_img = "";
+  string dir_txt = "./result/" + fname + "/txt";
+  string filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
+  string filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
+  fprintf(gp, "set ticslevel 0\n");
+  fprintf(gp, "set size ratio -1\n");
+  fprintf(gp, "unset key\n");
+  fprintf(gp, "set pm3d map corners2color c1\n");
+  fprintf(gp, "set xrange[%lf:%lf]\n", info1->value[0], info1->value[index1 - 1]);
+  fprintf(gp, "set yrange[%lf:%lf]\n", info2->value[0], info2->value[index2 - 1]);
+  fprintf(gp, "set tics out\n");
+  fprintf(gp, "set tics font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
+  fprintf(gp, "set xtics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
+  fprintf(gp, "set mxtics\n");
+  fprintf(gp, "set ytics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");
+  fprintf(gp, "set mytics\n");
+  fprintf(gp, "set cbrange[%lf:%lf]\n", range_min, range_max);
+  fprintf(gp, "set palette defined (0 \"dark-blue\", 2 \"blue\", 4 \"green\", 8 \"yellow\", 10 \"red\")\n");
+  fprintf(gp, "set xlabel \"%c\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n", dim1);
+  fprintf(gp, "set ylabel \"%c\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n", dim2);
+  fprintf(gp, "set title \"t=%lf\" font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n", *sim_time);
+  unsigned int numOfSpecies = los -> size();
+  int vol_count = 0, mem_count = 0, tmp_u;
+  for (unsigned int i = 0; i < numOfSpecies; i++) {
+    Species *s = los->get(i);
+    variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
+    if (sInfo != 0) {
+      if (sInfo->inVol) vol_count++;
+      else mem_count++;
+      if (dimension <= 2 || (dimension == 3 && sInfo->inVol)) {
+        dir_img = "./result/" + fname + "/img/" + s->getId();
+      }
+      fprintf(gp, "set terminal png truecolor size 500,500\n");
+      fprintf(gp, "set output \"/dev/null\"\n");
+      if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
+      else fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
+      if (sInfo->inVol) {//replot all membrane
+        fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+        fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:3:(255):(255):(255):(($3 > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str());
+      } else {
+        for (unsigned int j = 0; j < memList.size(); j++) {
+          if (strcmp(sInfo->geoi->domainTypeId, memList[j]) != 0) {
+            fprintf(gp, "set output \"/dev/null\"\n");
+            tmp_u = dimension + j + 2;
+            fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:%d:(255):(255):(255):(($%d > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
+          }
+        }
+        for (unsigned int j = 0; j < memList.size(); j++) {
+          if (strcmp(sInfo->geoi->domainTypeId, memList[j]) == 0) {
+            fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+            tmp_u = dimension + j + 2;
+            fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:(($%d > 0)? 0: 1):(0):(0):(0):(($%d > 0)? 0: 200) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
           }
         }
       }

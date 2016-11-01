@@ -14,19 +14,20 @@ using namespace std;
 
 void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rpInfo, double *value, int numOfASTNodes, int Xindex, int Yindex, int Zindex, bool isAllArea)
 {
-  int X, Y, Z, i, j, it_end = 0;
-  int st_index = 0, index = 0;
+  int X, Y, Z, it_end = 0;
+  int st_index = 0;
+  unsigned int index = 0;
   double rpStack[stackMax] = {0};
-  if (!isAllArea) it_end = (int)indexList.size();
+  if (!isAllArea) it_end = static_cast<int>(indexList.size());
   else it_end = Xindex * Yindex * Zindex;
-  for (j = 0; j < it_end; j++) {
+  for (unsigned int j = 0; j < it_end; j++) {
     if (!isAllArea) index = indexList[j];
     else index = j;
     Z = index / (Xindex * Yindex);
     Y = (index - Z * Xindex * Yindex) / Xindex;
     X = index - Z * Xindex * Yindex - Y * Xindex;
     st_index = 0;
-    for (i = 0; i < numOfASTNodes; i++) {
+    for (unsigned int i = 0; i < numOfASTNodes; i++) {
       if (rpInfo->varList[i] != 0) {//set variable into the stack
         rpStack[st_index] = rpInfo->varList[i][index];
         st_index++;
@@ -152,18 +153,18 @@ void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rp
         case AST_LAMBDA:
           break;
         case AST_LOGICAL_AND:
-          rpStack[st_index - 1] = (static_cast<int>(rpStack[st_index - 1]) == 1 && static_cast<int>(rpStack[st_index] == 1)) ? 1.0: 0.0;
+          rpStack[st_index - 1] = (static_cast<int>(rpStack[st_index - 1]) == 1 && static_cast<int>(rpStack[st_index]) == 1) ? 1.0: 0.0;
           break;
         case AST_LOGICAL_NOT:
           rpStack[st_index] = (static_cast<int>(rpStack[st_index]) == 0) ? 1.0: 0.0;
           st_index++;
           break;
         case AST_LOGICAL_OR:
-          rpStack[st_index - 1] = (static_cast<int>(rpStack[st_index - 1]) == 1 || static_cast<int>(rpStack[st_index] == 1)) ? 1.0: 0.0;
+          rpStack[st_index - 1] = (static_cast<int>(rpStack[st_index - 1]) == 1 || static_cast<int>(rpStack[st_index]) == 1) ? 1.0: 0.0;
           break;
         case AST_LOGICAL_XOR:
-          rpStack[st_index - 1] = ((static_cast<int>(rpStack[st_index - 1]) == 1 && static_cast<int>(rpStack[st_index] == 0))
-                                   || (static_cast<int>(rpStack[st_index - 1]) == 0 && static_cast<int>(rpStack[st_index] == 1))) ? 1.0: 0.0;
+          rpStack[st_index - 1] = ((static_cast<int>(rpStack[st_index - 1]) == 1 && static_cast<int>(rpStack[st_index]) == 0)
+                                   || (static_cast<int>(rpStack[st_index - 1]) == 0 && static_cast<int>(rpStack[st_index]) == 1)) ? 1.0: 0.0;
           break;
         case AST_RATIONAL:
           break;

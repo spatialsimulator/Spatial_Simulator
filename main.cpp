@@ -9,9 +9,6 @@
 #include "spatialsim/spatialsim.h"
 #include <sbml/xml/XMLError.h>
 #include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
 #include <iostream>
 #include <sys/stat.h>
 
@@ -19,7 +16,6 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-
   clock_t start = clock();
   if (argc == 1) printErrorMessage();
 
@@ -27,6 +23,7 @@ int main(int argc, char *argv[])
   if (doc->getErrorLog()->contains(XMLFileUnreadable) || doc->getErrorLog()->contains(BadlyFormedXML)
       || doc->getErrorLog()->contains(MissingXMLEncoding) || doc->getErrorLog()->contains(BadXMLDecl)) {
     doc->printErrors();
+    delete doc;
     exit(1);
   }
 

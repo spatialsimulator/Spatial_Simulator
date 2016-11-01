@@ -49,7 +49,7 @@ double checkDiffusionStab(variableInfo* sInfo, double deltaX, double deltaY, dou
 	return min_dt;
 }
 
-double checkMemDiffusionStab(variableInfo *sInfo, voronoiInfo* vorI, int Xindex, int Yindex, double dt, double dimension)
+double checkMemDiffusionStab(variableInfo *sInfo, voronoiInfo* vorI, int Xindex, int Yindex, double dt, unsigned int dimension)
 {
 	int X = 0, Y = 0, Z = 0, index = 0;
 	unsigned int i, j;
@@ -113,7 +113,7 @@ double checkMemDiffusionStab(variableInfo *sInfo, voronoiInfo* vorI, int Xindex,
 	return min_dt;
 }
 
-double checkAdvectionStab(variableInfo* sInfo, double deltaX, double deltaY, double deltaZ, double dt, int Xindex, int Yindex, int dimension)
+double checkAdvectionStab(variableInfo* sInfo, double deltaX, double deltaY, double deltaZ, double dt, int Xindex, int Yindex, unsigned int dimension)
 {
 	int index, X, Y, Z;
 	unsigned int i;

@@ -39,8 +39,10 @@ void spatialSimulator(optionList options)
 SBMLDocument *doc;
 if( options.docFlag != 0){
   //doc = readSBMLFromString(options.document);
-  doc = readSBML("/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml");
+  options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
+  doc = readSBML(options.fname);
 } else {
+  //options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
   doc = readSBML(options.fname);
 }
   struct stat st;
@@ -127,7 +129,9 @@ if( options.docFlag != 0){
 
   //filename
   string fname(options.fname);
+
   fname = fname.substr((int)fname.find_last_of("/") + 1, (int)fname.find_last_of(".") - (int)fname.find_last_of("/") - 1);
+  cout << fname << endl;
   if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir -p result/" + fname).c_str());
 
   bool isImageBased = false;
@@ -845,10 +849,6 @@ if( options.docFlag != 0){
       }
     }
 
-
-
-
-
     //draw geometries
     variableInfo *xInfo = 0, *yInfo = 0, *zInfo = 0;
     if (dimension >= 1){
@@ -1155,11 +1155,13 @@ if( options.docFlag != 0){
 
     //simulation
     cout << "simulation starts" << endl;
-    FILE *gp = popen("/opt/local/bin/gnuplot -persist", "w");
     clock_t diff_start, diff_end, boundary_start, boundary_end, out_start, out_end, re_start, re_end, ad_start, ad_end, assign_start, assign_end, update_start, update_end;
     clock_t re_time = 0, diff_time = 0, output_time = 0, ad_time = 0, update_time = 0, mem_time = 0, boundary_time = 0, assign_time = 0;
     clock_t sim_start = clock();
     cout << endl;
+    FILE *gp = NULL;
+    if(outputImageFlag)
+      gp = popen("/opt/local/bin/gnuplot -persist", "w");
     for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
       //cerr << static_cast<int>(100.0 * static_cast<double>(t) / (end_time / dt)) << endl;
       *sim_time = t * dt;
@@ -1167,14 +1169,19 @@ if( options.docFlag != 0){
       out_start = clock();
       //         double maxam = 0, minmin=10;
       if (count % out_step == 0) {
+        cout << Xindex << "  " << Yindex << "  " << Zindex << endl;
         if (!sliceFlag) {
-          outputTimeCource(gp, model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, file_num, fname, outputImageFlag);
+          outputTimeCourse(model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, dimension, Xindex, Yindex, Zindex, file_num, fname);
+          if(outputImageFlag) createOutputImage(gp, varInfoList, memList, xInfo, yInfo, zInfo, model -> getListOfSpecies(), Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, dimension, range_min, range_max, sim_time, file_num, fname);
         } else if (slicedim == 'z') {
-          outputTimeCource_zslice(gp, model, varInfoList, memList, xInfo, yInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Xsize, Ysize, file_num, fname, slice, outputImageFlag);
+          outputTimeCourse_zslice(model, varInfoList, memList, xInfo, yInfo, sim_time, end_time, dt, dimension, Xindex, Yindex, file_num, fname, slice);
+          if(outputImageFlag) createOutputSliceImage(gp, varInfoList, memList, xInfo, yInfo,'x','y', Xindex, Yindex, model -> getListOfSpecies(), dimension, range_min, range_max, sim_time, file_num, fname);
         } else if (slicedim == 'y') {
-          outputTimeCource_yslice(gp, model, varInfoList, memList, xInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Xsize, Zsize, file_num, fname, slice, outputImageFlag);
+          outputTimeCourse_yslice(model, varInfoList, memList, xInfo, zInfo, sim_time, end_time, dt, dimension, Xindex, Yindex, Zindex, file_num, fname, slice);
+          if(outputImageFlag) createOutputSliceImage(gp, varInfoList, memList, xInfo, zInfo,'x','z', Xindex, Zindex, model -> getListOfSpecies(), dimension, range_min, range_max, sim_time, file_num, fname);
         } else if (slicedim == 'x') {
-          outputTimeCource_xslice(gp, model, varInfoList, memList, yInfo, zInfo, sim_time, end_time, dt, range_min, range_max, dimension, Xindex, Yindex, Zindex, Ysize, Zsize, file_num, fname, slice, outputImageFlag);
+          outputTimeCourse_xslice(model, varInfoList, memList, yInfo, zInfo, sim_time, end_time, dt, dimension, Xindex, Yindex, Zindex, file_num, fname, slice);
+          if(outputImageFlag) createOutputSliceImage(gp, varInfoList, memList, yInfo, zInfo,'y','z', Yindex, Zindex, model -> getListOfSpecies(), dimension, range_min, range_max, sim_time, file_num, fname);
         }
         file_num++;
       }

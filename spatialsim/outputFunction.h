@@ -5,12 +5,16 @@
 #include "sbml/SBMLTypes.h"
 #include <vector>
 
-void outputTimeCource(FILE *gp, Model *model, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int file_num, std::string fname, bool outputImageFlag);
+void outputTimeCourse(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int Zindex, int file_num, std::string fname);
 
-void outputTimeCource_zslice(FILE *gp, Model *model, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, double Xsize, double Ysize, int file_num, std::string fname, int zslice, bool outputImageFlag);
+void outputTimeCourse_zslice(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int file_num, std::string fname, int zslice);
 
-void outputTimeCource_yslice(FILE *gp, Model *model, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Xsize, double Zsize, int file_num, std::string fname, int yslice, bool outputImageFlag);
+void outputTimeCourse_yslice(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int Zindex, int file_num, std::string fname, int yslice);
 
-void outputTimeCource_xslice(FILE *gp, Model *model, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, double range_min, double range_max, int dimension, int Xindex, int Yindex, int Zindex, double Ysize, double Zsize, int file_num, std::string fname, int xslice, bool outputImageFlag);
+void outputTimeCourse_xslice(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int Zindex, int file_num, std::string fname, int xslice);
+
+void createOutputImage(FILE *gp, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, ListOfSpecies *los, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int dimension, double range_min, double range_max, double *sim_time, int file_num, std::string fname);
+
+void createOutputSliceImage(FILE *gp, std::vector<variableInfo*> &varInfoList, std::vector<const char*> memList, variableInfo *info1, variableInfo *info2, char dim1, char dim2, int index1, int index2, ListOfSpecies *los, int dimension, double range_min, double range_max, double *sim_time, int file_num, std::string fname);
 
 #endif
