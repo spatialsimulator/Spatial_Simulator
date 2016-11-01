@@ -46,13 +46,12 @@ if( options.docFlag != 0){
   doc = readSBML(options.fname);
 }
   struct stat st;
-  unsigned int i, j, k, m;
+  unsigned int i, j, k;
   int X = 0, Y = 0, Z = 0, index = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0;
   double *sim_time = new double(0.0);
   double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
   double Xsize = 0.0, Ysize = 0.0, Zsize = 0.0;
   int numOfASTNodes = 0;
-  //int numOfIndexes = 0;
   char *xaxis = 0, *yaxis = 0, *zaxis = 0;
 
   cout << "validating model..." << endl;
@@ -70,11 +69,9 @@ if( options.docFlag != 0){
   string reqPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/req/version1");
   ListOfSpecies *los = model->getListOfSpecies();
   ListOfCompartments *loc = model->getListOfCompartments();
-  //ListOfRules *lorules = model->getListOfRules();
   SpatialCompartmentPlugin *cPlugin = 0;
   //sbml spatial package
   SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(spatialPrefix));
-  //SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin("spatial"));
   Geometry *geometry = spPlugin->getGeometry();
 
   //size of list
@@ -129,7 +126,6 @@ if( options.docFlag != 0){
 
   //filename
   string fname(options.fname);
-
   fname = fname.substr((int)fname.find_last_of("/") + 1, (int)fname.find_last_of(".") - (int)fname.find_last_of("/") - 1);
   cout << fname << endl;
   if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir -p result/" + fname).c_str());
@@ -158,10 +154,7 @@ if( options.docFlag != 0){
 
   int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
   int numOfVolIndexes = Xindex * Yindex * Zindex;
-  //int indexMax = Zindex * Yindex * Xindex;
-  //int indexMin = -1;
 
-  //int numOfIndexes = Xdiv * Ydiv * Zdiv;
   //unit
   unsigned int volDimension = 0, memDimension = 0;
   for (i = 0; i < numOfCompartments; i++) {
@@ -325,15 +318,7 @@ if( options.docFlag != 0){
             geoInfo->isBoundary = new int[numOfVolIndexes];
             fill_n(geoInfo->isBoundary, numOfVolIndexes, 0);
             geoInfoList.push_back(geoInfo);
-            /*
-               for (Y = 0; Y <= samField->getNumSamples2(); Y++) {
-               for (X = 0; X <= samField->getNumSamples1(); X++) {
-               sam_ofs << (unsigned int)uncompr[Y * samField->getNumSamples1() + X] << ", ";
-               }
-               sam_ofs << endl;
-               }
-               sam_ofs.close();
-               */
+
             for (Z = 0; Z < Zindex; Z += 2) {
               for (Y = 0; Y < Yindex; Y += 2) {
                 for (X = 0; X < Xindex; X += 2) {
@@ -343,7 +328,6 @@ if( options.docFlag != 0){
                   } else {
                     geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 0;
                   }
-                  //sam_ofs << (unsigned int)uncompr[X * samField->getNumSamples1() + Y] << ", ";
                 }
               }
             }
@@ -1163,7 +1147,6 @@ if( options.docFlag != 0){
     if(outputImageFlag)
       gp = popen("/opt/local/bin/gnuplot -persist", "w");
     for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
-      //cerr << static_cast<int>(100.0 * static_cast<double>(t) / (end_time / dt)) << endl;
       *sim_time = t * dt;
       //output
       out_start = clock();
@@ -1201,10 +1184,9 @@ if( options.docFlag != 0){
       }
       ad_end = clock();
       ad_time += ad_end - ad_start;
-      //cout << "ad time: "<< ((ad_end - ad_start) / static_cast<double>(CLOCKS_PER_SEC)) << endl;
 
       //runge-kutta
-      for (m = 0; m < 4; m++) {
+      for (unsigned int m = 0; m < 4; m++) {
         //diffusion
         for (i = 0; i < numOfSpecies; i++) {
           variableInfo *sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
@@ -1216,17 +1198,6 @@ if( options.docFlag != 0){
           //membane diffusion
           if (sInfo->diffCInfo != 0 && !sInfo->geoi->isVol) {
             calcMemDiffusion(sInfo, vorI, Xindex, Yindex, Zindex, m, dt, dimension);
-            // for(Y = 0; Y < Yindex; Y++) {
-            //   for(X = 0; X < Xindex; X++) {
-            //     if(X == 76 && Y == 7) {
-            //       cout << 3 << " " << flush;
-            //     }
-            //     else {
-            //       cout << sInfo->geoi->isDomain[Y*Xindex+X] << " " << flush;
-            //     }
-            //   }
-            //   cout << endl;
-            // }//mashimo's crazy
           }
           diff_end = clock();
           diff_time += diff_end - diff_start;
@@ -1333,36 +1304,6 @@ if( options.docFlag != 0){
           info->geoi = searchAvolInfoByCompartment(geoInfoList, info->sp->getCompartment().c_str());
         }
         reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
-        /*
-           double tmp_x, tmp_y, tmp_z, tmp_len;
-           double tmp_phi, tmp_theta;
-           for (j = 0; j < info->geoi->domainIndex.size(); j++) {
-           tmp_x = xInfo->value[info->geoi->domainIndex[j]];
-           tmp_y = yInfo->value[info->geoi->domainIndex[j]];
-           tmp_z = zInfo->value[info->geoi->domainIndex[j]];
-           tmp_phi = atan2(tmp_y, tmp_x);
-           tmp_theta = acos(tmp_z);
-        //tmp_x = sin(tmp_theta) * cos(tmp_phi);
-        //tmp_y = sin(tmp_theta) * sin(tmp_phi);
-        //tmp_z = cos(tmp_theta);
-        //tmp_len = 1.0 - sqrt(pow(tmp_x, 2) + pow(tmp_y, 2) + pow(tmp_z, 2));
-        //tmp_x += tmp_len * nuVec[info->geoi->domainIndex[j]].nx;
-        //tmp_y += tmp_len * nuVec[info->geoi->domainIndex[j]].ny;
-        //tmp_z += tmp_len * nuVec[info->geoi->domainIndex[j]].nz;
-        //info->value[info->geoi->domainIndex[j]] = 2.0 + 0.5 * exp(-2.0 * (*sim_time)) * tmp_x + exp(-6.0 * (*sim_time)) * (pow(tmp_x, 2) - pow(tmp_y, 2)) + exp(-12.0 * (*sim_time)) * (pow(tmp_x, 3) - 3 * tmp_x * pow(tmp_y, 2));
-        //if ((tmp_x - 5.0 * (*sim_time) >= 10.0) && (tmp_x - 5.0 * (*sim_time) <= 30.0) && (tmp_y - 5.0 * (*sim_time) >= 10.0) && (tmp_y - 5.0 * (*sim_time) <= 30.0)) {
-        // 				if ((tmp_x - 5.0 * (*sim_time) >= 10.0) && (tmp_x - 5.0 * (*sim_time) <= 30.0) && (tmp_y - 5.0 * (*sim_time) >= 10.0) && (tmp_y - 5.0 * (*sim_time) <= 30.0)) {
-        // 					info->value[info->geoi->domainIndex[j]] = 5.0;
-        // 				} else {
-        // 					info->value[info->geoi->domainIndex[j]] = 0.0;
-        // 				}
-
-        //info->value[info->geoi->domainIndex[j]] = 5.0 * exp(-pow(0.1 * (-30.0 + tmp_x - 5.0 *sim_time), 2) + pow(0.1 * (-30.0 + tmp_y + t * t * -1), 2) * -1);
-        //cout << info->value[info->geoi->domainIndex[j]] << endl;
-        //cout << tmp_len * nuVec[index].nx << endl;
-        //cout << sqrt(pow(tmp_x, 2) + pow(tmp_y, 2) + pow(tmp_z, 2)) << endl;
-        }
-        */
       }
       assign_end = clock();
       assign_time += assign_end - assign_start;

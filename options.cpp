@@ -21,7 +21,7 @@ void printErrorMessage()
   cout << "-c #(double or int): max of color bar range # (ex. -c 1)" << endl;
   cout << "-C #(double or int): min of color bar range # (ex. -c 1)" << endl;
   cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;
-  cout << "-p: surpress creating simulation image" << endl;
+  cout << "-p: create simulation image" << endl;
   exit(1);
 }
 
@@ -47,12 +47,11 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .slicedim = 'z',
     .fname = 0,
     .docFlag = 0,
-    .document = "",
-    .outputFlag=1
+    .outputFlag=0
   };
   int opt_result;
 
-  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:p:")) != -1) {
+  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:p")) != -1) {
     switch(opt_result) {
       case 'x':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
@@ -112,7 +111,7 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
         if (dimension != 3) printErrorMessage();
         break;
       case 'p':
-        options.outputFlag = 0;
+        options.outputFlag = 1;
         break;
       default:
         printErrorMessage();
@@ -121,7 +120,7 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
   }
 
   char *fname = argv[optind];
-  options.fname = (char*) malloc(sizeof(char) * strlen(fname) + 1);
+  options.fname = static_cast<char*>(malloc(sizeof(char) * strlen(fname) + 1));
   strncpy(options.fname, fname, strlen(fname) + 1);
 
   return options;

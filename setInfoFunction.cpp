@@ -134,7 +134,6 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
   for (i = 0; i < numOfParameters; i++) {
     Parameter *p = lop->get(i);
     SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin(spatialPrefix));
-    //ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(p->getPlugin(reqPrefix));
     variableInfo *info = new variableInfo;
     BoundaryCondition *bcon;
     CoordinateComponent *cc;
@@ -262,7 +261,7 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           for (Z = 0; Z < Zindex; Z++) {
             for (Y = 0; Y < Yindex; Y++) {
               for (X = 0; X < Xindex; X++) {
-                info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + (double)X * deltaX / 2.0;
+                info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(X) * deltaX / 2.0;
               }
             }
           }
@@ -276,7 +275,7 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           for (Z = 0; Z < Zindex; Z++) {
             for (Y = 0; Y < Yindex; Y++) {
               for (X = 0; X < Xindex; X++) {
-                info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + (double)Y * deltaY / 2.0;
+                info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Y) * deltaY / 2.0;
               }
             }
           }
@@ -290,7 +289,7 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
           for (Z = 0; Z < Zindex; Z++) {
             for (Y = 0; Y < Yindex; Y++) {
               for (X = 0; X < Xindex; X++) {
-                info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + (double)Z * deltaZ / 2.0;
+                info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Z) * deltaZ / 2.0;
               }
             }
           }
@@ -412,7 +411,7 @@ void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
   Species *s;
   for (i = 0; i < numOfRules; i++) {
     if (model->getRule(i)->isRate()) {
-      RateRule *rrule = (RateRule*)model->getRule(i);
+      RateRule *rrule = static_cast<RateRule*>(model->getRule(i));
       reactionInfo *rInfo = new reactionInfo;
       rInfo->id = rrule->getVariable().c_str();
       rInfo->value = new double[numOfVolIndexes];
@@ -433,7 +432,6 @@ void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
       fill_n(rInfo->rpInfo->opfuncList, numOfASTNodes, 0);
       rInfo->rpInfo->listNum = numOfASTNodes;
       parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes, freeConstList);
-      //parseAST(ast, rInfo->rpInfo->varList, rInfo->rpInfo->constList, rInfo->rpInfo->opfuncList, varInfoList, numOfASTNodes);
       rInfo->spRefList.push_back(searchInfoById(varInfoList, rrule->getVariable().c_str()));
       rInfo->srStoichiometry.push_back(1.0);
       s = model->getSpecies(rrule->getVariable());
@@ -445,7 +443,9 @@ void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
       rInfoList.push_back(rInfo);
     }
   }
+
 }
+
 normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, int numOfVolIndexes)
 {
   unsigned int i, j, k, step_kXY = 0, step_kYZ = 0, step_kXZ = 0;
@@ -660,9 +660,6 @@ normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsiz
           step_kXY = static_cast<int>(pow(hXY, -(2.0 / 3.0)) + 0.5);
           step_kYZ = static_cast<int>(pow(hYZ, -(2.0 / 3.0)) + 0.5);
           step_kXZ = static_cast<int>(pow(hXZ, -(2.0 / 3.0)) + 0.5);
-          //step_kXY = static_cast<int>(pow(hXY, -(2.0 / 3.0)));
-          //step_kYZ = static_cast<int>(pow(hYZ, -(2.0 / 3.0)));
-          //step_kXZ = static_cast<int>(pow(hXZ, -(2.0 / 3.0)));
           if (step_kXY == 0) step_kXY = 1;
           if (step_kYZ == 0) step_kYZ = 1;
           if (step_kXZ == 0) step_kXZ = 1;
@@ -717,11 +714,9 @@ normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsiz
               //calc step_k
               if ((a + b + c) == 0 || (-a + b + c) == 0 || (a - b + c) == 0 || (a + b - c) == 0) {
                 step_kXZ = 1;
-                //step_kXZ = static_cast<int>(pow((max_radiusXZ / hXZ), 2.0 / 3.0) + 0.5);
               } else {
                 rhoXZ = min(max_radiusXZ, (a * b * c) / sqrt((a + b + c) * (-a + b + c) * (a - b + c) * (a + b - c)));
                 step_kXZ = static_cast<int>(pow((rhoXZ / hXZ), 2.0 / 3.0) + 0.5);
-                //step_kXZ = static_cast<int>(pow((rhoXZ / hXZ), 2.0 / 3.0));
               }
               //calc tangent vector
               oneStepSearch(1, step_kXZ, X, Y, Z, Xindex, Yindex, Zindex, xzPlaneX, xzPlaneZ, isD, "xz");
@@ -737,7 +732,6 @@ normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsiz
             X2 = 0.0;
             Y2 = 0.0;
             Z2 = 1.0;
-            //cout << "(" << xyPlaneX[0] << ", " << xyPlaneY[0] << ")   " << "(" << X << ", " << Y << ")   " << "(" << xyPlaneX[1] << ", " << xyPlaneY[1] << ")   " << endl;
           } else if (dimension == 3) {
             if (geoInfo->bType[index].isBofXp || geoInfo->bType[index].isBofXm) {//xy * xz
               X1 = xyPlaneX[0] - xyPlaneX[1];
@@ -764,71 +758,19 @@ normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsiz
               Z2 = yzPlaneZ[0] - yzPlaneZ[1];
             }
           }
-          //cout << sqrt(pow(coord_x, 2) + pow(coord_y, 2) + pow(coord_z, 2)) << endl;
           nuVec[index].nx = Y1 * Z2 - Z1 * Y2;
           nuVec[index].ny = Z1 * X2 - X1 * Z2;
           nuVec[index].nz = X1 * Y2 - Y1 * X2;
           len = sqrt(pow(nuVec[index].nx, 2) + pow(nuVec[index].ny, 2) + pow(nuVec[index].nz, 2));
-          //double phi = atan2(nuVec[index].ny, nuVec[index].nx);
-          //double theta = acos(nuVec[index].nz / len);
           nuVec[index].nx /= len;
           nuVec[index].ny /= len;
-          //nuVec[index].nx = sin(theta) * cos(phi);
-          //nuVec[index].ny = sin(theta) * sin(phi);
-          //cout << "    " << nuVec[index].nx << " " << nuVec[index].ny << " " << pow(nuVec[index].nx, 2) + pow(nuVec[index].ny, 2) <<endl;
           nuVec[index].nz /= len;
-          //cout << "(" << X << ", " << Y << ", " << Z << ") " << nuVec[index].nx << " " << nuVec[index].ny << " " << nuVec[index].nz << endl;
-          /*
-            double coord_x = -1.0 + (double)X * hX / 2.0;
-            double coord_y = -1.0 + (double)Y * hY / 2.0;
-            double coord_z = -1.0 + (double)Z * hZ / 2.0;
-            //cout << fabs(fabs(nuVec[index].nx) - fabs(coord_x)) + fabs(fabs(nuVec[index].ny) - fabs(coord_y)) + fabs(fabs(nuVec[index].nz) - fabs(coord_z)) << " ";
-            nuVec[index].nx = coord_x;
-            nuVec[index].ny = coord_y;
-            nuVec[index].nz = coord_z;
-          */
-
         }
       }
     }
   }
-// 	for (i = 0; i < geoInfoList.size(); i++) {
-// 		GeometryInfo *geoInfo = geoInfoList[i];
-// 		if (geoInfo->isVol == false) {//avol is membrane
-// 			ofstream ofs_tmp;
-// 			ofs_tmp.open("tmp.txt");
-// 			for (j = 0; j < geoInfo->domainIndex.size(); j++) {
-// 				index = geoInfo->domainIndex[j];
-// 				Z = index / (Xindex * Yindex);
-// 				Y = (index - Z * Xindex * Yindex) / Xindex;
-// 				X = index - Z * Xindex * Yindex - Y * Xindex;
-// 				ofs_tmp << X << " " << Y << " " << fabs(nuVec[index].nx) << " " << fabs(nuVec[index].ny) << " " << (fabs(nuVec[index].nx) + fabs(nuVec[index].ny)) << endl;
-// 			}
-// // 			for (Y = 0; Y < Yindex; Y++) {
-// // 				for (X = 0; X < Xindex; X++) {
-// // 					index = Y * Xindex + X;
-// // 					//ofs_tmp << X << " " << Y << " " << geoInfo->normalAngle[index] << endl;
-// // 					if ((Y * Xindex + X) % 2 != 0 && geoInfo->isDomain[Y * Xindex + X] == 1) {
-// // 						//ofs_tmp << X << " " << Y << " " << geoInfo->normalAngle[index] << endl;
-// // 						ofs_tmp << X << " " << Y << " " << fabs(sin(nAngle->xy[index])) << endl;
-// // 					} else {
-// // 						ofs_tmp << X << " " << Y << " " << -1 << endl;
-// // 					}
-// // 				}
-// // 				ofs_tmp << endl;
-// // 			}
-// 			ofs_tmp.close();
-// 			break;
-// 		}
-// 	}
   return nuVec;
 }
-
-/*
-  typedef enum _preDirection {
-  N = 0, NE, E, SE, S, SW, W, NE
-  }preDirection;
-*/
 
 void stepSearch(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane)
 {
@@ -1099,13 +1041,12 @@ voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variab
   int Xdiv = (Xindex + 1) / 2;
   int Ydiv = (Yindex + 1) / 2;
   int Zdiv = (Zindex + 1) / 2;
-  //double X_proj = 0.0, Y_proj = 0.0, Z_proj = 0.0;
   double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
   double inner_pro = 0.0;
   double d_ij = 0.0, d_ji = 0.0, s_ij = 0.0, s_ji = 0.0;
-  deltaX = Xsize / (double)(Xdiv - 1);
-  deltaY = Ysize / (double)(Ydiv - 1);
-  if (dimension >= 3) deltaZ = Zsize / (double)(Zdiv - 1);
+  deltaX = Xsize / static_cast<double>(Xdiv - 1);
+  deltaY = Ysize / static_cast<double>(Ydiv - 1);
+  if (dimension >= 3) deltaZ = Zsize / static_cast<double>(Zdiv - 1);
 
   for (i = 0; i < geoInfoList.size(); i++) {
     if (!geoInfoList[i]->isVol) {

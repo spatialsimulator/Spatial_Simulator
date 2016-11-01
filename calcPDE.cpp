@@ -195,7 +195,7 @@ void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rp
   }
 }
 
-void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int Yindex, int Zindex, double dt, int m, int numOfReactants, bool isReaction)
+void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int Yindex, int Zindex, double dt, unsigned int m, int numOfReactants, bool isReaction)
 {
   int X, Y, Z, i, j;
   int k;
@@ -397,7 +397,7 @@ void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int
   }
 }
 
-void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, int m, double dt)
+void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, double dt)
 {
   int X = 0, Y = 0, Z = 0, index = 0;
   unsigned int j;
@@ -507,7 +507,7 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
   }
 }
 
-void cipCSLR(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, double dt, int Xindex, int Yindex, int Zindex, int dimension)
+void cipCSLR(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, double dt, int Xindex, int Yindex, int Zindex, unsigned int dimension)
 {
   double ux = 0.0, uy = 0.0, uz = 0.0, Dx = 0.0, Dy = 0.0, Dz = 0.0;
   double a_i = 0.0, b_i = 0.0, beta_i = 0.0;//parameter of CIP rational function
@@ -814,7 +814,7 @@ void cipCSLR(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, d
   delete[] val_delta;
 }
 
-void calcBoundary(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, int m, int dimension)
+void calcBoundary(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, unsigned int dimension)
 {
   int Xp = 0, Xm = 0, Yp = 0, Ym = 0, Zp = 0, Zm = 0, X = 0, Y = 0, Z = 0;
   int divIndexXp = 0, divIndexXm = 0, divIndexYp = 0,divIndexYm = 0, divIndexZp = 0, divIndexZm = 0;
@@ -891,7 +891,7 @@ void calcBoundary(variableInfo *sInfo, double deltaX, double deltaY, double delt
   }
 }
 
-void calcMemTransport(reactionInfo *rInfo, GeometryInfo *geoInfo, normalUnitVector *nuVec, int Xindex, int Yindex, int Zindex, double dt, int m, double deltaX, double deltaY, double deltaZ, int dimension, int numOfReactants)
+void calcMemTransport(reactionInfo *rInfo, GeometryInfo *geoInfo, normalUnitVector *nuVec, int Xindex, int Yindex, int Zindex, double dt, unsigned int m, double deltaX, double deltaY, double deltaZ, unsigned int dimension, unsigned int numOfReactants)
 {
   int X, Y, Z, i, j, k;
   int st_index = 0, index = 0, numOfVolIndexes = Xindex * Yindex * Zindex;
@@ -1276,7 +1276,7 @@ void calcMemTransport(reactionInfo *rInfo, GeometryInfo *geoInfo, normalUnitVect
   }
 }
 
-void calcMemDiffusion(variableInfo *sInfo, voronoiInfo *vorI, int Xindex, int Yindex, int Zindex, int m, double dt, int dimension)
+void calcMemDiffusion(variableInfo *sInfo, voronoiInfo *vorI, int Xindex, int Yindex, int Zindex, unsigned int m, double dt, unsigned int dimension)
 {
   int X = 0, Y = 0, Z = 0, index = 0;
   unsigned int i, j;
