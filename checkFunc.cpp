@@ -8,8 +8,9 @@
 #define CHECK(A, Aindex) (A == 0 || A == Aindex - 1)
 
 using namespace std;
+using namespace libsbml;
 
-void checkMemPosition(vector<GeometryInfo*> geoInfoList, unsigned int Xindex, unsigned int Yindex, unsigned int Zindex, int dimension) {
+void checkMemPosition(vector<GeometryInfo*> geoInfoList, unsigned int Xindex, unsigned int Yindex, unsigned int Zindex, unsigned int dimension) {
   unsigned int X, Y, Z, i, j, index;
   unsigned int size = static_cast<unsigned int>(geoInfoList.size());
   int badX=0,badY=0,badZ=0;

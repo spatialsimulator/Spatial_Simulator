@@ -11,6 +11,7 @@
 #define stackMax 50
 
 using namespace std;
+using namespace libsbml;
 
 void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rpInfo, double *value, int numOfASTNodes, int Xindex, int Yindex, int Zindex, bool isAllArea)
 {
@@ -195,7 +196,7 @@ void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rp
   }
 }
 
-void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int Yindex, int Zindex, double dt, unsigned int m, int numOfReactants, bool isReaction)
+void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int Yindex, int Zindex, double dt, unsigned int m, unsigned int numOfReactants, bool isReaction)
 {
   int X, Y, Z, i, j;
   int k;

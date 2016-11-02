@@ -5,8 +5,9 @@
 #include <vector>
 
 using namespace std;
+using namespace libsbml;
 
-void setBoundaryType(Model *model, vector<variableInfo*> &varInfoList, vector<GeometryInfo*> &geoInfoList, int Xindex, int Yindex, int Zindex, int dimension)
+void setBoundaryType(Model *model, vector<variableInfo*> &varInfoList, vector<GeometryInfo*> &geoInfoList, int Xindex, int Yindex, int Zindex, unsigned int dimension)
 {
 	ListOfSpecies *los = model->getListOfSpecies();
 	unsigned int i;

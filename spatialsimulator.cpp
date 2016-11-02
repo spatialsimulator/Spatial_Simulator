@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 
 using namespace std;
+using namespace libsbml;
 
 #ifdef __cplusplus
 extern "C"{
@@ -36,18 +37,19 @@ extern "C"{
 
 void spatialSimulator(optionList options)
 {
-SBMLDocument *doc;
-if( options.docFlag != 0){
-  //doc = readSBMLFromString(options.document);
-  options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
-  doc = readSBML(options.fname);
-} else {
-  //options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
-  doc = readSBML(options.fname);
-}
+  SBMLDocument *doc;
+  if( options.docFlag != 0){
+    //doc = readSBMLFromString(options.document);
+    options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
+    doc = readSBML(options.fname);
+  } else {
+    //options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
+    doc = readSBML(options.fname);
+  }
+
   struct stat st;
   unsigned int i, j, k;
-  int X = 0, Y = 0, Z = 0, index = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0;
+  int X = 0, Y = 0, Z = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0, index = 0;
   double *sim_time = new double(0.0);
   double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
   double Xsize = 0.0, Ysize = 0.0, Zsize = 0.0;
@@ -64,14 +66,11 @@ if( options.docFlag != 0){
   ASTNode *ast = 0;
   Species *s;
   SpeciesReference *sr;
-  XMLNamespaces *xns = doc->getNamespaces();
-  string spatialPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/spatial/version1");
-  string reqPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/req/version1");
   ListOfSpecies *los = model->getListOfSpecies();
   ListOfCompartments *loc = model->getListOfCompartments();
   SpatialCompartmentPlugin *cPlugin = 0;
   //sbml spatial package
-  SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(spatialPrefix));
+  SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(SpatialExtension::getPackageName()));
   Geometry *geometry = spPlugin->getGeometry();
 
   //size of list
@@ -126,7 +125,7 @@ if( options.docFlag != 0){
 
   //filename
   string fname(options.fname);
-  fname = fname.substr((int)fname.find_last_of("/") + 1, (int)fname.find_last_of(".") - (int)fname.find_last_of("/") - 1);
+  fname = fname.substr(static_cast<int>(fname.find_last_of("/")) + 1, static_cast<int>(fname.find_last_of("."))- static_cast<int>(fname.find_last_of("/")) - 1);
   cout << fname << endl;
   if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir -p result/" + fname).c_str());
 
@@ -153,7 +152,7 @@ if( options.docFlag != 0){
   cout << "color bar range max: " << range_max << endl << endl;
 
   int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
-  int numOfVolIndexes = Xindex * Yindex * Zindex;
+  unsigned int numOfVolIndexes = static_cast<unsigned int>(Xindex * Yindex * Zindex);
 
   //unit
   unsigned int volDimension = 0, memDimension = 0;
@@ -174,9 +173,9 @@ if( options.docFlag != 0){
   //compartment
   setCompartmentInfo(model, varInfoList);
   //species
-  setSpeciesInfo(doc, varInfoList, volDimension, memDimension, Xindex, Yindex, Zindex);
+  setSpeciesInfo(model, varInfoList, volDimension, memDimension, Xindex, Yindex, Zindex);
   //parameter
-  setParameterInfo(doc, varInfoList, Xdiv, Ydiv, Zdiv, Xsize, Ysize, Zsize, deltaX, deltaY, deltaZ, xaxis, yaxis, zaxis);
+  setParameterInfo(model, varInfoList, Xdiv, Ydiv, Zdiv, Xsize, Ysize, Zsize, deltaX, deltaY, deltaZ, xaxis, yaxis, zaxis);
   //time
   variableInfo *t_info = new variableInfo;
   InitializeVarInfo(t_info);
@@ -208,8 +207,9 @@ if( options.docFlag != 0){
       //gather information of compartment, domainType, analyticVolume
       for (j = 0; j < numOfCompartments; j++) {
         Compartment *c = loc->get(j);
-        cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin(spatialPrefix));
+        cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin(SpatialExtension::getPackageName()));
         if (cPlugin != 0) {
+          //fix here
           if (AnalyticVolume *analyticVol = analyticGeo->getAnalyticVolume(cPlugin->getCompartmentMapping()->getDomainType())) {
             GeometryInfo *geoInfo = new GeometryInfo;
             InitializeAVolInfo(geoInfo);
@@ -217,7 +217,7 @@ if( options.docFlag != 0){
             geoInfo->domainTypeId = cPlugin->getCompartmentMapping()->getDomainType().c_str();
             geoInfo->domainId = 0;
             geoInfo->bType = new boundaryType[numOfVolIndexes];
-            for (k = 0; k < (unsigned int)numOfVolIndexes; k++) {
+            for (k = 0; k < numOfVolIndexes; k++) {
               geoInfo->bType[k].isBofXp = false;
               geoInfo->bType[k].isBofXm = false;
               geoInfo->bType[k].isBofYp = false;
@@ -250,7 +250,7 @@ if( options.docFlag != 0){
             //judge if the coordinate point is inside the analytic volume
             fill_n(tmp_isDomain, numOfVolIndexes, 0);
             reversePolishInitial(volumeIndexList, geoInfo->rpInfo, tmp_isDomain, numOfASTNodes, Xindex, Yindex, Zindex, false);
-            for (k = 0; k < (unsigned int)numOfVolIndexes; k++) {
+            for (k = 0; k < numOfVolIndexes; k++) {
               index = k;
               geoInfo->isDomain[k] = (int)tmp_isDomain[k];
               Z = index / (Xindex * Yindex);
@@ -267,9 +267,9 @@ if( options.docFlag != 0){
       for (j = 0; j < numOfCompartments; j++) {
         Compartment *c = loc->get(j);
         if (c->getSpatialDimensions() == volDimension) {
-          cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin(spatialPrefix));
+          cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin(SpatialExtension::getPackageName()));
           if (cPlugin != 0) {
-            SampledField *samField = geometry->getListOfSampledFields() ->get(sfGeo -> getSampledField());
+            SampledField *samField = geometry->getListOfSampledFields() -> get(sfGeo -> getSampledField());
             SampledVolume *samVol = 0;
             for (k = 0; k < sfGeo->getNumSampledVolumes(); k++) {
               if (sfGeo->getSampledVolume(k)->getDomainType() == cPlugin->getCompartmentMapping()->getDomainType()) {
@@ -291,7 +291,7 @@ if( options.docFlag != 0){
               if (err != Z_OK) {
                 cout << "err with uncompression" << endl;
                 cout << err << endl;
-              return;
+                return;
               }
             }else{
               Byte *temp = compr;
@@ -304,7 +304,7 @@ if( options.docFlag != 0){
             geoInfo->domainTypeId = cPlugin->getCompartmentMapping()->getDomainType().c_str();
             geoInfo->domainId = 0;
             geoInfo->bType = new boundaryType[numOfVolIndexes];
-            for (k = 0; k < (unsigned int)numOfVolIndexes; k++) {
+            for (k = 0; k < numOfVolIndexes; k++) {
               geoInfo->bType[k].isBofXp = false;
               geoInfo->bType[k].isBofXm = false;
               geoInfo->bType[k].isBofYp = false;
@@ -499,7 +499,7 @@ if( options.docFlag != 0){
 
   //membrane compartment
   for (i = 0; i < numOfCompartments; i++) {
-    SpatialCompartmentPlugin *cPlugin = static_cast<SpatialCompartmentPlugin*>(loc->get(i)->getPlugin(spatialPrefix));
+    cPlugin = static_cast<SpatialCompartmentPlugin*>(loc->get(i)->getPlugin(SpatialExtension::getPackageName()));
     if (cPlugin == 0) continue;
     DomainType *dType = geometry->getDomainType(cPlugin->getCompartmentMapping()->getDomainType());
     GeometryInfo *geoInfo = searchAvolInfoByCompartment(geoInfoList, loc->get(i)->getId().c_str());
@@ -551,7 +551,7 @@ if( options.docFlag != 0){
       geoInfo->isBoundary = new int[numOfVolIndexes];
       fill_n(geoInfo->isBoundary, numOfVolIndexes, 0);
       geoInfo->bType = new boundaryType[numOfVolIndexes];
-      for (j = 0; j < (unsigned int)numOfVolIndexes; j++) {
+      for (j = 0; j < numOfVolIndexes; j++) {
         geoInfo->bType[j].isBofXp = false;
         geoInfo->bType[j].isBofXm = false;
         geoInfo->bType[j].isBofYp = false;
@@ -815,7 +815,7 @@ if( options.docFlag != 0){
     }
 
     for (i = 0; i < numOfSpecies; i++) {
-      Species *s = los->get(i);
+      s = los->get(i);
       variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
       if (sInfo != 0) {
         if (sInfo->inVol) {
@@ -874,10 +874,9 @@ if( options.docFlag != 0){
             fill_n(info->delta, 4 * numOfVolIndexes, 0);
           }
         }
-        ast = const_cast<ASTNode*>(((AssignmentRule*)model->getRule(info->id))->getMath());
+        ast = const_cast<ASTNode*>((static_cast<AssignmentRule*>(model->getRule(info->id)))->getMath());
       }
       if (ast != 0) {
-        //cout << info->id << ": " << SBML_formulaToString(ast) << endl;
         rearrangeAST(ast);
         numOfASTNodes = 0;
         countAST(ast, numOfASTNodes);
@@ -905,7 +904,7 @@ if( options.docFlag != 0){
           if (model->getInitialAssignment(info->id) != 0) {//initial assignment
             ast = const_cast<ASTNode*>((model->getInitialAssignment(info->id))->getMath());
           } else if (model->getRule(info->id) != 0 && model->getRule(info->id)->isAssignment()) {//assignment rule
-            ast = const_cast<ASTNode*>(((AssignmentRule*)model->getRule(info->id))->getMath());
+            ast = const_cast<ASTNode*>((static_cast<AssignmentRule*>(model->getRule(info->id)))->getMath());
           }
           parseAST(ast, info->rpInfo, varInfoList, info->rpInfo->listNum, freeConstList);
           cout << info->id << ": " << SBML_formulaToString(ast) << endl;
@@ -965,7 +964,7 @@ if( options.docFlag != 0){
     cout << "finished" << endl;
     if (dt > min_dt) {
       cout << "dt must be less than " << min_dt << endl;
-    return;
+      return;
     }
 
     //reaction information
@@ -1152,7 +1151,6 @@ if( options.docFlag != 0){
       out_start = clock();
       //         double maxam = 0, minmin=10;
       if (count % out_step == 0) {
-        cout << Xindex << "  " << Yindex << "  " << Zindex << endl;
         if (!sliceFlag) {
           outputTimeCourse(model, varInfoList, memList, xInfo, yInfo, zInfo, sim_time, end_time, dt, dimension, Xindex, Yindex, Zindex, file_num, fname);
           if(outputImageFlag) createOutputImage(gp, varInfoList, memList, xInfo, yInfo, zInfo, model -> getListOfSpecies(), Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, dimension, range_min, range_max, sim_time, file_num, fname);
@@ -1226,20 +1224,6 @@ if( options.docFlag != 0){
               if (!geoInfoList[j]->isVol) {
                 if ((geoInfoList[j]->adjacentGeo1 == reactantGeo && geoInfoList[j]->adjacentGeo2 == productGeo)
                     || (geoInfoList[j]->adjacentGeo1 == productGeo && geoInfoList[j]->adjacentGeo2 == reactantGeo)) {//mem transport
-                  //cout << geoInfoList[j]->domainTypeId << endl;
-                  // for (int y = 0; y < Yindex; y += 1) {
-                  //   for (int x = 0; x < Xindex; x += 1) {
-                  //     int index = y * Xindex + x;
-                  //     if (geoInfoList[j]->bType[index].isBofXp || geoInfoList[j]->bType[index].isBofXm || geoInfoList[j]->bType[index].isBofYp || geoInfoList[j]->bType[index].isBofYm) {
-                  //       cout << "1" << flush;
-                  //     }
-                  //     else {
-                  //       cout << "0" << flush;
-                  //     }
-                  //   }
-                  //   cout << endl;
-                  // }
-                  // exit(0);
                   calcMemTransport(rInfoList[i], geoInfoList[j], nuVec, Xindex, Yindex, Zindex, dt, m, deltaX, deltaY, deltaZ, dimension, r->getNumReactants());
                   break;
                 }
@@ -1260,7 +1244,7 @@ if( options.docFlag != 0){
         //rate rule
         for (i = 0; i < numOfRules; i++) {
           if (model->getRule(i)->isRate()) {
-            RateRule *rrule = (RateRule*)model->getRule(i);
+            RateRule *rrule = static_cast<RateRule*>(model->getRule(i));
             variableInfo *sInfo = searchInfoById(varInfoList, rrule->getVariable().c_str());
             reversePolishRK(rInfoList[i], sInfo->geoi, Xindex, Yindex, Zindex, dt, m, 1, false);
           }
@@ -1367,15 +1351,14 @@ if( options.docFlag != 0){
       }
       }
       clock_t sim_end = clock();
-      cerr << "simulation_time: "<< ((sim_end - sim_start) / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-      cerr << "reaction_time: "<< (re_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-      cerr << "diffusion_time: "<< (diff_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-      cerr << "advection_time: "<< (ad_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-      cerr << "update_time: "<< (update_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-      //cerr << "  mem_time: "<< (mem_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-      cerr << "assign_time: "<< (assign_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-      cerr << "output_time: "<< (output_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-      pclose(gp);
+      cout << "simulation_time: "<< ((sim_end - sim_start) / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+      cout << "reaction_time: "<< (re_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+      cout << "diffusion_time: "<< (diff_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+      cout << "advection_time: "<< (ad_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+      cout << "update_time: "<< (update_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+      cout << "assign_time: "<< (assign_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+      cout << "output_time: "<< (output_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+      if(gp != NULL) pclose(gp);
 
       //free
       freeVarInfo(varInfoList);
@@ -1389,20 +1372,20 @@ if( options.docFlag != 0){
       delete[] nuVec;
       delete[] vorI;
       delete doc;
-      }
-
-bool isResolvedAll(vector<variableInfo*> &dependence)
-{
-  vector<variableInfo*>::iterator it = dependence.begin();
-  while (it != dependence.end()) {
-    if (!(*it)->isResolved) {
-      return false;
     }
-    it++;
-  }
-  return true;
-}
+
+    bool isResolvedAll(vector<variableInfo*> &dependence)
+    {
+      vector<variableInfo*>::iterator it = dependence.begin();
+      while (it != dependence.end()) {
+        if (!(*it)->isResolved) {
+          return false;
+        }
+        it++;
+      }
+      return true;
+    }
 
 #ifdef __cplusplus
-}
+  }
 #endif

@@ -10,6 +10,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace libsbml;
 
 void setCompartmentInfo(Model *model, vector<variableInfo*> &varInfoList)
 {
@@ -27,18 +28,12 @@ void setCompartmentInfo(Model *model, vector<variableInfo*> &varInfoList)
       info->isResolved = true;
       info->isUniform = true;
       info->value = (c->isSetSize())? new double(c->getSize()): new double(1.0);
-      //cout << info->id << " " << *(info->value) << endl;
     }
   }
 }
 
-void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
+void setSpeciesInfo(Model *model, vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
 {
-
-  Model *model = doc->getModel();
-  XMLNamespaces *xns = doc->getNamespaces();
-  string spatialPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/spatial/version1");
-  string reqPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/req/version1");
   ListOfSpecies *los = model->getListOfSpecies();
   unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
   unsigned int i;
@@ -46,8 +41,8 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
   int numOfVolIndexes = Xindex * Yindex * Zindex;
   for (i = 0; i < numOfSpecies; i++) {
     Species *s = los->get(i);
-    //ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(reqPrefix));
-    SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(spatialPrefix));
+    //ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(ReqExtension::getPackageName());
+    SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(SpatialExtension::getPackageName()));
     //species have spatial extension
     if (splugin->getIsSpatial()) {
       variableInfo *info = new variableInfo;
@@ -98,13 +93,9 @@ void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsig
   }
 }
 
-void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
+void setParameterInfo(Model *model, vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
 {
-  Model *model = doc->getModel();
-  XMLNamespaces *xns = doc->getNamespaces();
-  string spatialPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/spatial/version1");
-  string reqPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/req/version1");
-  SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(spatialPrefix));
+  SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(SpatialExtension::getPackageName()));
   Geometry *geometry = spPlugin->getGeometry();
   ListOfParameters *lop = model->getListOfParameters();
   unsigned int numOfParameters = static_cast<unsigned int>(model->getNumParameters());
@@ -133,7 +124,7 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
   }
   for (i = 0; i < numOfParameters; i++) {
     Parameter *p = lop->get(i);
-    SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin(spatialPrefix));
+    SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin(SpatialExtension::getPackageName()));
     variableInfo *info = new variableInfo;
     BoundaryCondition *bcon;
     CoordinateComponent *cc;
@@ -303,7 +294,7 @@ void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int
   }
 }
 
-void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<reactionInfo*> &fast_rInfoList, vector<double*> freeConstList, int numOfVolIndexes)
+void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<reactionInfo*> &fast_rInfoList, vector<double*> freeConstList, unsigned int numOfVolIndexes)
 {
   ListOfReactions *lor = model->getListOfReactions();
   unsigned int numOfReactions = static_cast<unsigned int>(model->getNumReactions());
@@ -402,7 +393,7 @@ void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
   }
 }
 
-void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<double*> freeConstList, int numOfVolIndexes)
+void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<double*> freeConstList, unsigned int numOfVolIndexes)
 {
   unsigned int numOfRules = static_cast<unsigned int>(model->getNumRules());
   unsigned int i;
@@ -446,7 +437,7 @@ void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
 
 }
 
-normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, int numOfVolIndexes)
+normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, unsigned int numOfVolIndexes)
 {
   unsigned int i, j, k, step_kXY = 0, step_kYZ = 0, step_kXZ = 0;
   int X, Y, Z, index;
@@ -1026,7 +1017,7 @@ void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, 
   average d_ij and d_ji
 */
 
-voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, int numOfVolIndexes)
+voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, unsigned int numOfVolIndexes)
 {
   unsigned int i, j, k, l;
   int X, Y, Z, index;

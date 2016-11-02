@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 
 using namespace std;
+using namespace libsbml;
 
 int main(int argc, char *argv[])
 {

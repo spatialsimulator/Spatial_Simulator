@@ -5,6 +5,6 @@
 #include "sbml/SBMLTypes.h"
 #include <vector>
 
-void setBoundaryType(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<GeometryInfo*> &geoInfoList, int Xindex, int Yindex, int Zindex, int dimension);
+void setBoundaryType(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, std::vector<GeometryInfo*> &geoInfoList, int Xindex, int Yindex, int Zindex, unsigned int dimension);
 
 #endif

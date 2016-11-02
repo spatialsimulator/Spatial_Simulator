@@ -4,6 +4,6 @@
 #include "mystruct.h"
 #include <vector>
 
-void checkMemPosition(std::vector<GeometryInfo*> geoinfoList, unsigned int Xindex, unsigned int Yindex, unsigned int Zindex, int dimension);
+void checkMemPosition(std::vector<GeometryInfo*> geoinfoList, unsigned int Xindex, unsigned int Yindex, unsigned int Zindex, unsigned int dimension);
 
 #endif

@@ -3,6 +3,7 @@
 #include <vector>
 
 using namespace std;
+using namespace libsbml;
 
 variableInfo* searchInfoById(vector<variableInfo*> &varInfoList, const char *varName)
 {
@@ -20,8 +21,8 @@ GeometryInfo* searchAvolInfoByDomainType(vector<GeometryInfo*> &geoInfoList, con
 {
 	vector<GeometryInfo*>::iterator it = geoInfoList.begin();
 	while (it != geoInfoList.end()) {
-          if (strcmp((*it)->domainTypeId, dtId) == 0) {
-			return *it;
+    if (strcmp((*it)->domainTypeId, dtId) == 0) {
+      return *it;
 		}
 		it++;
 	}

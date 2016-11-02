@@ -45,8 +45,8 @@ typedef struct _GeometryInfo {
 	const char *domainTypeId;
 	const char *domainId;
   std::vector <const char *> domainIdList;
-	AdjacentDomains *adjacent0;
-	AdjacentDomains *adjacent1;
+  libsbml::AdjacentDomains *adjacent0;
+	libsbml::AdjacentDomains *adjacent1;
 	_GeometryInfo *adjacentGeo1;
 	_GeometryInfo *adjacentGeo2;
 	boundaryType *bType;
@@ -61,9 +61,9 @@ typedef struct _GeometryInfo {
 }GeometryInfo;
 
 typedef struct _variableInfo {
-	Species *sp;
-	Compartment *com;
-	Parameter *para;
+  libsbml::Species *sp;
+	libsbml::Compartment *com;
+	libsbml::Parameter *para;
 	const char* id;
 	double *value;
 	double *delta;
@@ -85,7 +85,7 @@ typedef struct _reactionInfo {
 	double *value;
 	reversePolishInfo *rpInfo;
 	bool isMemTransport;
-	Reaction *reaction;
+  libsbml::Reaction *reaction;
   std::vector<_variableInfo*> spRefList;
 	std::vector<bool> isVariable;
 	std::vector<double> srStoichiometry;

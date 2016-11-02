@@ -5,6 +5,7 @@
 #include <vector>
 
 using namespace std;
+using namespace libsbml;
 
 void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &varInfoList, int index_max, vector<double*> &freeConstList)
 {

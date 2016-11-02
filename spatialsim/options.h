@@ -4,7 +4,7 @@
 #include "mystruct.h"
 #include "sbml/SBMLTypes.h"
 
-optionList getOptionList(int argc, char **argv, SBMLDocument *doc);
+optionList getOptionList(int argc, char **argv, libsbml::SBMLDocument *doc);
 void printErrorMessage();
 
 #endif

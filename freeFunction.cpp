@@ -6,6 +6,7 @@
 #include <vector>
 
 using namespace std;
+using namespace libsbml;
 
 void freeVarInfo(vector<variableInfo*> &varInfoList)
 {

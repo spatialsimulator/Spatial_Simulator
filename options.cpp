@@ -7,6 +7,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace libsbml;
 
 void printErrorMessage()
 {

@@ -8,8 +8,9 @@
 #include <fstream>
 
 using namespace std;
+using namespace libsbml;
 
-void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname)
+void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, unsigned int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname)
 {
   int X = 0, Y = 0, Z = 0, index = 0;
   unsigned int i;
@@ -208,7 +209,7 @@ void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<c
   if (memFlag) ofs_mem.close();
 }
 
-void outputTimeCourse_zslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int file_num, string fname, int zslice)
+void outputTimeCourse_zslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, unsigned int dimension, int Xindex, int Yindex, int file_num, string fname, int zslice)
 {
   dimension = 2;
   int X = 0, Y = 0, index = 0, tmp_u;
@@ -306,7 +307,7 @@ void outputTimeCourse_zslice(Model *model, vector<variableInfo*> &varInfoList, v
   if (memFlag) ofs_mem.close();
  }
 
-void outputTimeCourse_yslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname, int yslice)
+void outputTimeCourse_yslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, unsigned int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname, int yslice)
 {
   dimension = 2;
   int X = 0, Z = 0, index = 0, tmp_u;
@@ -399,7 +400,7 @@ void outputTimeCourse_yslice(Model *model, vector<variableInfo*> &varInfoList, v
   if (memFlag) ofs_mem.close();
 }
 
-void outputTimeCourse_xslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname, int xslice)
+void outputTimeCourse_xslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, unsigned int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname, int xslice)
 {
   dimension = 2;
   int Y = 0, Z = 0, index = 0, tmp_u;
@@ -492,7 +493,7 @@ void outputTimeCourse_xslice(Model *model, vector<variableInfo*> &varInfoList, v
   if (memFlag) ofs_mem.close();
 }
 
-void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, ListOfSpecies *los, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, int dimension, double range_min, double range_max, double *sim_time, int file_num, string fname){
+void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, ListOfSpecies *los, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, unsigned int dimension, double range_min, double range_max, double *sim_time, int file_num, string fname){
   fprintf(gp, "set ticslevel 0\n");
   fprintf(gp, "set size ratio -1\n");
   fprintf(gp, "unset key\n");
@@ -585,7 +586,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
   }
 }
 
-void createOutputSliceImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *info1, variableInfo *info2, char dim1, char dim2, int index1, int index2, ListOfSpecies *los, int dimension, double range_min, double range_max, double *sim_time, int file_num, string fname){
+void createOutputSliceImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *info1, variableInfo *info2, char dim1, char dim2, int index1, int index2, ListOfSpecies *los, unsigned int dimension, double range_min, double range_max, double *sim_time, int file_num, string fname){
   stringstream ss;
   ss << file_num;
   string dir_img = "";
