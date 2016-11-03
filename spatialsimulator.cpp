@@ -200,67 +200,72 @@ void spatialSimulator(optionList options)
   //geometryDefinition
   double *tmp_isDomain = new double[numOfVolIndexes];
   for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
-    if( geometry->getGeometryDefinition(i)-> isSetIsActive() && !(geometry->getGeometryDefinition(i)->getIsActive())) continue;
+    if(geometry->getGeometryDefinition(i)-> isSetIsActive() && !(geometry->getGeometryDefinition(i)->getIsActive())) continue;
     if (geometry->getGeometryDefinition(i)->isAnalyticGeometry()) {
       //AnalyticVolumes
       AnalyticGeometry *analyticGeo = static_cast<AnalyticGeometry*>(geometry->getGeometryDefinition(i));
       //gather information of compartment, domainType, analyticVolume
-      for (j = 0; j < numOfCompartments; j++) {
-        Compartment *c = loc->get(j);
-        cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin(SpatialExtension::getPackageName()));
-        if (cPlugin != 0) {
-          //fix here
-          if (AnalyticVolume *analyticVol = analyticGeo->getAnalyticVolume(cPlugin->getCompartmentMapping()->getDomainType())) {
-            GeometryInfo *geoInfo = new GeometryInfo;
-            InitializeAVolInfo(geoInfo);
-            geoInfo->compartmentId = c->getId().c_str();
-            geoInfo->domainTypeId = cPlugin->getCompartmentMapping()->getDomainType().c_str();
-            geoInfo->domainId = 0;
-            geoInfo->bType = new boundaryType[numOfVolIndexes];
-            for (k = 0; k < numOfVolIndexes; k++) {
-              geoInfo->bType[k].isBofXp = false;
-              geoInfo->bType[k].isBofXm = false;
-              geoInfo->bType[k].isBofYp = false;
-              geoInfo->bType[k].isBofYm = false;
-              geoInfo->bType[k].isBofZp = false;
-              geoInfo->bType[k].isBofZm = false;
-            }
-            geoInfo->isVol = true;
-            ast = const_cast<ASTNode*>(analyticVol->getMath());
-            //cout << "before: " << SBML_formulaToString(ast) << endl;
-            rearrangeAST(ast);
-            //cout << "after: " << SBML_formulaToString(ast) << endl;
-            numOfASTNodes = 0;
-            countAST(ast, numOfASTNodes);
-            geoInfo->rpInfo = new reversePolishInfo();
-            geoInfo->rpInfo->varList = new double*[numOfASTNodes];
-            fill_n(geoInfo->rpInfo->varList, numOfASTNodes, reinterpret_cast<double*>(0));
-            geoInfo->rpInfo->constList = new double*[numOfASTNodes];
-            fill_n(geoInfo->rpInfo->constList, numOfASTNodes, reinterpret_cast<double*>(0));
-            geoInfo->rpInfo->opfuncList = new int[numOfASTNodes];
-            fill_n(geoInfo->rpInfo->opfuncList, numOfASTNodes, 0);
-            geoInfo->rpInfo->listNum = numOfASTNodes;
-            geoInfo->isDomain = new int[numOfVolIndexes];
-            fill_n(geoInfo->isDomain, numOfVolIndexes, 0);
-            geoInfo->isBoundary = new int[numOfVolIndexes];
-            fill_n(geoInfo->isBoundary, numOfVolIndexes, 0);
-            geoInfo->adjacent0 = 0;
-            geoInfo->adjacent1 = 0;
-            parseAST(ast, geoInfo->rpInfo, varInfoList, numOfASTNodes, freeConstList);
-            //judge if the coordinate point is inside the analytic volume
-            fill_n(tmp_isDomain, numOfVolIndexes, 0);
-            reversePolishInitial(volumeIndexList, geoInfo->rpInfo, tmp_isDomain, numOfASTNodes, Xindex, Yindex, Zindex, false);
-            for (k = 0; k < numOfVolIndexes; k++) {
-              index = k;
-              geoInfo->isDomain[k] = (int)tmp_isDomain[k];
-              Z = index / (Xindex * Yindex);
-              Y = (index - Z * Xindex * Yindex) / Xindex;
-              X = index - Z * Xindex * Yindex - Y * Xindex;
-            }
-            geoInfoList.push_back(geoInfo);
-          }
+      ListOfAnalyticVolumes *loav = analyticGeo -> getListOfAnalyticVolumes();
+      unsigned int numOfAnalyticVolume = analyticGeo -> getNumAnalyticVolumes();
+      for (j = 0; j < numOfAnalyticVolume; j++) {
+        AnalyticVolume *analyticVol = loav -> get(j);
+        Compartment *c = 0;
+        //use the first compartment that is mapped to the domaintype
+        for(k = 0; k< numOfCompartments; k++){
+          c  = loc->get(k);
+          cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin(SpatialExtension::getPackageName()));
+          if(analyticVol -> getDomainType() == cPlugin -> getCompartmentMapping() -> getDomainType())
+            break;
         }
+        GeometryInfo *geoInfo = new GeometryInfo;
+        InitializeAVolInfo(geoInfo);
+        geoInfo->compartmentId = c->getId().c_str();
+        geoInfo->domainTypeId = analyticVol -> getDomainType().c_str();
+        geoInfo->domainId = 0;
+        geoInfo->bType = new boundaryType[numOfVolIndexes];
+        for (k = 0; k < numOfVolIndexes; k++) {
+          geoInfo->bType[k].isBofXp = false;
+          geoInfo->bType[k].isBofXm = false;
+          geoInfo->bType[k].isBofYp = false;
+          geoInfo->bType[k].isBofYm = false;
+          geoInfo->bType[k].isBofZp = false;
+          geoInfo->bType[k].isBofZm = false;
+        }
+        geoInfo->isVol = true;
+        ast = const_cast<ASTNode*>(analyticVol->getMath());
+        //cout << "before: " << SBML_formulaToString(ast) << endl;
+        rearrangeAST(ast);
+        //cout << "after: " << SBML_formulaToString(ast) << endl;
+        numOfASTNodes = 0;
+        countAST(ast, numOfASTNodes);
+        geoInfo->rpInfo = new reversePolishInfo();
+        geoInfo->rpInfo->varList = new double*[numOfASTNodes];
+        fill_n(geoInfo->rpInfo->varList, numOfASTNodes, reinterpret_cast<double*>(0));
+        geoInfo->rpInfo->constList = new double*[numOfASTNodes];
+        fill_n(geoInfo->rpInfo->constList, numOfASTNodes, reinterpret_cast<double*>(0));
+        geoInfo->rpInfo->opfuncList = new int[numOfASTNodes];
+        fill_n(geoInfo->rpInfo->opfuncList, numOfASTNodes, 0);
+        geoInfo->rpInfo->listNum = numOfASTNodes;
+        geoInfo->isDomain = new int[numOfVolIndexes];
+        fill_n(geoInfo->isDomain, numOfVolIndexes, 0);
+        geoInfo->isBoundary = new int[numOfVolIndexes];
+        fill_n(geoInfo->isBoundary, numOfVolIndexes, 0);
+        geoInfo->adjacent0 = 0;
+        geoInfo->adjacent1 = 0;
+        parseAST(ast, geoInfo->rpInfo, varInfoList, numOfASTNodes, freeConstList);
+        //judge if the coordinate point is inside the analytic volume
+        fill_n(tmp_isDomain, numOfVolIndexes, 0);
+        reversePolishInitial(volumeIndexList, geoInfo->rpInfo, tmp_isDomain, numOfASTNodes, Xindex, Yindex, Zindex, false);
+        for (k = 0; k < numOfVolIndexes; k++) {
+          index = k;
+          geoInfo->isDomain[k] = (int)tmp_isDomain[k];
+          Z = index / (Xindex * Yindex);
+          Y = (index - Z * Xindex * Yindex) / Xindex;
+          X = index - Z * Xindex * Yindex - Y * Xindex;
+        }
+        geoInfoList.push_back(geoInfo);
       }
+
     } else if (geometry->getGeometryDefinition(i)->isSampledFieldGeometry()) {
       //SampleFieldGeometry
       SampledFieldGeometry *sfGeo	= static_cast<SampledFieldGeometry*>(geometry->getGeometryDefinition(i));
@@ -411,7 +416,6 @@ void spatialSimulator(optionList options)
               for (Y = 0; Y < Yindex; Y += 2) {
                 for (X = 0; X < Xindex; X += 2) {
                   index = Z * Yindex * Xindex + Y * Xindex + X;
-                  //if external == true && internal == true, then external = false;
                   if (geoInfoEx->isDomain[index] == 1 && geoInfoIn->isDomain[index] == 1) {
                     geoInfoEx->isDomain[index] = 0;
                   }
