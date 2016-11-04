@@ -6,7 +6,7 @@ By using this program, users may simulate their spatially extended SBML models.
 
 ##How to Compile##
 ###Dependencies###
-+ [libsbml 5.11.4](http://sbml.org/Software/libSBML "libsbml")
++ [libsbml 5.13.0](http://sbml.org/Software/libSBML "libsbml")
 + [gnuplot](http://www.gnuplot.info/ "gnuplot")
 + [Opencv](http://opencv.org/ "OpenCV")
 
@@ -26,7 +26,7 @@ By using this program, users may simulate their spatially extended SBML models.
     % ./main  -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -c 5 -C 0 -s z30 hoge.xml
 
   | Options | Definitions|
-  |:--------:|:------------|  
+  |:--------:|:------------|
   |-x | x軸方向のメッシュ数|
   |-y | y軸方向のメッシュ数|
   |-z | z軸方向のメッシュ数|

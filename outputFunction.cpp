@@ -158,19 +158,16 @@ void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<c
             variableInfo *sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
             if (sInfo != 0 && sInfo->inVol) {
               ofs_vol << ", " << sInfo->value[index];
-              //cout << sInfo->value[index] << " " << flush;
             }
           }
           ofs_vol << endl;
         }
         if (Y != Yindex - 1) {
           ofs_vol << endl;
-          //cout << endl;
         }
       }
       if (Z != Zindex - 1) {//mashimo
         ofs_vol << endl;
-        //cout << endl;
       }
     }
     if (memFlag) {
@@ -183,7 +180,6 @@ void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<c
             for (i = 0; i < numOfSpecies; i++) {
               variableInfo *sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
               //if(1 == isnan(sInfo->value[index])) {
-              //cout << X << " " << Y << " " << Z << endl;
               //cout << xInfo->value[index] << " " << yInfo->value[index] << " " << zInfo->value[index] << endl;
               //exit(-1);
               //}//mashimo
@@ -494,6 +490,7 @@ void outputTimeCourse_xslice(Model *model, vector<variableInfo*> &varInfoList, v
 }
 
 void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, ListOfSpecies *los, int Xindex, int Yindex, int Zindex, double Xsize, double Ysize, double Zsize, unsigned int dimension, double range_min, double range_max, double *sim_time, int file_num, string fname){
+
   fprintf(gp, "set ticslevel 0\n");
   fprintf(gp, "set size ratio -1\n");
   fprintf(gp, "unset key\n");
@@ -538,8 +535,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
         fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
         fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
       }
-      if (dimension == 2) {//2D
-
+      else if (dimension == 2) {//2D
         fprintf(gp, "set terminal png truecolor size 2560,2560\n");
         fprintf(gp, "set output \"/dev/null\"\n");
         if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
@@ -586,7 +582,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
   }
 }
 
-void createOutputSliceImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *info1, variableInfo *info2, char dim1, char dim2, int index1, int index2, ListOfSpecies *los, unsigned int dimension, double range_min, double range_max, double *sim_time, int file_num, string fname){
+void createOutputSliceImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *info1, variableInfo *info2, char dim1, char dim2, int Xindex, int Yindex, int Zindex, ListOfSpecies *los, unsigned int dimension, double range_min, double range_max, double *sim_time, int file_num, string fname){
   stringstream ss;
   ss << file_num;
   string dir_img = "";
@@ -597,8 +593,12 @@ void createOutputSliceImage(FILE *gp, vector<variableInfo*> &varInfoList, vector
   fprintf(gp, "set size ratio -1\n");
   fprintf(gp, "unset key\n");
   fprintf(gp, "set pm3d map corners2color c1\n");
-  fprintf(gp, "set xrange[%lf:%lf]\n", info1->value[0], info1->value[index1 - 1]);
-  fprintf(gp, "set yrange[%lf:%lf]\n", info2->value[0], info2->value[index2 - 1]);
+  if(dim1 == 'x') fprintf(gp, "set xrange[%lf:%lf]\n", info1->value[0], info1->value[Xindex - 1]);
+  else if(dim1 == 'y') fprintf(gp, "set xrange[%lf:%lf]\n", info1->value[0], info1->value[Yindex * Xindex - 1]);
+  else if(dim1 == 'z') fprintf(gp, "set xrange[%lf:%lf]\n", info1->value[0], info1->value[Zindex * Yindex * Xindex - 1]);
+  if(dim2 == 'x') fprintf(gp,"set yrange[%lf:%lf]\n", info2->value[0], info2->value[Xindex - 1]);
+  else if(dim2 == 'y') fprintf(gp, "set yrange[%lf:%lf]\n", info2->value[0], info2->value[Yindex * Xindex - 1]);
+  else if(dim2 == 'z') fprintf(gp, "set yrange[%lf:%lf]\n", info2->value[0], info2->value[Zindex * Yindex * Xindex - 1]);
   fprintf(gp, "set tics out\n");
   fprintf(gp, "set tics font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
   fprintf(gp, "set xtics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,18\"\n");

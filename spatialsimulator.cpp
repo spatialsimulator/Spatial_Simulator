@@ -37,7 +37,7 @@ extern "C"{
 
 void spatialSimulator(optionList options)
 {
-  SBMLDocument *doc;
+  SBMLDocument *doc = 0;
   if( options.docFlag != 0){
     //doc = readSBMLFromString(options.document);
     options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
@@ -64,8 +64,8 @@ void spatialSimulator(optionList options)
   //sbml core
   Model *model = doc->getModel();
   ASTNode *ast = 0;
-  Species *s;
-  SpeciesReference *sr;
+  Species *s = 0;
+  SpeciesReference *sr = 0;
   ListOfSpecies *los = model->getListOfSpecies();
   ListOfCompartments *loc = model->getListOfCompartments();
   SpatialCompartmentPlugin *cPlugin = 0;
@@ -114,7 +114,6 @@ void spatialSimulator(optionList options)
   char slicedim = options.slicedim;
   bool sliceFlag = (options.sliceFlag != 0);
   bool outputImageFlag = (options.outputFlag != 0);
-
   //div
   if (dimension <= 1) {
     Ydiv = 1;
@@ -1142,7 +1141,10 @@ void spatialSimulator(optionList options)
     delete[] geo_edge;
     cout << "finished" << endl << endl;
 
-    //simulation
+  for(int i = 0; i< Yindex; i++)
+    cout << yInfo -> value[Yindex * Xindex - i - 1] << endl;
+
+  //simulation
     cout << "simulation starts" << endl;
     clock_t diff_start, diff_end, boundary_start, boundary_end, out_start, out_end, re_start, re_end, ad_start, ad_end, assign_start, assign_end, update_start, update_end;
     clock_t re_time = 0, diff_time = 0, output_time = 0, ad_time = 0, update_time = 0, mem_time = 0, boundary_time = 0, assign_time = 0;
@@ -1162,13 +1164,13 @@ void spatialSimulator(optionList options)
           if(outputImageFlag) createOutputImage(gp, varInfoList, memList, xInfo, yInfo, zInfo, model -> getListOfSpecies(), Xindex, Yindex, Zindex, Xsize, Ysize, Zsize, dimension, range_min, range_max, sim_time, file_num, fname);
         } else if (slicedim == 'z') {
           outputTimeCourse_zslice(model, varInfoList, memList, xInfo, yInfo, sim_time, end_time, dt, dimension, Xindex, Yindex, file_num, fname, slice);
-          if(outputImageFlag) createOutputSliceImage(gp, varInfoList, memList, xInfo, yInfo,'x','y', Xindex, Yindex, model -> getListOfSpecies(), dimension, range_min, range_max, sim_time, file_num, fname);
+          if(outputImageFlag) createOutputSliceImage(gp, varInfoList, memList, xInfo, yInfo,'x','y', Xindex, Yindex, Zindex, model -> getListOfSpecies(), dimension, range_min, range_max, sim_time, file_num, fname);
         } else if (slicedim == 'y') {
           outputTimeCourse_yslice(model, varInfoList, memList, xInfo, zInfo, sim_time, end_time, dt, dimension, Xindex, Yindex, Zindex, file_num, fname, slice);
-          if(outputImageFlag) createOutputSliceImage(gp, varInfoList, memList, xInfo, zInfo,'x','z', Xindex, Zindex, model -> getListOfSpecies(), dimension, range_min, range_max, sim_time, file_num, fname);
+          if(outputImageFlag) createOutputSliceImage(gp, varInfoList, memList, xInfo, zInfo,'x','z', Xindex, Yindex, Zindex, model -> getListOfSpecies(), dimension, range_min, range_max, sim_time, file_num, fname);
         } else if (slicedim == 'x') {
           outputTimeCourse_xslice(model, varInfoList, memList, yInfo, zInfo, sim_time, end_time, dt, dimension, Xindex, Yindex, Zindex, file_num, fname, slice);
-          if(outputImageFlag) createOutputSliceImage(gp, varInfoList, memList, yInfo, zInfo,'y','z', Yindex, Zindex, model -> getListOfSpecies(), dimension, range_min, range_max, sim_time, file_num, fname);
+          if(outputImageFlag) createOutputSliceImage(gp, varInfoList, memList, yInfo, zInfo,'y','z', Xindex, Yindex, Zindex, model -> getListOfSpecies(), dimension, range_min, range_max, sim_time, file_num, fname);
         }
         file_num++;
       }
@@ -1364,15 +1366,15 @@ void spatialSimulator(optionList options)
       cout << "update_time: "<< (update_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
       cout << "assign_time: "<< (assign_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
       cout << "output_time: "<< (output_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-      if(gp != NULL) pclose(gp);
+      if(gp != 0) pclose(gp);
 
       //free
       freeVarInfo(varInfoList);
       freeAvolInfo(geoInfoList);
       freeRInfo(rInfoList);
       for (i = 0; i < freeConstList.size(); i++) {
-          delete freeConstList[i];
-          freeConstList[i] = 0;
+        delete freeConstList[i];
+        freeConstList[i] = 0;
       }
       if(options.fname != 0)
         delete options.fname;
@@ -1395,5 +1397,7 @@ void spatialSimulator(optionList options)
     }
 
 #ifdef __cplusplus
+
   }
+
 #endif

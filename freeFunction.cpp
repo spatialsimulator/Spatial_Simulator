@@ -28,15 +28,15 @@ void freeVarInfo(vector<variableInfo*> &varInfoList)
         info->boundaryInfo = 0;
       //rpinfo
       if (info->rpInfo != 0) {
-//        for(int j = 0; j < info->rpInfo->listNum; j++){
-//          if(info -> rpInfo -> constList[j] != 0) {
-//            delete[] info -> rpInfo -> constList[j];
-//            info -> rpInfo -> constList[j] = 0;
+        for(int j = 0; j < info->rpInfo->listNum; j++){
+          if(info -> rpInfo -> constList[j] != 0) {
+            delete[] info -> rpInfo -> constList[j];
+            info -> rpInfo -> constList[j] = 0;
 //          } else if(info -> rpInfo -> deltaList[j] != 0) {
 //            delete[] info -> rpInfo -> deltaList[j];
 //            info -> rpInfo -> deltaList[j] = 0;
-//          }
-//        }
+          }
+        }
         //varList
         delete[] info->rpInfo->varList;
         info->rpInfo->varList = 0;
