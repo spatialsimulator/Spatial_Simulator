@@ -364,11 +364,15 @@ void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
       //cout << "before reaction: " << SBML_formulaToString(ast) << endl;
       //cerr << "num_of_nodes: " << tmp << endl;
       rearrangeAST(ast);
+      char *formula = 0;
       if (rInfo->isMemTransport == false) {
-        cout << "reaction: " << SBML_formulaToString(ast) << endl;
+        formula = SBML_formulaToString(ast);
+        cout << "reaction: " << formula << endl;
       } else {
-        cout << "mem trans: " << SBML_formulaToString(ast) << endl;
+        formula = SBML_formulaToString(ast);
+        cout << "mem trans: " << formula << endl;
       }
+      delete formula;
       numOfASTNodes = 0;
       countAST(ast, numOfASTNodes);
       //cerr << "num_of_nodes: " << numOfASTNodes << endl;
@@ -383,7 +387,6 @@ void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
       fill_n(rInfo->rpInfo->opfuncList, numOfASTNodes, 0);
       rInfo->rpInfo->listNum = numOfASTNodes;
       parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes, freeConstList);
-      //parseAST(ast, rInfo->rpInfo->varList, rInfo->rpInfo->constList, rInfo->rpInfo->opfuncList, varInfoList, numOfASTNodes);
       if (!r->getFast()) {
         rInfoList.push_back(rInfo);
       } else {

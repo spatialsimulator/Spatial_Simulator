@@ -911,7 +911,9 @@ void spatialSimulator(optionList options)
             ast = const_cast<ASTNode*>((static_cast<AssignmentRule*>(model->getRule(info->id)))->getMath());
           }
           parseAST(ast, info->rpInfo, varInfoList, info->rpInfo->listNum, freeConstList);
-          cout << info->id << ": " << SBML_formulaToString(ast) << endl;
+          char *formula = SBML_formulaToString(ast);
+          cout << info->id << ": " << formula << endl;
+          delete formula;
           bool isAllArea = (info->sp != 0)? false: true;
           if (info->sp != 0) info->geoi = searchAvolInfoByCompartment(geoInfoList, info->sp->getCompartment().c_str());
           reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
@@ -1369,9 +1371,11 @@ void spatialSimulator(optionList options)
       freeAvolInfo(geoInfoList);
       freeRInfo(rInfoList);
       for (i = 0; i < freeConstList.size(); i++) {
-        delete freeConstList[i];
-        freeConstList[i] = 0;
+          delete freeConstList[i];
+          freeConstList[i] = 0;
       }
+      if(options.fname != 0)
+        delete options.fname;
       delete sim_time;
       delete[] nuVec;
       delete[] vorI;
