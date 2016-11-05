@@ -39,11 +39,10 @@ void spatialSimulator(optionList options)
 {
   SBMLDocument *doc = 0;
   if( options.docFlag != 0){
-    //doc = readSBMLFromString(options.document);
-    options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
-    doc = readSBML(options.fname);
-  } else {
+    doc = readSBMLFromString(options.document);
     //options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
+    //doc = readSBML(options.fname);
+  } else {
     doc = readSBML(options.fname);
   }
 
@@ -124,7 +123,7 @@ void spatialSimulator(optionList options)
 
   //filename
   string fname(options.fname);
-  fname = fname.substr(static_cast<int>(fname.find_last_of("/")) + 1, static_cast<int>(fname.find_last_of("."))- static_cast<int>(fname.find_last_of("/")) - 1);
+  fname = fname.substr(static_cast<unsigned long>(fname.find_last_of("/")) + 1, static_cast<unsigned long>(fname.find_last_of("."))- static_cast<unsigned long>(fname.find_last_of("/")) - 1);
   cout << fname << endl;
   if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir -p result/" + fname).c_str());
 
@@ -154,20 +153,8 @@ void spatialSimulator(optionList options)
   unsigned int numOfVolIndexes = static_cast<unsigned int>(Xindex * Yindex * Zindex);
 
   //unit
-  unsigned int volDimension = 0, memDimension = 0;
-  for (i = 0; i < numOfCompartments; i++) {
-    Compartment *c = loc->get(i);
-    if (volDimension == 0) {
-      volDimension = c->getSpatialDimensions();
-    } else {
-      if (c->getSpatialDimensions() >= volDimension) {
-        volDimension = c->getSpatialDimensions();
-      } else {
-        memDimension = c->getSpatialDimensions();
-      }
-    }
-  }
-
+  unsigned int volDimension = geometry -> getListOfCoordinateComponents() -> size();
+  unsigned int memDimension = volDimension - 1;
   //set id and value
   //compartment
   setCompartmentInfo(model, varInfoList);
@@ -1141,9 +1128,6 @@ void spatialSimulator(optionList options)
     delete[] geo_edge;
     cout << "finished" << endl << endl;
 
-  for(int i = 0; i< Yindex; i++)
-    cout << yInfo -> value[Yindex * Xindex - i - 1] << endl;
-
   //simulation
     cout << "simulation starts" << endl;
     clock_t diff_start, diff_end, boundary_start, boundary_end, out_start, out_end, re_start, re_end, ad_start, ad_end, assign_start, assign_end, update_start, update_end;
@@ -1397,7 +1381,5 @@ void spatialSimulator(optionList options)
     }
 
 #ifdef __cplusplus
-
   }
-
 #endif

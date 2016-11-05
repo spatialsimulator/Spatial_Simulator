@@ -14,7 +14,6 @@ void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<c
 {
   int X = 0, Y = 0, Z = 0, index = 0;
   unsigned int i;
-  string dir_txt = "", dir_img = "";
   unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
   ListOfSpecies *los = model->getListOfSpecies();
   stringstream ss;
@@ -26,10 +25,9 @@ void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<c
       memFlag = true;
     }
   }
-  dir_txt = "./result/" + fname + "/txt";
-  string filename_vol = "", filename_mem = "";
-  filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
-  filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
+  string dir_txt = "./result/" + fname + "/txt";
+  string filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
+  string filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
   ofstream ofs_vol, ofs_mem;
   ofs_vol.open(filename_vol.c_str());
   ofs_vol << "# results of " << fname << ".xml simulation" << endl;
@@ -208,9 +206,8 @@ void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<c
 void outputTimeCourse_zslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, double *sim_time, double end_time, double dt, unsigned int dimension, int Xindex, int Yindex, int file_num, string fname, int zslice)
 {
   dimension = 2;
-  int X = 0, Y = 0, index = 0, tmp_u;
-  unsigned int i, j;
-  string dir_txt = "", dir_img = "";
+  int X = 0, Y = 0, index = 0;
+  unsigned int i;
   unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
   ListOfSpecies *los = model->getListOfSpecies();
   stringstream ss;
@@ -222,10 +219,9 @@ void outputTimeCourse_zslice(Model *model, vector<variableInfo*> &varInfoList, v
       memFlag = true;
     }
   }
-  dir_txt = "./result/" + fname + "/txt";
-  string filename_vol = "", filename_mem = "";
-  filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
-  filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
+  string dir_txt = "./result/" + fname + "/txt";
+  string filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
+  string filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
   ofstream ofs_vol, ofs_mem;
   ofs_vol.open(filename_vol.c_str());
   ofs_vol << "# results of " << fname << ".xml simulation" << endl;
@@ -306,9 +302,8 @@ void outputTimeCourse_zslice(Model *model, vector<variableInfo*> &varInfoList, v
 void outputTimeCourse_yslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, unsigned int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname, int yslice)
 {
   dimension = 2;
-  int X = 0, Z = 0, index = 0, tmp_u;
-  unsigned int i, j;
-  string dir_txt = "", dir_img = "";
+  int X = 0, Z = 0, index = 0;
+  unsigned int i;
   unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
   ListOfSpecies *los = model->getListOfSpecies();
   stringstream ss;
@@ -320,10 +315,9 @@ void outputTimeCourse_yslice(Model *model, vector<variableInfo*> &varInfoList, v
       memFlag = true;
     }
   }
-  dir_txt = "./result/" + fname + "/txt";
-  string filename_vol = "", filename_mem = "";
-  filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
-  filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
+  string dir_txt = "./result/" + fname + "/txt";
+  string filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
+  string filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
   ofstream ofs_vol, ofs_mem;
   ofs_vol.open(filename_vol.c_str());
   ofs_vol << "# results of " << fname << ".xml simulation" << endl;
@@ -399,9 +393,8 @@ void outputTimeCourse_yslice(Model *model, vector<variableInfo*> &varInfoList, v
 void outputTimeCourse_xslice(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, unsigned int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname, int xslice)
 {
   dimension = 2;
-  int Y = 0, Z = 0, index = 0, tmp_u;
-  unsigned int i, j;
-  string dir_txt = "", dir_img = "";
+  int Y = 0, Z = 0, index = 0;
+  unsigned int i;
   unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
   ListOfSpecies *los = model->getListOfSpecies();
   stringstream ss;
@@ -413,10 +406,9 @@ void outputTimeCourse_xslice(Model *model, vector<variableInfo*> &varInfoList, v
       memFlag = true;
     }
   }
-  dir_txt = "./result/" + fname + "/txt";
-  string filename_vol = "", filename_mem = "";
-  filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
-  filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
+  string dir_txt = "./result/" + fname + "/txt";
+  string filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
+  string filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
   ofstream ofs_vol, ofs_mem;
   ofs_vol.open(filename_vol.c_str());
   ofs_vol << "# results of " << fname << ".xml simulation" << endl;
@@ -518,7 +510,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
   string filename_vol =  dir_txt + "/volume/" + ss.str() + ".csv";
   string filename_mem =  dir_txt + "/membrane/" + ss.str() + ".csv";
 
-  int vol_count = 0, mem_count = 0, tmp_u;
+  int vol_count = 0, mem_count = 0, tmp_u = 0;
   unsigned int numOfSpecies = los -> size();
   for (unsigned int i = 0; i < numOfSpecies; i++) {
     Species *s = los->get(i);
@@ -533,13 +525,13 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
       }
       if (dimension == 1) {
         fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-        fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
+        fprintf(gp, "splot \"%s\" u 1:2:%u with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
       }
       else if (dimension == 2) {//2D
         fprintf(gp, "set terminal png truecolor size 2560,2560\n");
         fprintf(gp, "set output \"/dev/null\"\n");
-        if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
-        else fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
+        if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%u with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
+        else fprintf(gp, "splot \"%s\" u 1:2:%u with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
         if (sInfo->inVol) {//replot all membrane
           fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
           fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:3:(255):(255):(255):(($3 > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str());
@@ -575,7 +567,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
           fprintf(gp, "set mztics\n");
           fprintf(gp, "set terminal png truecolor size 640,640\n");
           fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
-          fprintf(gp, "splot \"%s\" u 1:2:3:%d with points palette\n", filename_vol.c_str(), dimension + vol_count);
+          fprintf(gp, "splot \"%s\" u 1:2:3:%u with points palette\n", filename_vol.c_str(), dimension + vol_count);
         }
       }
     }
