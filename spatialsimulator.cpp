@@ -91,7 +91,6 @@ void spatialSimulator(optionList options)
 	memList.reserve(numOfCompartments);
 	unsigned int dimension = geometry->getNumCoordinateComponents();
 
-	vector<double*> freeConstList;
 	vector<string> spIdList = vector<string>();
 	spIdList.reserve(numOfSpecies);
 	for (i = 0; i < numOfSpecies; i++) {
@@ -238,7 +237,7 @@ void spatialSimulator(optionList options)
 				fill_n(geoInfo->isBoundary, numOfVolIndexes, 0);
 				geoInfo->adjacent0 = 0;
 				geoInfo->adjacent1 = 0;
-				parseAST(ast, geoInfo->rpInfo, varInfoList, numOfASTNodes, freeConstList);
+				parseAST(ast, geoInfo->rpInfo, varInfoList, numOfASTNodes);
 				//judge if the coordinate point is inside the analytic volume
 				fill_n(tmp_isDomain, numOfVolIndexes, 0);
 				reversePolishInitial(volumeIndexList, geoInfo->rpInfo, tmp_isDomain, numOfASTNodes, Xindex, Yindex, Zindex, false);
@@ -896,7 +895,7 @@ void spatialSimulator(optionList options)
 				} else if (model->getRule(info->id) != 0 && model->getRule(info->id)->isAssignment()) {//assignment rule
 					ast = const_cast<ASTNode*>((static_cast<AssignmentRule*>(model->getRule(info->id)))->getMath());
 				}
-				parseAST(ast, info->rpInfo, varInfoList, info->rpInfo->listNum, freeConstList);
+				parseAST(ast, info->rpInfo, varInfoList, info->rpInfo->listNum);
 				char *formula = SBML_formulaToString(ast);
 				cout << info->id << ": " << formula << endl;
 				delete formula;
@@ -960,9 +959,9 @@ void spatialSimulator(optionList options)
 	}
 
 	//reaction information
-	setReactionInfo(model, varInfoList, rInfoList, fast_rInfoList, freeConstList, numOfVolIndexes);
+	setReactionInfo(model, varInfoList, rInfoList, fast_rInfoList,numOfVolIndexes);
 	//rate rule information
-	setRateRuleInfo(model, varInfoList, rInfoList, freeConstList, numOfVolIndexes);
+	setRateRuleInfo(model, varInfoList, rInfoList, numOfVolIndexes);
 	//output geometries
 	cout << endl << "outputting geometries into text file... " << endl;
 	int *geo_edge = new int[numOfVolIndexes];
@@ -1356,10 +1355,6 @@ void spatialSimulator(optionList options)
 	freeVarInfo(varInfoList);
 	freeAvolInfo(geoInfoList);
 	freeRInfo(rInfoList);
-	for (i = 0; i < freeConstList.size(); i++) {
-		delete freeConstList[i];
-		freeConstList[i] = 0;
-	}
 	if(options.fname != 0)
 		delete options.fname;
 	delete sim_time;

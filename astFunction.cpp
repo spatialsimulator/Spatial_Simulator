@@ -7,12 +7,12 @@
 using namespace std;
 using namespace libsbml;
 
-void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &varInfoList, int index_max, vector<double*> &freeConstList)
+void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &varInfoList, int index_max)
 {
 	static int index = 0;
 	unsigned int i;
 	for (i = 0; i < ast->getNumChildren(); i++) {
-		parseAST(ast->getChild(i), rpInfo, varInfoList, index_max, freeConstList);
+		parseAST(ast->getChild(i), rpInfo, varInfoList, index_max);
 	}
 	if (ast->isFunction() || ast->isOperator() || ast->isRelational() || ast->isLogical()) {
 		//ast is function, operator, relational or logical
@@ -25,13 +25,11 @@ void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &va
 		rpInfo->constList[index] = new double(ast->getReal());
 		rpInfo->opfuncList[index] = 0;
 		if (rpInfo->deltaList != 0) rpInfo->deltaList[index] = 0;
-		freeConstList.push_back(rpInfo->constList[index]);
 	} else if (ast->isInteger()) {//ast is integer
 		rpInfo->varList[index] = 0;
 		rpInfo->constList[index] = new double(ast->getInteger());
 		rpInfo->opfuncList[index] = 0;
 		if (rpInfo->deltaList != 0) rpInfo->deltaList[index] = 0;
-		freeConstList.push_back(rpInfo->constList[index]);
 	} else if (ast->isConstant()) {//ast is constant
 		ASTNodeType_t type = ast->getType();
 		if (type == AST_CONSTANT_E) {
@@ -39,25 +37,21 @@ void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &va
 			rpInfo->constList[index] = new double(M_E);
 			rpInfo->opfuncList[index] = 0;
 			if (rpInfo->deltaList != 0) rpInfo->deltaList[index] = 0;
-			freeConstList.push_back(rpInfo->constList[index]);
 		} else if (type == AST_CONSTANT_PI) {
 			rpInfo->varList[index] = 0;
 			rpInfo->constList[index] = new double(M_PI);
 			rpInfo->opfuncList[index] = 0;
 			if (rpInfo->deltaList != 0) rpInfo->deltaList[index] = 0;
-			freeConstList.push_back(rpInfo->constList[index]);
 		}  else if (type == AST_CONSTANT_FALSE) {
 			rpInfo->varList[index] = 0;
 			rpInfo->constList[index] = new double(0.0);
 			rpInfo->opfuncList[index] = 0;
 			if (rpInfo->deltaList != 0) rpInfo->deltaList[index] = 0;
-			freeConstList.push_back(rpInfo->constList[index]);
 		}  else if (type == AST_CONSTANT_TRUE) {
 			rpInfo->varList[index] = 0;
 			rpInfo->constList[index] = new double(1.0);
 			rpInfo->opfuncList[index] = 0;
 			if (rpInfo->deltaList != 0) rpInfo->deltaList[index] = 0;
-			freeConstList.push_back(rpInfo->constList[index]);
 		}
 	}
 	else if (ast->isName()) {
@@ -82,7 +76,6 @@ void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &va
 			rpInfo->constList[index] = new double(6.0221367e+23);
 			rpInfo->opfuncList[index] = 0;
 			if (rpInfo->deltaList != 0) rpInfo->deltaList[index] = 0;
-			freeConstList.push_back(rpInfo->constList[index]);
 		} else if (type == AST_NAME_TIME) {
 			variableInfo *info = searchInfoById(varInfoList, "t");
 			if (info != 0) {

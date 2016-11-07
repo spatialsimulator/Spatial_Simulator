@@ -294,7 +294,7 @@ void setParameterInfo(Model *model, vector<variableInfo*> &varInfoList, int Xdiv
 	}
 }
 
-void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<reactionInfo*> &fast_rInfoList, vector<double*> freeConstList, unsigned int numOfVolIndexes)
+void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<reactionInfo*> &fast_rInfoList, unsigned int numOfVolIndexes)
 {
 	ListOfReactions *lor = model->getListOfReactions();
 	unsigned int numOfReactions = static_cast<unsigned int>(model->getNumReactions());
@@ -386,7 +386,7 @@ end:
 			rInfo->rpInfo->opfuncList = new int[numOfASTNodes];
 			fill_n(rInfo->rpInfo->opfuncList, numOfASTNodes, 0);
 			rInfo->rpInfo->listNum = numOfASTNodes;
-			parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes, freeConstList);
+			parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes);
 			if (!r->getFast()) {
 				rInfoList.push_back(rInfo);
 			} else {
@@ -396,7 +396,7 @@ end:
 	}
 }
 
-void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<double*> freeConstList, unsigned int numOfVolIndexes)
+void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, unsigned int numOfVolIndexes)
 {
 	unsigned int numOfRules = static_cast<unsigned int>(model->getNumRules());
 	unsigned int i;
@@ -425,7 +425,7 @@ void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
 			rInfo->rpInfo->opfuncList = new int[numOfASTNodes];
 			fill_n(rInfo->rpInfo->opfuncList, numOfASTNodes, 0);
 			rInfo->rpInfo->listNum = numOfASTNodes;
-			parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes, freeConstList);
+			parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes);
 			rInfo->spRefList.push_back(searchInfoById(varInfoList, rrule->getVariable().c_str()));
 			rInfo->srStoichiometry.push_back(1.0);
 			s = model->getSpecies(rrule->getVariable());

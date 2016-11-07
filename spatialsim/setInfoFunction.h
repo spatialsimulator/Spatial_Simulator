@@ -11,9 +11,9 @@ void setSpeciesInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoLi
 
 void setParameterInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis);
 
-void setReactionInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, std::vector<reactionInfo*> &rInfoList, std::vector<reactionInfo*> &fast_rInfoList, std::vector<double*> freeConstList, unsigned int numOfVolIndexes);
+void setReactionInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, std::vector<reactionInfo*> &rInfoList, std::vector<reactionInfo*> &fast_rInfoList, unsigned int numOfVolIndexes);
 
-void setRateRuleInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, std::vector<reactionInfo*> &rInfoList, std::vector<double*> freeConstList, unsigned int numOfVolIndexes);
+void setRateRuleInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, std::vector<reactionInfo*> &rInfoList, unsigned int numOfVolIndexes);
 
 normalUnitVector* setNormalAngle(std::vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, unsigned int numOfVolIndexes);
 

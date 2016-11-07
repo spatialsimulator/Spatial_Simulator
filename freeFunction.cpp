@@ -70,12 +70,12 @@ void freeAvolInfo(vector<GeometryInfo*> &geoInfoList)
 	for (size_t i = 0; i < geoInfoList.size(); i++) {
 		GeometryInfo *geoInfo = geoInfoList[i];
 		if (geoInfo->rpInfo != 0) {
-			//     for(int j = 0; j < geoInfo->rpInfo->listNum; j++){
-			//       if(geoInfo -> rpInfo -> constList[j] != 0) {
-			//         delete[] geoInfo -> rpInfo -> constList[j];
-			//         geoInfo -> rpInfo -> constList[j] = 0;
-			//       }
-			//     }
+			for(int j = 0; j < geoInfo->rpInfo->listNum; j++) {
+				if(geoInfo->rpInfo->constList[j] != 0) {
+					delete[] geoInfo->rpInfo->constList[j];
+					geoInfo->rpInfo->constList[j] = 0;
+				}
+			}
 			//varList
 			delete[] geoInfo->rpInfo->varList;
 			geoInfo->rpInfo->varList = 0;
@@ -115,15 +115,15 @@ void freeRInfo(vector<reactionInfo*> &rInfoList)
 		delete[] rInfo->value;
 		rInfo->value = 0;
 		if (rInfo->rpInfo != 0) {
-			//    for(int j = 0; j < rInfo->rpInfo->listNum; j++){
-			//      if(rInfo -> rpInfo -> constList[j] != 0) {
-			//        delete[] rInfo -> rpInfo -> constList[j];
-			//        rInfo -> rpInfo -> constList[j] = 0;
-			//      } else if(rInfo -> rpInfo -> deltaList[j] != 0) {
-			//        delete[] rInfo -> rpInfo -> deltaList[j];
-			//        rInfo -> rpInfo -> deltaList[j] = 0;
-			//      }
-			//    }
+			for(int j = 0; j < rInfo->rpInfo->listNum; j++) {
+				if(rInfo->rpInfo->constList[j] != 0) {
+					delete[] rInfo->rpInfo->constList[j];
+					rInfo->rpInfo->constList[j] = 0;
+					//      } else if(rInfo -> rpInfo -> deltaList[j] != 0) {
+					//        delete[] rInfo -> rpInfo -> deltaList[j];
+					//        rInfo -> rpInfo -> deltaList[j] = 0;
+				}
+			}
 			//varList
 			delete[] rInfo->rpInfo->varList;
 			rInfo->rpInfo->varList = 0;

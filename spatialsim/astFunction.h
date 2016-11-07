@@ -6,8 +6,11 @@
 #include <vector>
 
 void rearrangeAST(libsbml::ASTNode *ast);
+
 void countAST(libsbml::ASTNode *ast, int &numOfASTNode);
-void parseAST(libsbml::ASTNode *ast, reversePolishInfo *rpInfo, std::vector<variableInfo*> &varInfoList, int index_max, std::vector<double*> &freeConstList);
+
+void parseAST(libsbml::ASTNode *ast, reversePolishInfo *rpInfo, std::vector<variableInfo*> &varInfoList, int index_max);
+
 void parseDependence(const libsbml::ASTNode *ast, std::vector<variableInfo*> &dependence, std::vector<variableInfo*> &varInfoList);
 
 #endif
