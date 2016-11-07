@@ -1,338 +1,323 @@
+#include "spatialsim/setInfoFunction.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/initializeFunction.h"
+#include "spatialsim/searchFunction.h"
+#include "spatialsim/astFunction.h"
 #include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
 #include <vector>
 #include <iostream>
-#include <sstream>
-#include <fstream>
-#include "mystruct.h"
-#include "initializeFunction.h"
-#include "searchFunction.h"
-#include "astFunction.h"
 
-void stepSearch(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane);
-void stepSearch_no_recursive(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane);
-void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane);
+using namespace std;
+using namespace libsbml;
 
-void setCompartmentInfo(Model *model, vector<variableInfo*> &varInfoList)
+void setCompartmentInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList)
 {
-  ListOfCompartments *loc = model->getListOfCompartments();
-  unsigned int numOfCompartments = static_cast<unsigned int>(model->getNumCompartments());
-  unsigned int i;
-  for (i = 0; i < numOfCompartments; i++) {
-    Compartment *c = loc->get(i);
-    variableInfo *info = new variableInfo;
-    InitializeVarInfo(info);
-    varInfoList.push_back(info);
-    info->com = c;
-    info->id = c->getId().c_str();
-    if (model->getRule(info->id) == 0) {
-      info->isResolved = true;
-      info->isUniform = true;
-      info->value = (c->isSetSize())? new double(c->getSize()): new double(1.0);
-      //cout << info->id << " " << *(info->value) << endl;
-    }
-  }
+	ListOfCompartments *loc = model->getListOfCompartments();
+	unsigned int numOfCompartments = static_cast<unsigned int>(model->getNumCompartments());
+	unsigned int i;
+	for (i = 0; i < numOfCompartments; i++) {
+		Compartment *c = loc->get(i);
+		variableInfo *info = new variableInfo;
+		InitializeVarInfo(info);
+		varInfoList.push_back(info);
+		info->com = c;
+		info->id = c->getId().c_str();
+		if (model->getRule(info->id) == 0) {
+			info->isResolved = true;
+			info->isUniform = true;
+			info->value = (c->isSetSize()) ? new double(c->getSize()) : new double(1.0);
+		}
+	}
 }
 
-void setSpeciesInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
+void setSpeciesInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
 {
-  Model *model = doc->getModel();
-  XMLNamespaces *xns = doc->getNamespaces();
-  string spatialPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/spatial/version1");
-  string reqPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/req/version1");
-  ListOfSpecies *los = model->getListOfSpecies();
-  unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
-  unsigned int i;
-  int X, Y, Z;
-  int numOfVolIndexes = Xindex * Yindex * Zindex;
-  for (i = 0; i < numOfSpecies; i++) {
-    Species *s = los->get(i);
-    ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(reqPrefix));
-    SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(spatialPrefix));
-    //species have spatial extension
-    if (splugin->getIsSpatial()) {
-      variableInfo *info = new variableInfo;
-      InitializeVarInfo(info);
-      varInfoList.push_back(info);
-      info->sp = s;
-      info->com = model->getCompartment(s->getCompartment());
-      info->id = s->getId().c_str();
-      if (info->com->getSpatialDimensions()== volDimension) {
-        info->inVol = true;
-      } else if (info->com->getSpatialDimensions()== memDimension) {
-        info->inVol = false;
-      }
-      //species value is specified by initial amount, initial value, rule or initial assignment
-      //species is spatially defined
+	ListOfSpecies *los = model->getListOfSpecies();
+	unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
+	unsigned int i;
+	int X, Y, Z;
+	unsigned int numOfVolIndexes = Xindex * Yindex * Zindex;
+	for (i = 0; i < numOfSpecies; i++) {
+		Species *s = los->get(i);
+		//ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(ReqExtension::getPackageName());
+		SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(SpatialExtension::getPackageName()));
+		//species have spatial extension
+		if (splugin->getIsSpatial()) {
+			variableInfo *info = new variableInfo;
+			InitializeVarInfo(info);
+			varInfoList.push_back(info);
+			info->sp = s;
+			info->com = model->getCompartment(s->getCompartment());
+			info->id = s->getId().c_str();
+			if (info->com->getSpatialDimensions()== volDimension) {
+				info->inVol = true;
+			} else if (info->com->getSpatialDimensions()== memDimension) {
+				info->inVol = false;
+			}
+			//species value is specified by initial amount, initial value, rule or initial assignment
+			//species is spatially defined
 
-      //ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
-      //if (cm -> getViableWithoutChange()) {
-        if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
-          info->value = new double[numOfVolIndexes];
-          fill_n(info->value, numOfVolIndexes, 0);
-          //if (!s->isSetConstant() || !s->getConstant()) {
-            info->delta = new double[4 * numOfVolIndexes];
-            fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
-            //}
-          if (s->isSetInitialAmount()) {//Initial Amount
-            info->isResolved = true;
-            for (Z = 0; Z < Zindex; Z++) {
-              for (Y = 0; Y < Yindex; Y++) {
-                for (X = 0; X < Xindex; X++) {
-                  info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
-                }
-              }
-            }
-          } else if (s->isSetInitialConcentration()) {//Initial Concentration
-            for (Z = 0; Z < Zindex; Z++) {
-              for (Y = 0; Y < Yindex; Y++) {
-                for (X = 0; X < Xindex; X++) {
-                  info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
-                }
-              }
-            }
-          }
-          info->isResolved = true; //mashimo 2016/1/23
-        }
-     // }
-    }
-  }
+			//ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
+
+			//if (cm -> getViableWithoutChange()) {
+			if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
+				info->value = new double[numOfVolIndexes];
+				fill_n(info->value, numOfVolIndexes, 0);
+				//if (!s->isSetConstant() || !s->getConstant()) {
+				info->delta = new double[4 * numOfVolIndexes];
+				fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
+				//}
+				if (s->isSetInitialAmount()) {//Initial Amount
+					info->isResolved = true;
+					for (Z = 0; Z < Zindex; Z++) {
+						for (Y = 0; Y < Yindex; Y++) {
+							for (X = 0; X < Xindex; X++) {
+								info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
+							}
+						}
+					}
+				} else if (s->isSetInitialConcentration()) {//Initial Concentration
+					for (Z = 0; Z < Zindex; Z++) {
+						for (Y = 0; Y < Yindex; Y++) {
+							for (X = 0; X < Xindex; X++) {
+								info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
+							}
+						}
+					}
+				}
+				// }
+			}
+    info -> isResolved = true;
+		}
+	}
 }
 
-void setParameterInfo(SBMLDocument *doc, vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
+void setParameterInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
 {
-  Model *model = doc->getModel();
-  XMLNamespaces *xns = doc->getNamespaces();
-  string spatialPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/spatial/version1");
-  string reqPrefix = xns->getPrefix("http://www.sbml.org/sbml/level3/version1/req/version1");
-  SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(spatialPrefix));
-  Geometry *geometry = spPlugin->getGeometry();
-  ListOfParameters *lop = model->getListOfParameters();
-  unsigned int numOfParameters = static_cast<unsigned int>(model->getNumParameters());
-  unsigned int i;
-  int X, Y, Z;
-  int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
-  int numOfVolIndexes = Xindex * Yindex * Zindex;
-  string XmaxId = "", XminId = "", YmaxId = "", YminId = "", ZmaxId = "", ZminId = "";
+	SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(SpatialExtension::getPackageName()));
+	Geometry *geometry = spPlugin->getGeometry();
+	ListOfParameters *lop = model->getListOfParameters();
+	unsigned int numOfParameters = static_cast<unsigned int>(model->getNumParameters());
+	unsigned int i;
+	int X, Y, Z;
+	int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
+	int numOfVolIndexes = Xindex * Yindex * Zindex;
+	string XmaxId = "", XminId = "", YmaxId = "", YminId = "", ZmaxId = "", ZminId = "";
 
-  //id of coordinate boundary
-  //cc = geometry->getCoordinateComponent(p->getId());
-  for (i = 0; i < geometry->getNumCoordinateComponents(); i++) {
-    CoordinateComponent *cc = geometry->getCoordinateComponent(i);
-    if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
-      XmaxId = cc->getBoundaryMax()->getId();
-      XminId = cc->getBoundaryMin()->getId();
-    }
-    if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
-      YmaxId = cc->getBoundaryMax()->getId();
-      YminId = cc->getBoundaryMin()->getId();
-    }
-    if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
-      ZmaxId = cc->getBoundaryMax()->getId();
-      ZminId = cc->getBoundaryMin()->getId();
-    }
-  }
-  for (i = 0; i < numOfParameters; i++) {
-    Parameter *p = lop->get(i);
-    SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin(spatialPrefix));
-    //ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(p->getPlugin(reqPrefix));//unused variable
-    variableInfo *info = new variableInfo;
-    BoundaryCondition *bcon;
-    CoordinateComponent *cc;
-    variableInfo *sInfo;
-    InitializeVarInfo(info);
-    varInfoList.push_back(info);
-    info->para = p;
-    info->id = p->getId().c_str();
-    if (!pPlugin->isSpatialParameter()) {//normal parameters
-      if (model->getRule(info->id) == 0 && p->isSetValue()) {
-        info->isResolved = true;
-        info->isUniform = true;
-        info->value = new double(p->getValue());
-      }
-    } else {//spatial parameter plugin
-      switch (pPlugin->getType()) {
-      case SBML_SPATIAL_DIFFUSIONCOEFFICIENT://diffusion coefficient
-      {
-        sInfo = searchInfoById(varInfoList, pPlugin->getDiffusionCoefficient()->getVariable().c_str());
-        if (sInfo->diffCInfo == 0) {
-          sInfo->diffCInfo = new variableInfo*[3];
-          fill_n(sInfo->diffCInfo, 3, reinterpret_cast<variableInfo*>(0));
-        }
+	//id of coordinate boundary
+	//cc = geometry->getCoordinateComponent(p->getId());
+	for (i = 0; i < geometry->getNumCoordinateComponents(); i++) {
+		CoordinateComponent *cc = geometry->getCoordinateComponent(i);
+		if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
+			XmaxId = cc->getBoundaryMax()->getId();
+			XminId = cc->getBoundaryMin()->getId();
+		}
+		if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
+			YmaxId = cc->getBoundaryMax()->getId();
+			YminId = cc->getBoundaryMin()->getId();
+		}
+		if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
+			ZmaxId = cc->getBoundaryMax()->getId();
+			ZminId = cc->getBoundaryMin()->getId();
+		}
+	}
+	for (i = 0; i < numOfParameters; i++) {
+		Parameter *p = lop->get(i);
+		SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin(SpatialExtension::getPackageName()));
+		variableInfo *info = new variableInfo;
+		BoundaryCondition *bcon;
+		CoordinateComponent *cc;
+		variableInfo *sInfo;
+		InitializeVarInfo(info);
+		varInfoList.push_back(info);
+		info->para = p;
+		info->id = p->getId().c_str();
+		if (!pPlugin->isSpatialParameter()) {//normal parameters
+			if (model->getRule(info->id) == 0 && p->isSetValue()) {
+				info->isResolved = true;
+				info->isUniform = true;
+				info->value = new double(p->getValue());
+			}
+		} else {//spatial parameter plugin
+			switch (pPlugin->getType()) {
+			case SBML_SPATIAL_DIFFUSIONCOEFFICIENT://diffusion coefficient
+			{
+				sInfo = searchInfoById(varInfoList, pPlugin->getDiffusionCoefficient()->getVariable().c_str());
+				if (sInfo->diffCInfo == 0) {
+					sInfo->diffCInfo = new variableInfo*[3];
+					fill_n(sInfo->diffCInfo, 3, reinterpret_cast<variableInfo*>(0));
+				}
 
-        DiffusionCoefficient* dc = pPlugin -> getDiffusionCoefficient();
-        switch (dc -> getType()){
-        case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
-          sInfo->diffCInfo[0] = info;
-          sInfo->diffCInfo[1] = info;
-          if(Zindex > 1)sInfo->diffCInfo[2] = info;
-          break;
+				DiffusionCoefficient* dc = pPlugin->getDiffusionCoefficient();
+				switch (dc->getType()) {
+				case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
+					sInfo->diffCInfo[0] = info;
+					sInfo->diffCInfo[1] = info;
+					if(Zindex > 1) sInfo->diffCInfo[2] = info;
+					break;
 
-        case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
-          sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
-          break;
+				case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
+					sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
+					break;
 
-        case SPATIAL_DIFFUSIONKIND_TENSOR:
-          sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
-          sInfo->diffCInfo[dc->getCoordinateReference2()] = info;
-          break;
+				case SPATIAL_DIFFUSIONKIND_TENSOR:
+					sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
+					sInfo->diffCInfo[dc->getCoordinateReference2()] = info;
+					break;
 
-        case DIFFUSIONKIND_UNKNOWN:
-          cerr << "warning: Diffusion_Kind == Unknown" << endl;
-          break;
-        }
+				case DIFFUSIONKIND_UNKNOWN:
+					cerr << "warning: Diffusion_Kind == Unknown" << endl;
+					break;
+				}
 
-        if (model->getRule(info->id) == 0 && p->isSetValue()) {
-          info->isResolved = true;
-          info->isUniform = true;
-          switch (dc -> getType()){
-          case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
-            sInfo->diffCInfo[0]  -> value = new double(p->getValue());
-            sInfo->diffCInfo[1]  -> value = new double(p->getValue());
-            if(Zindex > 1)   sInfo->diffCInfo[2]  -> value = new double(p->getValue());
-            break;
+				if (model->getRule(info->id) == 0 && p->isSetValue()) {
+					info->isResolved = true;
+					info->isUniform = true;
+					switch (dc->getType()) {
+					case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
+						sInfo->diffCInfo[0]->value = new double(p->getValue());
+						sInfo->diffCInfo[1]->value = new double(p->getValue());
+						if(Zindex  < 1)   sInfo->diffCInfo[2]->value = new double(p->getValue());
+						break;
+					case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
+						sInfo->diffCInfo[dc->getCoordinateReference1()]->value = new double(p->getValue());
+						break;
 
-          case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
-            sInfo->diffCInfo[dc->getCoordinateReference1()]  -> value = new double(p->getValue());
-            break;
+					case SPATIAL_DIFFUSIONKIND_TENSOR:
+						sInfo->diffCInfo[dc->getCoordinateReference1()]->value = new double(p->getValue());
+						sInfo->diffCInfo[dc->getCoordinateReference2()]->value = new double(p->getValue());
+						break;
 
-          case SPATIAL_DIFFUSIONKIND_TENSOR:
-            sInfo->diffCInfo[dc->getCoordinateReference1()]  -> value = new double(p->getValue());
-            sInfo->diffCInfo[dc->getCoordinateReference2()]  -> value = new double(p->getValue());
-            break;
-
-          case DIFFUSIONKIND_UNKNOWN:
-            cerr << "warning: Diffusion_Kind == Unknown" << endl;
-            break;
-          }
-        }
-      }
-      break;
-      case SBML_SPATIAL_ADVECTIONCOEFFICIENT://advection coefficient
-        sInfo = searchInfoById(varInfoList, pPlugin->getAdvectionCoefficient()->getVariable().c_str());
-        if (sInfo->adCInfo == 0) {
-          sInfo->adCInfo = new variableInfo*[3];
-          fill_n(sInfo->adCInfo, 3, reinterpret_cast<variableInfo*>(0));
-        }
-        sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate() - 1] = info;
-        if (model->getRule(info->id) == 0 && p->isSetValue()) {
-          info->isResolved = true;
-          info->isUniform = true;
-          sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate() - 1]->value = new double(p->getValue());
-        }
-        break;
-      case SBML_SPATIAL_BOUNDARYCONDITION://boundary condition
-      {
-        sInfo = searchInfoById(varInfoList, pPlugin->getBoundaryCondition()->getVariable().c_str());
-        bcon = pPlugin->getBoundaryCondition();
-        if (sInfo->boundaryInfo == 0) {
-          sInfo->boundaryInfo = new variableInfo*[6];
-          fill_n(sInfo->boundaryInfo, 6, reinterpret_cast<variableInfo*>(0));
-        }
-        if (sInfo != 0 &&bcon != 0) {
-          int boundaryIndex = -1;
-          if (bcon->getCoordinateBoundary() == XmaxId) boundaryIndex = Xmax;
-          if (bcon->getCoordinateBoundary() == XminId) boundaryIndex = Xmin;
-          if (bcon->getCoordinateBoundary() == YmaxId) boundaryIndex = Ymax;
-          if (bcon->getCoordinateBoundary() == YminId) boundaryIndex = Ymin;
-          if (bcon->getCoordinateBoundary() == ZmaxId) boundaryIndex = Zmax;
-          if (bcon->getCoordinateBoundary() == ZminId) boundaryIndex = Zmin;
-          if (boundaryIndex != -1) {
-            sInfo->boundaryInfo[boundaryIndex] = info;
-            if (model->getRule(info->id) == 0 && p->isSetValue()) {
-              info->isResolved = true;
-              info->isUniform = true;
-              sInfo->boundaryInfo[boundaryIndex]->value = new double(p->getValue());
-            }
-          }
-        }
-      }
-      break;
-      case SBML_SPATIAL_SPATIALSYMBOLREFERENCE:{//spatial symbol reference
-        //  if (pPlugin->getSpatialSymbolReference()->getType() == "coordinateComponent")
-        cc = geometry->getCoordinateComponent(p->getId());
-        double min = cc->getBoundaryMin()->getValue();
-        double max = cc->getBoundaryMax()->getValue();
-        if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
-          info->value = new double[numOfVolIndexes];
-          fill_n(info->value, numOfVolIndexes, 0);
-          xaxis = const_cast<char*>(p->getId().c_str());
-          Xsize = max - min;
-          deltaX = (max - min) / (Xdiv - 1);
-          info->isResolved = true;
-          for (Z = 0; Z < Zindex; Z++) {
-            for (Y = 0; Y < Yindex; Y++) {
-              for (X = 0; X < Xindex; X++) {
-                info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + (double)X * deltaX / 2.0;
-              }
-            }
-          }
-        } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
-          info->value = new double[numOfVolIndexes];
-          fill_n(info->value, numOfVolIndexes, 0);
-          yaxis = const_cast<char*>(p->getId().c_str());
-          Ysize = max - min;
-          deltaY = (max - min) / (Ydiv - 1);
-          info->isResolved = true;
-          for (Z = 0; Z < Zindex; Z++) {
-            for (Y = 0; Y < Yindex; Y++) {
-              for (X = 0; X < Xindex; X++) {
-                info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + (double)Y * deltaY / 2.0;
-              }
-            }
-          }
-        } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
-          info->value = new double[numOfVolIndexes];
-          fill_n(info->value, numOfVolIndexes, 0);
-          zaxis = const_cast<char*>(p->getId().c_str());
-          Zsize = max - min;
-          deltaZ = (max - min) / (Zdiv - 1);
-          info->isResolved = true;
-          for (Z = 0; Z < Zindex; Z++) {
-            for (Y = 0; Y < Yindex; Y++) {
-              for (X = 0; X < Xindex; X++) {
-                info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + (double)Z * deltaZ / 2.0;
-              }
-            }
-          }
-        }
-      }
-        break;
-      default:
-        break;
-      }
-    }
-  }
+					case DIFFUSIONKIND_UNKNOWN:
+						cerr << "warning: Diffusion_Kind == Unknown" << endl;
+						break;
+					}
+				}
+			}
+			break;
+			case SBML_SPATIAL_ADVECTIONCOEFFICIENT://advection coefficient
+				sInfo = searchInfoById(varInfoList, pPlugin->getAdvectionCoefficient()->getVariable().c_str());
+				if (sInfo->adCInfo == 0) {
+					sInfo->adCInfo = new variableInfo*[3];
+					fill_n(sInfo->adCInfo, 3, reinterpret_cast<variableInfo*>(0));
+				}
+				sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate() - 1] = info;
+				if (model->getRule(info->id) == 0 && p->isSetValue()) {
+					info->isResolved = true;
+					info->isUniform = true;
+					sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate() - 1]->value = new double(p->getValue());
+				}
+				break;
+			case SBML_SPATIAL_BOUNDARYCONDITION://boundary condition
+			{
+				sInfo = searchInfoById(varInfoList, pPlugin->getBoundaryCondition()->getVariable().c_str());
+				bcon = pPlugin->getBoundaryCondition();
+				if (sInfo->boundaryInfo == 0) {
+					sInfo->boundaryInfo = new variableInfo*[6];
+					fill_n(sInfo->boundaryInfo, 6, reinterpret_cast<variableInfo*>(0));
+				}
+				if (sInfo != 0 &&bcon != 0) {
+					int boundaryIndex = -1;
+					if (bcon->getCoordinateBoundary() == XmaxId) boundaryIndex = Xmax;
+					if (bcon->getCoordinateBoundary() == XminId) boundaryIndex = Xmin;
+					if (bcon->getCoordinateBoundary() == YmaxId) boundaryIndex = Ymax;
+					if (bcon->getCoordinateBoundary() == YminId) boundaryIndex = Ymin;
+					if (bcon->getCoordinateBoundary() == ZmaxId) boundaryIndex = Zmax;
+					if (bcon->getCoordinateBoundary() == ZminId) boundaryIndex = Zmin;
+					if (boundaryIndex != -1) {
+						sInfo->boundaryInfo[boundaryIndex] = info;
+						if (model->getRule(info->id) == 0 && p->isSetValue()) {
+							info->isResolved = true;
+							info->isUniform = true;
+							sInfo->boundaryInfo[boundaryIndex]->value = new double(p->getValue());
+						}
+					}
+				}
+			}
+			break;
+			case SBML_SPATIAL_SPATIALSYMBOLREFERENCE: {//spatial symbol reference
+				//  if (pPlugin->getSpatialSymbolReference()->getType() == "coordinateComponent")
+				cc = geometry->getCoordinateComponent(p->getId());
+				double min = cc->getBoundaryMin()->getValue();
+				double max = cc->getBoundaryMax()->getValue();
+				if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
+					info->value = new double[numOfVolIndexes];
+					fill_n(info->value, numOfVolIndexes, 0);
+					xaxis = const_cast<char*>(p->getId().c_str());
+					Xsize = max - min;
+					deltaX = (max - min) / (Xdiv - 1);
+					info->isResolved = true;
+					for (Z = 0; Z < Zindex; Z++) {
+						for (Y = 0; Y < Yindex; Y++) {
+							for (X = 0; X < Xindex; X++) {
+								info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(X) * deltaX / 2.0;
+							}
+						}
+					}
+				} else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
+					info->value = new double[numOfVolIndexes];
+					fill_n(info->value, numOfVolIndexes, 0);
+					yaxis = const_cast<char*>(p->getId().c_str());
+					Ysize = max - min;
+					deltaY = (max - min) / (Ydiv - 1);
+					info->isResolved = true;
+					for (Z = 0; Z < Zindex; Z++) {
+						for (Y = 0; Y < Yindex; Y++) {
+							for (X = 0; X < Xindex; X++) {
+								info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Y) * deltaY / 2.0;
+							}
+						}
+					}
+				} else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
+					info->value = new double[numOfVolIndexes];
+					fill_n(info->value, numOfVolIndexes, 0);
+					zaxis = const_cast<char*>(p->getId().c_str());
+					Zsize = max - min;
+					deltaZ = (max - min) / (Zdiv - 1);
+					info->isResolved = true;
+					for (Z = 0; Z < Zindex; Z++) {
+						for (Y = 0; Y < Yindex; Y++) {
+							for (X = 0; X < Xindex; X++) {
+								info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Z) * deltaZ / 2.0;
+							}
+						}
+					}
+				}
+			}
+			break;
+			default:
+				break;
+			}
+		}
+	}
 }
 
-void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<reactionInfo*> &fast_rInfoList, vector<double*> freeConstList, int numOfVolIndexes)
+void setReactionInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<reactionInfo*> &fast_rInfoList, unsigned int numOfVolIndexes)
 {
-  ListOfReactions *lor = model->getListOfReactions();
-  unsigned int numOfReactions = static_cast<unsigned int>(model->getNumReactions());
-  unsigned int i, j, k;
-  ASTNode *ast = 0;
-  int numOfASTNodes = 0;
-  Species *s;
-  for (i = 0; i < numOfReactions; i++) {
-    Reaction *r = lor->get(i);
-    const KineticLaw *kl = r->getKineticLaw();
-    if (kl != 0) {
-      for (j = 0; j < kl->getNumLocalParameters(); j++) {
-        const LocalParameter *lp = kl->getLocalParameter(j);
-        variableInfo *info = new variableInfo;
-        InitializeVarInfo(info);
-        info->id = lp->getId().c_str();
-        if (model->getRule(info->id) == 0 && lp->isSetValue()) {
-          info->isResolved = true;
-          info->isUniform = true;
-          info->value = new double(lp->getValue());
-        }
-        varInfoList.push_back(info);
-      }
+	ListOfReactions *lor = model->getListOfReactions();
+	unsigned int numOfReactions = static_cast<unsigned int>(model->getNumReactions());
+	unsigned int i, j, k;
+	ASTNode *ast = 0;
+	int numOfASTNodes = 0;
+	Species *s;
+	for (i = 0; i < numOfReactions; i++) {
+		Reaction *r = lor->get(i);
+		const KineticLaw *kl = r->getKineticLaw();
+		if (kl != 0) {
+			for (j = 0; j < kl->getNumLocalParameters(); j++) {
+				const LocalParameter *lp = kl->getLocalParameter(j);
+				variableInfo *info = new variableInfo;
+				InitializeVarInfo(info);
+				info->id = lp->getId().c_str();
+				if (model->getRule(info->id) == 0 && lp->isSetValue()) {
+					info->isResolved = true;
+					info->isUniform = true;
+					info->value = new double(lp->getValue());
+				}
+				varInfoList.push_back(info);
+			}
 
       reactionInfo *rInfo = new reactionInfo;
       rInfo->reaction = r;
@@ -381,7 +366,6 @@ void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
           rInfo->isVariable.push_back(false);
         }
       }
-      //omihsam
       rInfo->id = r->getId().c_str();
       rInfo->value = new double[numOfVolIndexes];
       fill_n(rInfo->value, numOfVolIndexes, 0);
@@ -409,8 +393,7 @@ void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
       rInfo->rpInfo->opfuncList = new int[numOfASTNodes];
       fill_n(rInfo->rpInfo->opfuncList, numOfASTNodes, 0);
       rInfo->rpInfo->listNum = numOfASTNodes;
-      parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes, freeConstList);
-      //parseAST(ast, rInfo->rpInfo->varList, rInfo->rpInfo->constList, rInfo->rpInfo->opfuncList, varInfoList, numOfASTNodes);
+      parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes);
       if (!r->getFast()) {
         rInfoList.push_back(rInfo);
       } else {
@@ -420,51 +403,50 @@ void setReactionInfo(Model *model, vector<variableInfo*> &varInfoList, vector<re
   }
 }
 
-void setRateRuleInfo(Model *model, vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<double*> freeConstList, int numOfVolIndexes)
+void setRateRuleInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, std::vector<reactionInfo*> &rInfoList, unsigned int numOfVolIndexes)
 {
-  unsigned int numOfRules = static_cast<unsigned int>(model->getNumRules());
-  unsigned int i;
-  ASTNode *ast = 0;
-  int numOfASTNodes = 0;
-  Species *s;
-  for (i = 0; i < numOfRules; i++) {
-    if (model->getRule(i)->isRate()) {
-      RateRule *rrule = (RateRule*)model->getRule(i);
-      reactionInfo *rInfo = new reactionInfo;
-      rInfo->id = rrule->getVariable().c_str();
-      rInfo->value = new double[numOfVolIndexes];
-      fill_n(rInfo->value, numOfVolIndexes, 0);
-      ast = const_cast<ASTNode*>(rrule->getMath());
-      rearrangeAST(ast);
-      cout << "rate rule: " << SBML_formulaToString(ast) << endl;
-      numOfASTNodes = 0;
-      countAST(ast, numOfASTNodes);
-      rInfo->rpInfo = new reversePolishInfo();
-      rInfo->rpInfo->varList = new double*[numOfASTNodes];
-      fill_n(rInfo->rpInfo->varList, numOfASTNodes, reinterpret_cast<double*>(0));
-      rInfo->rpInfo->deltaList = new double*[numOfASTNodes];
-      fill_n(rInfo->rpInfo->deltaList, numOfASTNodes, reinterpret_cast<double*>(0));
-      rInfo->rpInfo->constList = new double*[numOfASTNodes];
-      fill_n(rInfo->rpInfo->constList, numOfASTNodes, reinterpret_cast<double*>(0));
-      rInfo->rpInfo->opfuncList = new int[numOfASTNodes];
-      fill_n(rInfo->rpInfo->opfuncList, numOfASTNodes, 0);
-      rInfo->rpInfo->listNum = numOfASTNodes;
-      parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes, freeConstList);
-      //parseAST(ast, rInfo->rpInfo->varList, rInfo->rpInfo->constList, rInfo->rpInfo->opfuncList, varInfoList, numOfASTNodes);
-      rInfo->spRefList.push_back(searchInfoById(varInfoList, rrule->getVariable().c_str()));
-      rInfo->srStoichiometry.push_back(1.0);
-      s = model->getSpecies(rrule->getVariable());
-      if (!s->isSetConstant() || !s->getConstant() || !s->getBoundaryCondition()) {
-        rInfo->isVariable.push_back(true);
-      } else {
-        rInfo->isVariable.push_back(false);
-      }
-      rInfoList.push_back(rInfo);
-    }
-  }
+	unsigned int numOfRules = static_cast<unsigned int>(model->getNumRules());
+	unsigned int i;
+	ASTNode *ast = 0;
+	int numOfASTNodes = 0;
+	Species *s;
+	for (i = 0; i < numOfRules; i++) {
+		if (model->getRule(i)->isRate()) {
+			RateRule *rrule = static_cast<RateRule*>(model->getRule(i));
+			reactionInfo *rInfo = new reactionInfo;
+			rInfo->id = rrule->getVariable().c_str();
+			rInfo->value = new double[numOfVolIndexes];
+			fill_n(rInfo->value, numOfVolIndexes, 0);
+			ast = const_cast<ASTNode*>(rrule->getMath());
+			rearrangeAST(ast);
+			cout << "rate rule: " << SBML_formulaToString(ast) << endl;
+			numOfASTNodes = 0;
+			countAST(ast, numOfASTNodes);
+			rInfo->rpInfo = new reversePolishInfo();
+			rInfo->rpInfo->varList = new double*[numOfASTNodes];
+			fill_n(rInfo->rpInfo->varList, numOfASTNodes, reinterpret_cast<double*>(0));
+			rInfo->rpInfo->deltaList = new double*[numOfASTNodes];
+			fill_n(rInfo->rpInfo->deltaList, numOfASTNodes, reinterpret_cast<double*>(0));
+			rInfo->rpInfo->constList = new double*[numOfASTNodes];
+			fill_n(rInfo->rpInfo->constList, numOfASTNodes, reinterpret_cast<double*>(0));
+			rInfo->rpInfo->opfuncList = new int[numOfASTNodes];
+			fill_n(rInfo->rpInfo->opfuncList, numOfASTNodes, 0);
+			rInfo->rpInfo->listNum = numOfASTNodes;
+			parseAST(ast, rInfo->rpInfo, varInfoList, numOfASTNodes);
+			rInfo->spRefList.push_back(searchInfoById(varInfoList, rrule->getVariable().c_str()));
+			rInfo->srStoichiometry.push_back(1.0);
+			s = model->getSpecies(rrule->getVariable());
+			if (!s->isSetConstant() || !s->getConstant() || !s->getBoundaryCondition()) {
+				rInfo->isVariable.push_back(true);
+			} else {
+				rInfo->isVariable.push_back(false);
+			}
+			rInfoList.push_back(rInfo);
+		}
+	}
 }
 
-normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, int numOfVolIndexes)
+normalUnitVector* setNormalAngle(std::vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, unsigned int numOfVolIndexes)
 {
   unsigned int i, j, k, step_kXY = 0, step_kYZ = 0, step_kXZ = 0;
   int X, Y, Z, index;
@@ -483,34 +465,29 @@ normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsiz
   double hXY = 1.0, hYZ = 1.0, hXZ = 1.0;
   //double XYratio = Ysize / Xsize, XZratio = Zsize / Xsize;// unused varibale
   int xyPlaneX[2] = {0}, xyPlaneY[2] = {0}, yzPlaneY[2] = {0}, yzPlaneZ[2] = {0}, xzPlaneX[2] = {0}, xzPlaneZ[2] = {0};
+	/*
+	   hX = 1.0 / (Xdiv - 1);
+	   hY = XYratio / (Ydiv - 1);
+	   if (dimension == 2) {
+	   hXY = (hX + hY) / 2.0;
+	   } else if (dimension == 3) {
+	   hZ = XZratio / (Zdiv - 1);
+	   hXY = (hX + hY) / 2.0;
+	   hYZ = (hY + hZ) / 2.0;
+	   hXZ = (hX + hZ) / 2.0;
+	   }
+	 */
 
-  /*
-    hX = 1.0 / (Xdiv - 1);
-    hY = XYratio / (Ydiv - 1);
-    if (dimension == 2) {
-    hXY = (hX + hY) / 2.0;
-    } else if (dimension == 3) {
-    hZ = XZratio / (Zdiv - 1);
-    hXY = (hX + hY) / 2.0;
-    hYZ = (hY + hZ) / 2.0;
-    hXZ = (hX + hZ) / 2.0;
-    }
-  */
-
-  hX = Xsize / (Xdiv - 1);
-  hY = Ysize / (Ydiv - 1);
-  if (dimension == 2) {
-    hXY = (hX + hY) / 2.0;
-  } else if (dimension == 3) {
-    hZ = Zsize / (Zdiv - 1);
-    hXY = (hX + hY) / 2.0;
-    hYZ = (hY + hZ) / 2.0;
-    hXZ = (hX + hZ) / 2.0;
-  }
-
-  //cout << Xsize << " " << Ysize << " " << Zsize << endl;
-  //cout << deltaX << " " << deltaY << " " << deltaZ << endl;
-  //cout << hXY << " " << hYZ << " " << hXZ << endl;
+	hX = Xsize / (Xdiv - 1);
+	hY = Ysize / (Ydiv - 1);
+	if (dimension == 2) {
+		hXY = (hX + hY) / 2.0;
+	} else if (dimension == 3) {
+		hZ = Zsize / (Zdiv - 1);
+		hXY = (hX + hY) / 2.0;
+		hYZ = (hY + hZ) / 2.0;
+		hXZ = (hX + hZ) / 2.0;
+	}
 
   if (dimension >= 2) {
     for (i = 0; i < geoInfoList.size(); i++) {
@@ -806,44 +783,56 @@ normalUnitVector* setNormalAngle(vector<GeometryInfo*> &geoInfoList, double Xsiz
             nuVec[index].ny = coord_y;
             nuVec[index].nz = coord_z;
           */
-
-        }
-      }
-    }
-  }
-// 	for (i = 0; i < geoInfoList.size(); i++) {
-// 		GeometryInfo *geoInfo = geoInfoList[i];
-// 		if (geoInfo->isVol == false) {//avol is membrane
-// 			ofstream ofs_tmp;
-// 			ofs_tmp.open("tmp.txt");
-// 			for (j = 0; j < geoInfo->domainIndex.size(); j++) {
-// 				index = geoInfo->domainIndex[j];
-// 				Z = index / (Xindex * Yindex);
-// 				Y = (index - Z * Xindex * Yindex) / Xindex;
-// 				X = index - Z * Xindex * Yindex - Y * Xindex;
-// 				ofs_tmp << X << " " << Y << " " << fabs(nuVec[index].nx) << " " << fabs(nuVec[index].ny) << " " << (fabs(nuVec[index].nx) + fabs(nuVec[index].ny)) << endl;
-// 			}
-// // 			for (Y = 0; Y < Yindex; Y++) {
-// // 				for (X = 0; X < Xindex; X++) {
-// // 					index = Y * Xindex + X;
-// // 					//ofs_tmp << X << " " << Y << " " << geoInfo->normalAngle[index] << endl;
-// // 					if ((Y * Xindex + X) % 2 != 0 && geoInfo->isDomain[Y * Xindex + X] == 1) {
-// // 						//ofs_tmp << X << " " << Y << " " << geoInfo->normalAngle[index] << endl;
-// // 						ofs_tmp << X << " " << Y << " " << fabs(sin(nAngle->xy[index])) << endl;
-// // 					} else {
-// // 						ofs_tmp << X << " " << Y << " " << -1 << endl;
-// // 					}
-// // 				}
-// // 				ofs_tmp << endl;
-// // 			}
-// 			ofs_tmp.close();
-// 			break;
-// 		}
-// 	}
-  return nuVec;
+					//set normal unit vector
+					//calc extended product
+					if (dimension == 2) {
+						X1 = xyPlaneX[0] - xyPlaneX[1];
+						Y1 = xyPlaneY[0] - xyPlaneY[1];
+						Z1 = 0.0;
+						X2 = 0.0;
+						Y2 = 0.0;
+						Z2 = 1.0;
+					} else if (dimension == 3) {
+						if (geoInfo->bType[index].isBofXp || geoInfo->bType[index].isBofXm) {//xy * xz
+							X1 = xyPlaneX[0] - xyPlaneX[1];
+							Y1 = xyPlaneY[0] - xyPlaneY[1];
+							Z1 = 0.0;
+							X2 = xzPlaneX[0] - xzPlaneX[1];
+							Y2 = 0.0;
+							Z2 = xzPlaneZ[0] - xzPlaneZ[1];
+						}
+						if (geoInfo->bType[index].isBofYp || geoInfo->bType[index].isBofYm) {//xy * yz
+							X1 = xyPlaneX[0] - xyPlaneX[1];
+							Y1 = xyPlaneY[0] - xyPlaneY[1];
+							Z1 = 0.0;
+							X2 = 0.0;
+							Y2 = yzPlaneY[0] - yzPlaneY[1];
+							Z2 = yzPlaneZ[0] - yzPlaneZ[1];
+						}
+						if (geoInfo->bType[index].isBofZp || geoInfo->bType[index].isBofZm) {//xz * yz
+							X1 = xzPlaneX[0] - xzPlaneX[1];
+							Y1 = 0.0;
+							Z1 = xzPlaneZ[0] - xzPlaneZ[1];
+							X2 = 0.0;
+							Y2 = yzPlaneY[0] - yzPlaneY[1];
+							Z2 = yzPlaneZ[0] - yzPlaneZ[1];
+						}
+					}
+					nuVec[index].nx = Y1 * Z2 - Z1 * Y2;
+					nuVec[index].ny = Z1 * X2 - X1 * Z2;
+					nuVec[index].nz = X1 * Y2 - Y1 * X2;
+					len = sqrt(pow(nuVec[index].nx, 2) + pow(nuVec[index].ny, 2) + pow(nuVec[index].nz, 2));
+					nuVec[index].nx /= len;
+					nuVec[index].ny /= len;
+					nuVec[index].nz /= len;
+				}
+			}
+		}
+	}
+	return nuVec;
 }
 
-normalUnitVector* setNormalAngle_modify(vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, int numOfVolIndexes)
+normalUnitVector* setNormalAngle_modify(std::vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, unsigned int numOfVolIndexes)
 {
   unsigned int i, j, k, step_kXY = 0, step_kYZ = 0, step_kXZ = 0;
   int X, Y, Z, index;
@@ -1245,7 +1234,7 @@ normalUnitVector* setNormalAngle_modify(vector<GeometryInfo*> &geoInfoList, doub
   }preDirection;
 */
 
-void stepSearch(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane)
+void stepSearch(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, std::string plane)
 {
   if (step_count == step_k) return;
   int Nindex1 = 0, Nindex2 = 0;
@@ -1355,7 +1344,7 @@ void stepSearch(int l, int preD, int step_count, int step_k, int X, int Y, int Z
   }
 }
 
-void stepSearch_no_recursive(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, string plane)
+void stepSearch_no_recursive(int l, int preD, int step_count, int step_k, int X, int Y, int Z, int Xindex, int Yindex, int Zindex, int *horComponent, int *verComponent, int *isD, std::string plane)
 {
   int Nindex1 = 0, Nindex2 = 0;
   int Sindex1 = 0, Sindex2 = 0;
@@ -1711,7 +1700,7 @@ void oneStepSearch(int step_count, int step_k, int X, int Y, int Z, int Xindex, 
   average d_ij and d_ji
 */
 
-voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, int numOfVolIndexes)
+voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, std::vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, unsigned int numOfVolIndexes)
 {
   unsigned int i, j, k, l;
   int X, Y, Z, index;
@@ -2120,7 +2109,7 @@ voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variab
   return vorI;
 }
 
-voronoiInfo* setVoronoiInfo_modify(normalUnitVector *nuVec, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, int numOfVolIndexes)
+voronoiInfo* setVoronoiInfo_modify(normalUnitVector *nuVec, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, std::vector<GeometryInfo*> &geoInfoList, double Xsize, double Ysize, double Zsize, int dimension, int Xindex, int Yindex, int Zindex, unsigned int numOfVolIndexes)
 {
   unsigned int i, j, k, l;
   int X, Y, Z, index;

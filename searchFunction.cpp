@@ -1,19 +1,17 @@
-#include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
+#include "spatialsim/searchFunction.h"
+#include "spatialsim/mystruct.h"
 #include <vector>
-#include "mystruct.h"
+
+using namespace std;
+using namespace libsbml;
 
 variableInfo* searchInfoById(vector<variableInfo*> &varInfoList, const char *varName)
 {
 	vector<variableInfo*>::iterator it = varInfoList.begin();
-	while (it != varInfoList.end()) {          
-          if (strcmp((*it)->id, varName) == 0) {
-            return *it;
-          }
+	while (it != varInfoList.end()) {
+		if (strcmp((*it)->id, varName) == 0) {
+			return *it;
+		}
 		it++;
 	}
 	return 0;
@@ -22,8 +20,8 @@ variableInfo* searchInfoById(vector<variableInfo*> &varInfoList, const char *var
 GeometryInfo* searchAvolInfoByDomainType(vector<GeometryInfo*> &geoInfoList, const char *dtId)
 {
 	vector<GeometryInfo*>::iterator it = geoInfoList.begin();
-	while (it != geoInfoList.end()) {          
-          if (strcmp((*it)->domainTypeId, dtId) == 0) {
+	while (it != geoInfoList.end()) {
+		if (strcmp((*it)->domainTypeId, dtId) == 0) {
 			return *it;
 		}
 		it++;

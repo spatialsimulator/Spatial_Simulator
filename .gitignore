@@ -1,3 +1,9 @@
 main
 result/
 *.o
+libspatialsim.dylib
+spatialsimulator
+TAGS
+*.jar
+*.dSYM/
+*.log

@@ -1,46 +1,31 @@
-#include <sstream>
-#include <string>
-#include <vector>
-#include <ctime>
+#include "spatialsim/outputImage.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/searchFunction.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/extension/SBMLExtensionRegistry.h"
 #include "sbml/packages/req/common/ReqExtensionTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include "sbml/packages/spatial/extension/SpatialExtension.h"
-#include "mystruct.h"
-#include "searchFunction.h"
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <ctime>
+
+using namespace libsbml;
+using namespace cv;
 using namespace std;
-//opencv
-//#include <cv.h>
-//#include <highgui.h>
-#include <opencv2/opencv.hpp> //K40
-//#include <opencv2/highgui.hpp>
-#include <opencv2/highgui/highgui.hpp>//K40
+Vec3b infVec(192, 192, 192);
+Vec3b nanVec(255, 192, 255);
+
 #define barSizeX 20
 #define barSizeY 400
 #define cbAreaX 100
 #define cbAreaY 420
-using namespace cv;
-Vec3b infVec(192, 192, 192);
-Vec3b nanVec(255, 192, 255);
 
-void makeValueMat(Mat* valueMat, double* value, int Xindex, int Yindex, double range_min, double range_max);
-void makeValueMat_slice(Mat* valueMat, double* value, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim);
-void makeMemValueMat(Mat* valueMat, double* value, int* geo_edge, int Xindex, int Yindex, double range_min, double range_max);
-void makeMemValueMat_slice(Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim);
-void sparseMat(Mat* origin, Mat* result);
-void addMemToValueMat(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv);
-void addMemToValueMat_slice(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, int slice, char slicedim);
-void resizeMat(Mat* valueMat_sparse, Mat* valueMat_mag, int magnification);
-void makeColorBar(Mat* colorBar);
-void makeColorBarArea(Mat* area, double range_max, double range_min, int* cbSize, int* cbIndent);
-void setDetail(Mat* image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, string fname, string s_id, int magnification);
-void setDetail_slice(Mat* image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, string fname, string s_id, int magnification, int slice, char slicedim);
-int calcMagnification(int Xdiv, int Ydiv);
-string getCurrentTime();
-
-void outputImg(Model *model, vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, string fname, int file_num) {
+void outputImg(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, magnification = 1;
   int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2];
   areaSize[0] = Xindex;//空間領域は膜も描画できるようにこう
@@ -104,7 +89,7 @@ void outputImg(Model *model, vector<variableInfo*> &varInfoList, int* geo_edge, 
     colorBarArea->copyTo(*Roi_cbArea);
     //================= value area frame & number =====================
     setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY, Xdiv, Ydiv, fname, s_id, magnification);
-    ss << "./result/" << fname << "/img_opencv/" << s_id << "/" << file_num << ".png";
+    ss << "./result/" << fname << "/img/" << s_id << "/" << file_num << ".png";
     imwrite(ss.str(), *image);
     ss.str("");
     delete valueMat;
@@ -115,7 +100,7 @@ void outputImg(Model *model, vector<variableInfo*> &varInfoList, int* geo_edge, 
   delete colorBarArea;
 }
 
-void outputImg_slice(Model *model, vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, string fname, int file_num, int slice, char slicedim) {
+void outputImg_slice(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1, magnification = 1;
   int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2], division[2], index[2];
   if (slicedim == 'x') {
@@ -197,7 +182,7 @@ void outputImg_slice(Model *model, vector<variableInfo*> &varInfoList, int* geo_
     colorBarArea->copyTo(*Roi_cbArea);
     //================= value area frame & number =====================
     setDetail_slice(image, indent, areaSize, t, min0, max0, min1, max1, Xdiv, Ydiv, Zdiv, fname, s_id, magnification, slice ,slicedim);
-    ss << "./result/" << fname << "/img_opencv/" << s_id << "/" << file_num << ".png";
+    ss << "./result/" << fname << "/img/" << s_id << "/" << file_num << ".png";
     imwrite(ss.str(), *image);
     ss.str("");
     delete valueMat;
@@ -208,7 +193,7 @@ void outputImg_slice(Model *model, vector<variableInfo*> &varInfoList, int* geo_
   delete colorBarArea;
 }
 
-void makeValueMat(Mat* mat, double* value, int Xindex, int Yindex, double range_min, double range_max) {
+void makeValueMat(cv::Mat* mat, double* value, int Xindex, int Yindex, double range_min, double range_max) {
   int X, Y, index;
   double value_level = 0;
   for (Y = 0; Y < mat->rows; ++Y) {
@@ -247,7 +232,7 @@ void makeValueMat(Mat* mat, double* value, int Xindex, int Yindex, double range_
   }
 }
 
-void makeValueMat_slice(Mat* mat, double* value, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim) {
+void makeValueMat_slice(cv::Mat* mat, double* value, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim) {
   int x, y, index;
   double value_level = 0;
   for (y = 0; y < mat->rows; ++y) {
@@ -287,7 +272,7 @@ void makeValueMat_slice(Mat* mat, double* value, int Xindex, int Yindex, int Zin
   }
 }
 
-void makeMemValueMat(Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, double range_min, double range_max) {
+void makeMemValueMat(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, double range_min, double range_max) {
   int X, Y, index;
   double value_level = 0;
   for (Y = 0; Y < Yindex; ++Y) {
@@ -327,7 +312,7 @@ void makeMemValueMat(Mat* mat, double* value, int* geo_edge, int Xindex, int Yin
   }
 }
 
-void makeMemValueMat_slice(Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim) {
+void makeMemValueMat_slice(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim) {
   int x, y, index;
   double value_level = 0;
   for (y = 0; y < mat->rows; ++y) {
@@ -369,7 +354,7 @@ void makeMemValueMat_slice(Mat* mat, double* value, int* geo_edge, int Xindex, i
   }
 }
 
-void sparseMat(Mat* origin, Mat* result) {
+void sparseMat(cv::Mat* origin, cv::Mat* result) {
   int Y, X, rX, rY;
   for (Y = 0; Y < origin->rows; ++Y) {
     for (X = 0; X < origin->cols; ++X) {
@@ -383,7 +368,7 @@ void sparseMat(Mat* origin, Mat* result) {
   }
 }
 
-void resizeMat(Mat* origin, Mat* result, int magnification) {
+void resizeMat(cv::Mat* origin, cv::Mat* result, int magnification) {
   int Y, X, rX, rY, i, j;
   for (Y = 0; Y < origin->rows; ++Y) {
     for (X = 0; X < origin->cols; ++X) {
@@ -398,7 +383,7 @@ void resizeMat(Mat* origin, Mat* result, int magnification) {
   }
 }
 
-void addMemToValueMat(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv) {
+void addMemToValueMat(cv::Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv) {
   int Xindex = Xdiv * 2 - 1, Yindex = Ydiv * 2 - 1, index;
   for (int Y = 0; Y < Yindex; ++Y) {
     for (int X = 0; X < Xindex; ++X) {
@@ -412,7 +397,7 @@ void addMemToValueMat(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv) {
   }
 }
 
-void addMemToValueMat_slice(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, int slice, char slicedim) {
+void addMemToValueMat_slice(cv::Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, int slice, char slicedim) {
   int Xindex = Xdiv * 2 - 1, Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1, index;
   for (int y = 0; y < valueMat->rows; ++y) {
     for (int x = 0; x < valueMat->cols; ++x) {
@@ -428,7 +413,7 @@ void addMemToValueMat_slice(Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv, in
   }
 }
 
-void makeColorBar(Mat* colorBar) {
+void makeColorBar(cv::Mat* colorBar) {
   int x, y, c;
   for (y = 0; y < barSizeY; ++y) {
     for (x = 0; x < barSizeX; ++x) {
@@ -471,7 +456,7 @@ void makeColorBar(Mat* colorBar) {
   }
 }
 
-void makeColorBarArea(Mat* area, double range_max, double range_min, int* cbSize, int* cbIndent) {
+void makeColorBarArea(cv::Mat* area, double range_max, double range_min, int* cbSize, int* cbIndent) {
   int i;
   int bltics = area->cols * 5.0 / 200.0;
   if (bltics == 0) bltics = 1;
@@ -501,7 +486,7 @@ void makeColorBarArea(Mat* area, double range_max, double range_min, int* cbSize
   }
 }
 
-void setDetail(Mat* image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, string fname, string s_id, int magnification) {
+void setDetail(cv::Mat* image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, string s_id, int magnification) {
   int i, fix[2];
   int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
   int thickness = baseSize / 250;
@@ -582,7 +567,7 @@ void setDetail(Mat* image, int* indent, int* areaSize, double t, double minX, do
   putText(*image, date, Point(image->cols - 1, image->rows - 1) - Point(textSize.width, textSize.height * 3 / 5), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
 }
 
-void setDetail_slice(Mat* image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, string fname, string s_id, int magnification, int slice, char slicedim) {
+void setDetail_slice(cv::Mat* image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim) {
   int i, fix[2];
   int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
   int thickness = baseSize / 250;

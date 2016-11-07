@@ -1,49 +1,14 @@
+#include "spatialsim/checkFunc.h"
+#include "spatialsim/mystruct.h"
+#include "sbml/SBMLTypes.h"
+#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include <iostream>
 #include <vector>
-#include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
-#include "mystruct.h"
+
+using namespace libsbml;
 using namespace std;
 
-void checkGeometry(GeometryInfo* geoInfo, string plane, int* isD, int X, int Y, int Z, int Xindex, int Yindex, int Zindex);
- 
-void checkNormalUnitVector(normalUnitVector *nuVec, int Xindex, int Yindex, int Zindex) {
-  int X, Y, Z;
-  for (Z = 0; Z < Zindex; ++Z) {
-    for (Y = 0; Y < Yindex; ++Y) {
-      for (X = 0; X < Xindex; ++X) {
-        cout << nuVec->nx << " " << nuVec->ny << " " << nuVec->nz << endl;
-      }
-    }
-  }
-}
-
-void checkMemPosition(vector<GeometryInfo*> geoInfoList, int Xindex, int Yindex, int Zindex, int dimension) {
-	unsigned int X, Y, Z, i, j, index;
-	GeometryInfo* geoInfo;
-	for (i = 0; i < (unsigned int)geoInfoList.size(); ++i) {
-		geoInfo = geoInfoList[i];
-		if(geoInfo->isVol == false) {
-			for (j = 0; j < (unsigned int)geoInfo->domainIndex.size(); ++j) {
-				index = geoInfo->domainIndex[j];
-				Z = index / (Xindex * Yindex);
-				Y = (index - Z * Xindex * Yindex) / Xindex;
-				X = index - Z * Xindex * Yindex - Y * Xindex;
-        if (2 <= dimension) checkGeometry(geoInfo, "xy", geoInfo->isDomain, X, Y, Z, Xindex, Yindex, Zindex);
-        if (3 == dimension) {
-          checkGeometry(geoInfo, "yz", geoInfo->isDomain, X, Y, Z, Xindex, Yindex, Zindex);
-          checkGeometry(geoInfo, "xz", geoInfo->isDomain, X, Y, Z, Xindex, Yindex, Zindex);
-        }
- 			}
-		}
-	}
-}
-
-void checkGeometry(GeometryInfo* geoInfo, string plane, int* isD, int X, int Y, int Z, int Xindex, int Yindex, int Zindex) {
+void checkGeometry(GeometryInfo* geoInfo, std::string plane, int* isD, int X, int Y, int Z, unsigned int Xindex, unsigned int Yindex, unsigned int Zindex) {
   int Nindex1 = 0, Nindex2 = 0;
   int Sindex1 = 0, Sindex2 = 0;
   int Eindex1 = 0, Eindex2 = 0;
@@ -94,7 +59,7 @@ void checkGeometry(GeometryInfo* geoInfo, string plane, int* isD, int X, int Y, 
   }
   if (indexMax > Nindex2 && isD[Nindex2] == 1 && isD[Nindex1] == 2)  return;
   if (indexMax > NEindex && isD[NEindex] == 1) return;
-  if (indexMax > Eindex2 && isD[Eindex2] == 1 && isD[Eindex1] == 2) return; 
+  if (indexMax > Eindex2 && isD[Eindex2] == 1 && isD[Eindex1] == 2) return;
   if (indexMax > SEindex && indexMin < SEindex && isD[SEindex] == 1)return;
   if (indexMin < Sindex2 && isD[Sindex2] == 1 && isD[Sindex1] == 2) return;
   if (indexMin < SWindex && isD[SWindex] == 1) return;
@@ -124,5 +89,29 @@ void checkGeometry(GeometryInfo* geoInfo, string plane, int* isD, int X, int Y, 
   cout << isD[Windex2 - ns]<<isD[Windex1 - ns]<<isD[index - ns]<<isD[Eindex1 - ns]<<isD[Eindex2 - ns]<<endl;
   cout << " " << isD[SWindex - ns] << isD[Sindex1 - ns] << isD[SEindex - ns] << " " <<endl;
   cout << " " << " " << isD[Sindex2 - ns]<< " " << " " <<endl;
-  return;
+}
+
+void checkMemPosition(std::vector<GeometryInfo*> geoInfoList, unsigned int Xindex, unsigned int Yindex, unsigned int Zindex, unsigned int dimension) {
+	unsigned int X, Y, Z, i, j, index;
+	unsigned int size = static_cast<unsigned int>(geoInfoList.size());
+	int badX=0,badY=0,badZ=0;
+	GeometryInfo* geoInfo;
+
+	for (i = 0; i < size; ++i) {
+		geoInfo = geoInfoList[i];
+		if(geoInfo->isVol == false) {
+			unsigned int domainSize = static_cast<unsigned int>(geoInfo->domainIndex.size());
+			for (j = 0; j < domainSize; ++j) {
+				index = geoInfo->domainIndex[j];
+				Z = index / (Xindex * Yindex);
+				Y = (index - Z * Xindex * Yindex) / Xindex;
+				X = index - Z * Xindex * Yindex - Y * Xindex;
+        if (2 <= dimension) checkGeometry(geoInfo, "xy", geoInfo->isDomain, X, Y, Z, Xindex, Yindex, Zindex);
+        if (3 == dimension) {
+          checkGeometry(geoInfo, "yz", geoInfo->isDomain, X, Y, Z, Xindex, Yindex, Zindex);
+          checkGeometry(geoInfo, "xz", geoInfo->isDomain, X, Y, Z, Xindex, Yindex, Zindex);
+        }
+ 			}
+		}
+	}
 }

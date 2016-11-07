@@ -1,30 +1,31 @@
-#include <vector>
-#include <string>
-#include <sstream>
+#include "spatialsim/outputHDF.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/searchFunction.h"
+#include "H5Cpp.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include "sbml/packages/spatial/extension/SpatialExtension.h"
-#include "mystruct.h"
-#include "searchFunction.h"
-using namespace std;
+#include <vector>
+#include <string>
+#include <sstream>
 
-#include "H5Cpp.h"
 using namespace H5;
+using namespace libsbml;
+using namespace std;
 
 const string FILENAME = "TimeCourseData.h5";
 const string IMGFILENAME = "ImageData.h5";
 
-void makeHDF(string fname, ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
+void makeHDF(std::string fname, libsbml::ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
   H5File file("./result/" + fname + "/HDF5/" + FILENAME, H5F_ACC_TRUNC);
   for (unsigned int i = 0; i < los->size(); ++i) {
     file.createGroup(los->get(i)->getId());
   }
 }
 
-void make3DHDF(string fname, ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
+void make3DHDF(std::string fname, libsbml::ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
   H5File file("./result/" + fname + "/HDF5/" + IMGFILENAME, H5F_ACC_TRUNC);
   for (unsigned int i = 0; i < los->size(); ++i) {
     file.createGroup(los->get(i)->getId());
@@ -37,7 +38,7 @@ void outputGeoData() {
 
 }
 
-void outputValueData(vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int dimension, int file_num, string fname) {
+void outputValueData(std::vector<variableInfo*>&varInfoList, libsbml::ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int dimension, int file_num, std::string fname) {
   int Xindex = Xdiv * 2 - 1, Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1;
   int i, X, Y, Z;
   string s_id;
@@ -82,7 +83,7 @@ void outputValueData(vector<variableInfo*>&varInfoList, ListOfSpecies* los, int 
   }
 }
 
-void output3D_uint8 (vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xindex, int Yindex, int Zindex, int file_num, string fname, double range_max) {
+void output3D_uint8 (std::vector<variableInfo*>&varInfoList, libsbml::ListOfSpecies* los, int Xindex, int Yindex, int Zindex, int file_num, std::string fname, double range_max) {
   int i, X, Y, Z, index;
   uint8_t ***value;
   value = new uint8_t**[Xindex];

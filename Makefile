@@ -1,40 +1,44 @@
-PROG = main
-CFLAGS = -Wall -Wextra -g -c -O2
-OPENCVFLAGS = `pkg-config --libs opencv`
-HDF5LFLAGS = -L/opt/local/lib/hdf5-18/lib -lhdf5 -lhdf5_cpp
+PROG = spatialsimulator
+MYLIB = libspatialsim.dylib
+HEADERS = $(wildcard spatialsim/*.h)
+ALL_SRCS := $(wildcard *.cpp)
+SRCS := $(filter-out main.cpp, $(ALL_SRCS))
+OBJS = $(SRCS:.cpp=.o)
 CC = g++
-OBJS = main.o setInfoFunction.o initializeFunction.o boundaryFunction.o astFunction.o freeFunction.o searchFunction.o calcPDE.o outputFunction.o checkStability.o outputImage.o outputHDF.o checkFunc.o
+CFLAGS = -Wall -Wextra -Weverything -g -c -O2 -fno-common -fPIC
+HDFFLAGS = -I/opt/local/include
+OPENCVFLAGS = `pkg-config --cflags opencv`
+LDFLAGS = -L/usr/local/lib -lsbml -lz -L.
+OPENCVLDFLAGS = `pkg-config --libs opencv`
+HDFLDFLAGS = -L/opt/local/lib/hdf5-18/lib -lhdf5 -lhdf5_cpp
+MYLIBFLAGS = -dynamiclib -install_name $(MYLIB) -compatibility_version 1.0 -current_version 1.0.0
+MYLIBDIR = darwin/
+MYJAR = libspatialsimj.jar
+SBMLLIB = libsbml.5.dylib
 
-$(PROG): $(OBJS)
-	$(CC) -L/usr/local/lib -lsbml -lz $(OPENCVFLAGS) $(HDF5LFLAGS) -o $(PROG) $(OBJS)
+.PHONY: all
+all: $(PROG)
+	@$(MAKE) deploy
 
-main.o: main.cpp
-	$(CC) $(CFLAGS) main.cpp
-setInfoFunction.o: setInfoFunction.cpp
-	$(CC) $(CFLAGS) setInfoFunction.cpp
-initializeFunction.o: initializeFunction.cpp
-	$(CC) $(CFLAGS) initializeFunction.cpp
-boundaryFunction.o: boundaryFunction.cpp
-	$(CC) $(CFLAGS) boundaryFunction.cpp
-astFunction.o: astFunction.cpp
-	$(CC) $(CFLAGS) astFunction.cpp
-freeFunction.o: freeFunction.cpp
-	$(CC) $(CFLAGS) freeFunction.cpp
-searchFunction.o: searchFunction.cpp
-	$(CC) $(CFLAGS) searchFunction.cpp
-calcPDE.o: calcPDE.cpp
-	$(CC) $(CFLAGS) calcPDE.cpp
-outputFunction.o: outputFunction.cpp
-	$(CC) $(CFLAGS) outputFunction.cpp
-checkStability.o: checkStability.cpp
-	$(CC) $(CFLAGS) checkStability.cpp
-outputImage.o: outputImage.cpp
-	$(CC) $(CFLAGS) `pkg-config --cflags opencv` outputImage.cpp
-outputHDF.o: outputHDF.cpp
-	$(CC) $(CFLAGS) -I/opt/local/lib/hdf5-18/include outputHDF.cpp
-checkFunc.o: checkFunc.cpp
-	$(CC) $(CFLAGS) checkFunc.cpp
+%.o: %.cpp $(HEADERS)
+	$(CC) $(CFLAGS) $(HDFFLAGS) $(OPENCVFLAGS) -c $<
+
+$(MYLIB): $(OBJS)
+	$(CC) -o $@ $^ $(MYLIBFLAGS) $(LDFLAGS) $(OPENCVLDFLAGS) $(HDFLDFLAGS) -v
+	install_name_tool -change $(SBMLLIB) ./$(SBMLLIB) $(MYLIB)
+
+$(PROG): main.o $(MYLIB)
+	$(CC) -o $@ main.o $(LDFLAGS) $(OPENCVLDFLAGS) $(HDFLDFLAGS) -lspatialsim
 
 .PHONY: clean
 clean:
-	rm -f $(PROG) $(OBJS)
+	rm -rf $(PROG) $(OBJS) main.o $(MYLIB) $(MYJAR)
+
+.PHONY: deploy
+deploy:
+	@echo "Creating jar"
+	@if [ ! -d $(MYLIBDIR) ]; then\
+	 @mkdir $(MYLIBDIR);\
+	fi
+	@cp $(MYLIB) $(MYLIBDIR)
+	@jar cvf $(MYJAR) $(MYLIBDIR)

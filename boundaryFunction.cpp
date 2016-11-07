@@ -1,17 +1,13 @@
+#include "spatialsim/boundaryFunction.h"
+#include "spatialsim/mystruct.h"
+#include "spatialsim/searchFunction.h"
 #include "sbml/SBMLTypes.h"
-#include "sbml/extension/SBMLExtensionRegistry.h"
-#include "sbml/packages/req/common/ReqExtensionTypes.h"
-#include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
-#include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
-#include "sbml/packages/spatial/extension/SpatialExtension.h"
 #include <vector>
-#include <iostream>
-#include <sstream>
-#include <fstream>
-#include "mystruct.h"
-#include "searchFunction.h"
 
-void setBoundaryType(Model *model, vector<variableInfo*> &varInfoList, vector<GeometryInfo*> &geoInfoList, int Xindex, int Yindex, int Zindex, int dimension)
+using namespace std;
+using namespace libsbml;
+
+void setBoundaryType(Model *model, vector<variableInfo*> &varInfoList, vector<GeometryInfo*> &geoInfoList, int Xindex, int Yindex, int Zindex, unsigned int dimension)
 {
 	ListOfSpecies *los = model->getListOfSpecies();
 	unsigned int i;
