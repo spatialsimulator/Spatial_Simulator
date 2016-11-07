@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Spatial SBML Simulator with HDF5+OpenCV
 ## How to Compile
 ### Dependency
@@ -88,4 +87,3 @@ By using this program, users may simulate their spatially extended SBML models.
 
 
 ##License##
->>>>>>> library
