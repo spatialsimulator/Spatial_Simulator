@@ -7,3 +7,4 @@ TAGS
 *.jar
 *.dSYM/
 *.log
+.DS_Store
