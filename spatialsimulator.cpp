@@ -266,27 +266,20 @@ void spatialSimulator(optionList options)
 								samVol = sfGeo->getSampledVolume(k);
 							}
 						}
-						uLong uncomprLen = samField->getUncompressedLength();
-						uLong comprLen = samField->getSamplesLength();
-						Byte *compr = (Byte*)calloc(sizeof(Byte), comprLen);
-						int *compr_int = (int*)calloc(sizeof(int), comprLen);
-						Byte *uncompr = (Byte*)calloc(sizeof(Byte), uncomprLen);
-						samField->getSamples(compr_int);
-						for (k = 0; k < comprLen; k++) {
-							compr[k] = (Byte)(compr_int[k]);
-						}
-						// isdeflated
-						if(uncomprLen > comprLen) {
-							int err = uncompress(uncompr, &uncomprLen, (const Byte*)compr, comprLen);
-							if (err != Z_OK) {
-								cout << "err with uncompression" << endl;
-								cout << err << endl;
-								return;
-							}
-						}else{
-							Byte *temp = compr;
-							compr = uncompr;
-							uncompr = temp;
+
+						int *uncompr;
+						uLong length;
+						if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_UNCOMPRESSED) {
+							length = samField->getUncompressedLength();
+							uncompr = (int*)calloc(sizeof(int), length);
+							samField->getUncompressed(uncompr);
+						} else if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_DEFLATED) {
+							length = samField->getSamplesLength();
+							uncompr = (int*)calloc(sizeof(int), length);
+							samField->getSamples(uncompr);
+						} else {
+							cerr << "base64 not supported" << endl;
+							exit(1);
 						}
 						GeometryInfo *geoInfo = new GeometryInfo;
 						InitializeAVolInfo(geoInfo);
@@ -308,7 +301,6 @@ void spatialSimulator(optionList options)
 						geoInfo->isBoundary = new int[numOfVolIndexes];
 						fill_n(geoInfo->isBoundary, numOfVolIndexes, 0);
 						geoInfoList.push_back(geoInfo);
-
 						for (Z = 0; Z < Zindex; Z += 2) {
 							for (Y = 0; Y < Yindex; Y += 2) {
 								for (X = 0; X < Xindex; X += 2) {
@@ -371,8 +363,8 @@ void spatialSimulator(optionList options)
 								}
 							}
 						}
-						free(compr_int);
-						free(compr);
+						//free(compr_int);
+						//free(compr);
 						free(uncompr);
 					}
 				}

@@ -239,7 +239,7 @@ void setParameterInfo(Model *model, vector<variableInfo*> &varInfoList, int Xdiv
 			break;
 			case SBML_SPATIAL_SPATIALSYMBOLREFERENCE: {//spatial symbol reference
 				//  if (pPlugin->getSpatialSymbolReference()->getType() == "coordinateComponent")
-				cc = geometry->getCoordinateComponent(p->getId());
+				cc = geometry->getCoordinateComponent(pPlugin->getSpatialSymbolReference()->getSpatialRef());
 				double min = cc->getBoundaryMin()->getValue();
 				double max = cc->getBoundaryMax()->getValue();
 				if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
