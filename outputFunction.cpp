@@ -524,7 +524,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
 				dir_img = "./result/" + fname + "/img/" + s->getId();
 			}
 			if (dimension == 1) {
-				fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+				fprintf(gp, "set output \"%s/%04d.png\"\n", dir_img.c_str(), file_num);
 				fprintf(gp, "splot \"%s\" u 1:2:%u with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
 			}
 			else if (dimension == 2) {//2D
@@ -533,7 +533,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
 				if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%u with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
 				else fprintf(gp, "splot \"%s\" u 1:2:%u with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
 				if (sInfo->inVol) {//replot all membrane
-					fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+					fprintf(gp, "set output \"%s/%04d.png\"\n", dir_img.c_str(), file_num);
 					fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:3:(255):(255):(255):(($3 > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str());
 				} else {
 					for (unsigned int j = 0; j < memList.size(); j++) {
@@ -545,7 +545,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
 					}
 					for (unsigned int j = 0; j < memList.size(); j++) {
 						if (strcmp(sInfo->geoi->domainTypeId, memList[j]) == 0) {
-							fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+							fprintf(gp, "set output \"%s/%04d.png\"\n", dir_img.c_str(), file_num);
 							tmp_u = dimension + j + 2;
 							fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:(($%d > 0)? 0: 1):(0):(0):(0):(($%d > 0)? 0: 200) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
 						}
@@ -558,7 +558,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
 					fprintf(gp, "set ztics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
 					fprintf(gp, "set mztics\n");
 					fprintf(gp, "set terminal png truecolor size 640,640\n");
-					fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+					fprintf(gp, "set output \"%s/%04d.png\"\n", dir_img.c_str(), file_num);
 					fprintf(gp, "splot \"%s\" u 1:2:3:(($%d == 1)? $%d: 1/0) with points palette\n", filename_mem.c_str(), 3 + 2 * mem_count - 1, 3 + 2 * mem_count);
 				} else if (sInfo->inVol) { // 未完
 					fprintf(gp, "set view equal xyz\n");
@@ -566,7 +566,7 @@ void createOutputImage(FILE *gp, vector<variableInfo*> &varInfoList, vector<cons
 					fprintf(gp, "set ztics autofreq font \"/System/Library/Fonts/LucidaGrande.ttc,20\"\n");
 					fprintf(gp, "set mztics\n");
 					fprintf(gp, "set terminal png truecolor size 640,640\n");
-					fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+					fprintf(gp, "set output \"%s/%04d.png\"\n", dir_img.c_str(), file_num);
 					fprintf(gp, "splot \"%s\" u 1:2:3:%u with points palette\n", filename_vol.c_str(), dimension + vol_count);
 				}
 			}
@@ -618,7 +618,7 @@ void createOutputSliceImage(FILE *gp, vector<variableInfo*> &varInfoList, vector
 			if (sInfo->inVol) fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_vol.c_str(), dimension + vol_count);
 			else fprintf(gp, "splot \"%s\" u 1:2:%d with image failsafe\n", filename_mem.c_str(), dimension + 2 * mem_count);
 			if (sInfo->inVol) {//replot all membrane
-				fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+				fprintf(gp, "set output \"%s/%04d.png\"\n", dir_img.c_str(), file_num);
 				fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:3:(255):(255):(255):(($3 > 0)? 255: 0) with rgbalpha failsafe t\"\"\n", dir_txt.c_str());
 			} else {
 				for (unsigned int j = 0; j < memList.size(); j++) {
@@ -630,7 +630,7 @@ void createOutputSliceImage(FILE *gp, vector<variableInfo*> &varInfoList, vector
 				}
 				for (unsigned int j = 0; j < memList.size(); j++) {
 					if (strcmp(sInfo->geoi->domainTypeId, memList[j]) == 0) {
-						fprintf(gp, "set output \"%s/%4d.png\"\n", dir_img.c_str(), file_num);
+						fprintf(gp, "set output \"%s/%04d.png\"\n", dir_img.c_str(), file_num);
 						tmp_u = dimension + j + 2;
 						fprintf(gp, "replot \"%s/geometry/all_membrane.csv\" u 1:2:(($%d > 0)? 0: 1):(0):(0):(0):(($%d > 0)? 0: 200) with rgbalpha failsafe t\"\"\n", dir_txt.c_str(), tmp_u, tmp_u);
 					}
