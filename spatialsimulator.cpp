@@ -481,7 +481,7 @@ void spatialSimulator(optionList options)
 	//membrane compartment
 	for (i = 0; i < numOfCompartments; i++) {
 		cPlugin = static_cast<SpatialCompartmentPlugin*>(loc->get(i)->getPlugin(SpatialExtension::getPackageName()));
-		if (cPlugin == 0) continue;
+		if (cPlugin == 0 || !(cPlugin -> isSetCompartmentMapping())) continue;
 		DomainType *dType = geometry->getDomainType(cPlugin->getCompartmentMapping()->getDomainType());
 		GeometryInfo *geoInfo = searchAvolInfoByCompartment(geoInfoList, loc->get(i)->getId().c_str());
 		if (geoInfo == 0) {
