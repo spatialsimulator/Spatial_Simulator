@@ -46,8 +46,6 @@ void spatialSimulator(optionList options)
 	SBMLDocument *doc = 0;
 	if( options.docFlag != 0) {
 		doc = readSBMLFromString(options.document);
-		//options.fname = "/Users/ii/Documents/workspace/SpatialSimulatorPlugin/sample/hogehoge.xml";
-		//doc = readSBML(options.fname);
 	} else {
 		doc = readSBML(options.fname);
 	}
@@ -63,7 +61,7 @@ void spatialSimulator(optionList options)
 
 	cout << "validating model..." << endl;
 	doc->checkConsistency();
-	doc->printErrors();
+	doc->printErrors(cerr);
 	cout << "finished" << endl;
 
 	//sbml core

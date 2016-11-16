@@ -13,8 +13,8 @@ void freeVarInfo(vector<variableInfo*> &varInfoList)
 	for (size_t i = 0; i < varInfoList.size(); i++) {
 		variableInfo *info = varInfoList[i];
 		if (strcmp(info->id, "t") != 0) {
-			//value
-			delete[] info->value;
+      //value
+      delete[] info->value;
 			info->value = 0;
 			//delta
 			delete[] info->delta;
