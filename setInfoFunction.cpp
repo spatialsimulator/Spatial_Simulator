@@ -178,7 +178,7 @@ void setParameterInfo(Model *model, vector<variableInfo*> &varInfoList, int Xdiv
 					case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
 						sInfo->diffCInfo[0]->value = new double(p->getValue());
 						sInfo->diffCInfo[1]->value = new double(p->getValue());
-						if(Zindex  < 1)   sInfo->diffCInfo[2]->value = new double(p->getValue());
+						if(Zindex  > 1)   sInfo->diffCInfo[2]->value = new double(p->getValue());
 						break;
 
 					case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
