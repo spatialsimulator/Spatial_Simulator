@@ -115,15 +115,6 @@ void freeRInfo(vector<reactionInfo*> &rInfoList)
 		delete[] rInfo->value;
 		rInfo->value = 0;
 		if (rInfo->rpInfo != 0) {
-			for(int j = 0; j < rInfo->rpInfo->listNum; j++) {
-				if(rInfo->rpInfo->constList[j] != 0) {
-					delete[] rInfo->rpInfo->constList[j];
-					rInfo->rpInfo->constList[j] = 0;
-					//      } else if(rInfo -> rpInfo -> deltaList[j] != 0) {
-					//        delete[] rInfo -> rpInfo -> deltaList[j];
-					//        rInfo -> rpInfo -> deltaList[j] = 0;
-				}
-			}
 			//varList
 			delete[] rInfo->rpInfo->varList;
 			rInfo->rpInfo->varList = 0;
