@@ -127,7 +127,9 @@ void spatialSimulator(optionList options)
 	//filename
 	string fname(options.fname);
 	fname = fname.substr(static_cast<unsigned long>(fname.find_last_of("/")) + 1, static_cast<unsigned long>(fname.find_last_of("."))- static_cast<unsigned long>(fname.find_last_of("/")) - 1);
-	cout << fname << endl;
+	if(fname.empty())
+    fname = model->getId();
+  cout << fname << endl;
 	if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir -p result/" + fname).c_str());
 
 	bool isImageBased = false;
