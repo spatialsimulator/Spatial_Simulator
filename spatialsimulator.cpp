@@ -45,7 +45,10 @@ void spatialSimulator(optionList options)
 {
 	SBMLDocument *doc = 0;
 	if( options.docFlag != 0) {
+    // from java
 		doc = readSBMLFromString(options.document);
+    freopen("operation.log", "w", stdout);
+    freopen("operation.log", "w", stderr);
 	} else {
 		doc = readSBML(options.fname);
 	}
