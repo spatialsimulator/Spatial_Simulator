@@ -1,20 +1,3 @@
-# Spatial SBML Simulator with HDF5+OpenCV
-## How to Compile
-### Dependency
-- [libSBML 5.11.4](http://sbml.org/Software/libSBML "libSBML")
-- [HDF5](https://www.hdfgroup.org/HDF5/ "hdf5")
-- [OpenCV]("http://opencv.org/" "opencv") 3.0
-
-インストールはmacportsとかで各自頑張って
-
-## How To Use
-とりあえず、３Dモデルの場合、スライス指定して画像を吐く機能はもう実装しました。
-実際、テキストデータとgnuplotで出力するのよか、むっちゃ速い。
-
-各駅停車と新幹線くらい違う。
-
-書くの疲れたからここまで。
-=======
 Spatial Simulator
 ======================
 
@@ -24,8 +7,8 @@ By using this program, users may simulate their spatially extended SBML models.
 ##How to Compile##
 ###Dependencies###
 + [libsbml 5.13.0](http://sbml.org/Software/libSBML "libsbml")
-+ [gnuplot](http://www.gnuplot.info/ "gnuplot")
-+ [Opencv](http://opencv.org/ "OpenCV")
++ [gnuplot 5.0](http://www.gnuplot.info/ "gnuplot")
++ [Opencv 3.1](http://opencv.org/ "OpenCV")
 
 ###Build Spatial Simulator###
 
