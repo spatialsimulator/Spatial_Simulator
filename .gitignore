@@ -8,3 +8,6 @@ TAGS
 *.dSYM/
 *.log
 .DS_Store
+GPATH
+GRTAGS
+GTAGS

@@ -7,8 +7,8 @@ By using this program, users may simulate their spatially extended SBML models.
 ##How to Compile##
 ###Dependencies###
 + [libsbml 5.13.0](http://sbml.org/Software/libSBML "libsbml")
-+ [gnuplot](http://www.gnuplot.info/ "gnuplot")
-+ [Opencv](http://opencv.org/ "OpenCV")
++ [gnuplot 5.0](http://www.gnuplot.info/ "gnuplot")
++ [Opencv 3.1](http://opencv.org/ "OpenCV")
 
 ###Build Spatial Simulator###
 
