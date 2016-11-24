@@ -1,23 +1,4 @@
 # Spatial SBML Simulator with HDF5+OpenCV
-## How to Compile
-### Dependency
-- [libSBML 5.11.4](http://sbml.org/Software/libSBML "libSBML")
-- [HDF5](https://www.hdfgroup.org/HDF5/ "hdf5")
-- [OpenCV]("http://opencv.org/" "opencv") 3.0
-
-インストールはmacportsとかで各自頑張って
-
-## How To Use
-とりあえず、３Dモデルの場合、スライス指定して画像を吐く機能はもう実装しました。
-実際、テキストデータとgnuplotで出力するのよか、むっちゃ速い。
-
-各駅停車と新幹線くらい違う。
-
-書くの疲れたからここまで。
-=======
-Spatial Simulator
-======================
-
 This program is a PDE simulator for SBML models.
 By using this program, users may simulate their spatially extended SBML models.
 
@@ -25,7 +6,7 @@ By using this program, users may simulate their spatially extended SBML models.
 ###Dependencies###
 + [libsbml 5.13.0](http://sbml.org/Software/libSBML "libsbml")
 + [gnuplot](http://www.gnuplot.info/ "gnuplot")
-+ [Opencv](http://opencv.org/ "OpenCV")
++ [OpenCV](http://opencv.org/ "OpenCV")
 
 ###Build Spatial Simulator###
 
@@ -37,10 +18,9 @@ By using this program, users may simulate their spatially extended SBML models.
 ###Compile###
 
     % make
-
 ###Run###
 
-    % ./main  -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -c 5 -C 0 -s z30 hoge.xml
+    % ./spatialsimulator  -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -c 5 -C 0 -s z30 hoge.xml
 
   | Options | Definitions|
   |:--------:|:------------|
@@ -54,6 +34,8 @@ By using this program, users may simulate their spatially extended SBML models.
   |-C | レンジの最低値（少しダサいので今後修正）|
   |-s | どのスライスの何番目を見るかを指定|
   |hoge.xml | モデルが記述されたSBMLファイル|
+
+### Example ###
 
 ##To Do##
 + メモリリークちゃんとチェックしてないから大変なことになってそう (すいません)
