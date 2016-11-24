@@ -8,7 +8,6 @@ By using this program, users may simulate their spatially extended SBML models.
 ###Dependencies###
 + [libsbml 5.13.0](http://sbml.org/Software/libSBML "libsbml")
 + [gnuplot](http://www.gnuplot.info/ "gnuplot")
-+ [Opencv](http://opencv.org/ "OpenCV")
 
 ###Build Spatial Simulator###
 
@@ -23,7 +22,7 @@ By using this program, users may simulate their spatially extended SBML models.
 
 ###Run###
 
-    % ./main  -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -c 5 -C 0 -s z30 hoge.xml
+    % ./spatialsimulator  -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -c 5 -C 0 -s z30 hoge.xml
 
   | Options | Definitions|
   |:--------:|:------------|
