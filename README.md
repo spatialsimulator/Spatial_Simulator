@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 Spatial Simulator
 ======================
 
+=======
+# Spatial SBML Simulator with HDF5+OpenCV
+>>>>>>> 5643f34e81c6512fa1c159c20e644569e11f7765
 This program is a PDE simulator for SBML models.
 By using this program, users may simulate their spatially extended SBML models.
 
@@ -20,10 +24,9 @@ By using this program, users may simulate their spatially extended SBML models.
 ###Compile###
 
     % make
-
 ###Run###
 
-    % ./main  -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -c 5 -C 0 -s z30 hoge.xml
+    % ./spatialsimulator  -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -c 5 -C 0 -s z30 hoge.xml
 
   | Options | Definitions|
   |:--------:|:------------|
@@ -37,6 +40,8 @@ By using this program, users may simulate their spatially extended SBML models.
   |-C | レンジの最低値（少しダサいので今後修正）|
   |-s | どのスライスの何番目を見るかを指定|
   |hoge.xml | モデルが記述されたSBMLファイル|
+
+### Example ###
 
 ##To Do##
 + メモリリークちゃんとチェックしてないから大変なことになってそう (すいません)
