@@ -52,5 +52,6 @@ void checkMemPosition(vector<GeometryInfo*> geoInfoList, unsigned int Xindex, un
 		if(badZ == -1) {
 			cerr << " Z boundary";
 		}
+    cerr << endl;
 	}
 }

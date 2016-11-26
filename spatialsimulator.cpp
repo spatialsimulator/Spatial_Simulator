@@ -38,11 +38,10 @@ extern "C" {
 void spatialSimulator(optionList options)
 {
 	SBMLDocument *doc = 0;
-	if( options.docFlag != 0) {
+	if(options.docFlag != 0) {
     // from java
 		doc = readSBMLFromString(options.document);
-    freopen("operation.log", "w", stdout);
-    freopen("operation.log", "w", stderr);
+    freopen("spatial_simulator_operation.log", "w", stdout);
 	} else {
 		doc = readSBML(options.fname);
 	}
@@ -126,7 +125,8 @@ void spatialSimulator(optionList options)
 	fname = fname.substr(static_cast<unsigned long>(fname.find_last_of("/")) + 1, static_cast<unsigned long>(fname.find_last_of("."))- static_cast<unsigned long>(fname.find_last_of("/")) - 1);
 	if(fname.empty())
     fname = model->getId();
-  cout << fname << endl;
+
+  cout << "File name: \n" << fname << endl;
 	if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir -p result/" + fname).c_str());
 
 	bool isImageBased = false;
@@ -269,7 +269,6 @@ void spatialSimulator(optionList options)
 								samVol = sfGeo->getSampledVolume(k);
 							}
 						}
-
 						int *uncompr;
 						uLong length;
 						if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_UNCOMPRESSED) {
@@ -277,9 +276,9 @@ void spatialSimulator(optionList options)
 							uncompr = (int*)calloc(sizeof(int), length);
 							samField->getUncompressed(uncompr);
 						} else if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_DEFLATED) {
-							length = samField->getSamplesLength();
+							length = samField->getUncompressedLength();
 							uncompr = (int*)calloc(sizeof(int), length);
-							samField->getSamples(uncompr);
+							samField->getUncompressed(uncompr);
 						} else {
 							cerr << "base64 not supported" << endl;
 							exit(1);
@@ -381,8 +380,8 @@ void spatialSimulator(optionList options)
 	delete[] tmp_isDomain;
 	//merge external and internal analytic volumes and get boundary points of the geometry
 	for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
-		AnalyticGeometry *analyticGeo = static_cast<AnalyticGeometry*>(geometry->getGeometryDefinition(i));
 		if (geometry->getGeometryDefinition(i)->isAnalyticGeometry()) {
+		AnalyticGeometry *analyticGeo = static_cast<AnalyticGeometry*>(geometry->getGeometryDefinition(i));
 			for (j = 0; j < analyticGeo->getNumAnalyticVolumes(); j++) {
 				AnalyticVolume *analyticVolEx = analyticGeo->getAnalyticVolume(j);
 				GeometryInfo *geoInfoEx = searchAvolInfoByDomainType(geoInfoList, analyticVolEx->getDomainType().c_str());
@@ -480,7 +479,6 @@ void spatialSimulator(optionList options)
 			}
 		}
 	}
-
 	//membrane compartment
 	for (i = 0; i < numOfCompartments; i++) {
 		cPlugin = static_cast<SpatialCompartmentPlugin*>(loc->get(i)->getPlugin(SpatialExtension::getPackageName()));
@@ -525,7 +523,6 @@ void spatialSimulator(optionList options)
 			geoi2->adjacentGeo2 = geoi1;
 		}
 	}
-
 	//membrane position
 	for (i = 0; i < geoInfoList.size(); i++) {
 		GeometryInfo *geoInfo = geoInfoList[i];
@@ -949,7 +946,7 @@ void spatialSimulator(optionList options)
 	}
 	cout << "finished" << endl;
 	if (dt > min_dt) {
-		cout << "dt must be less than " << min_dt << endl;
+		cerr << "dt must be less than " << min_dt << endl;
 		return;
 	}
 
@@ -1337,6 +1334,7 @@ void spatialSimulator(optionList options)
 		}
 	}
 	clock_t sim_end = clock();
+  cout << endl;
 	cout << "simulation_time: "<< ((sim_end - sim_start) / static_cast<double>(CLOCKS_PER_SEC)) << endl;
 	cout << "reaction_time: "<< (re_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
 	cout << "diffusion_time: "<< (diff_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;

@@ -59,16 +59,12 @@ void setSpeciesInfo(Model *model, vector<variableInfo*> &varInfoList, unsigned i
 			//species value is specified by initial amount, initial value, rule or initial assignment
 			//species is spatially defined
 
-			//ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
 
-			//if (cm -> getViableWithoutChange()) {
 			if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
 				info->value = new double[numOfVolIndexes];
 				fill_n(info->value, numOfVolIndexes, 0);
-				//if (!s->isSetConstant() || !s->getConstant()) {
 				info->delta = new double[4 * numOfVolIndexes];
 				fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
-				//}
 				if (s->isSetInitialAmount()) {//Initial Amount
 					info->isResolved = true;
 					for (Z = 0; Z < Zindex; Z++) {

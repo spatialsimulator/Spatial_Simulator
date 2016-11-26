@@ -20,7 +20,7 @@ void freeVarInfo(vector<variableInfo*> &varInfoList)
 			delete[] info->delta;
 			info->delta = 0;
 			//Coefficient
-			delete[] info->diffCInfo;
+      delete[] info->diffCInfo;
 			info->diffCInfo = 0;
 			delete[] info->adCInfo;
 			info->adCInfo = 0;
@@ -122,7 +122,13 @@ void freeRInfo(vector<reactionInfo*> &rInfoList)
 			delete[] rInfo->rpInfo->deltaList;
 			rInfo->rpInfo->deltaList = 0;
 			//constList
-			delete[] rInfo->rpInfo->constList;
+					for(int j = 0; j < rInfo->rpInfo->listNum; j++) {
+					if(rInfo->rpInfo->constList[j] != 0) {
+						delete[] rInfo->rpInfo->constList[j];
+						rInfo->rpInfo->constList[j] = 0;
+          }
+          }
+          delete[] rInfo->rpInfo->constList;
 			rInfo->rpInfo->constList = 0;
 			//opfuncList
 			delete[] rInfo->rpInfo->opfuncList;
