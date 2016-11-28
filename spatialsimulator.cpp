@@ -291,9 +291,9 @@ void spatialSimulator(optionList options)
 							uncompr = (int*)calloc(sizeof(int), length);
 							samField->getUncompressed(uncompr);
 						} else if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_DEFLATED) {
-							length = samField->getSamplesLength();
+							length = samField->getUncompressedLength();
 							uncompr = (int*)calloc(sizeof(int), length);
-							samField->getSamples(uncompr);
+							samField->getUncompressed(uncompr);
 						} else {
 							cerr << "base64 not supported" << endl;
 							exit(1);
