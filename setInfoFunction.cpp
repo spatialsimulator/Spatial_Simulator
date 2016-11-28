@@ -154,12 +154,12 @@ void setParameterInfo(Model *model, vector<variableInfo*> &varInfoList, int Xdiv
 					break;
 
 				case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
-					sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
+					sInfo->diffCInfo[dc->getCoordinateReference1() - 1] = info;
 					break;
 
 				case SPATIAL_DIFFUSIONKIND_TENSOR:
-					sInfo->diffCInfo[dc->getCoordinateReference1()] = info;
-					sInfo->diffCInfo[dc->getCoordinateReference2()] = info;
+					sInfo->diffCInfo[dc->getCoordinateReference1() - 1] = info;
+					sInfo->diffCInfo[dc->getCoordinateReference2() - 1] = info;
 					break;
 
 				case DIFFUSIONKIND_UNKNOWN:
@@ -172,18 +172,15 @@ void setParameterInfo(Model *model, vector<variableInfo*> &varInfoList, int Xdiv
 					info->isUniform = true;
 					switch (dc->getType()) {
 					case SPATIAL_DIFFUSIONKIND_ISOTROPIC:
-						sInfo->diffCInfo[0]->value = new double(p->getValue());
-						sInfo->diffCInfo[1]->value = new double(p->getValue());
-						if(Zindex  > 1)   sInfo->diffCInfo[2]->value = new double(p->getValue());
+						info->value = new double(p->getValue());
 						break;
 
 					case SPATIAL_DIFFUSIONKIND_ANISOTROPIC:
-						sInfo->diffCInfo[dc->getCoordinateReference1()]->value = new double(p->getValue());
+						info->value = new double(p->getValue());
 						break;
 
 					case SPATIAL_DIFFUSIONKIND_TENSOR:
-						sInfo->diffCInfo[dc->getCoordinateReference1()]->value = new double(p->getValue());
-						sInfo->diffCInfo[dc->getCoordinateReference2()]->value = new double(p->getValue());
+						info->value = new double(p->getValue());
 						break;
 
 					case DIFFUSIONKIND_UNKNOWN:
@@ -203,7 +200,7 @@ void setParameterInfo(Model *model, vector<variableInfo*> &varInfoList, int Xdiv
 				if (model->getRule(info->id) == 0 && p->isSetValue()) {
 					info->isResolved = true;
 					info->isUniform = true;
-					sInfo->adCInfo[pPlugin->getAdvectionCoefficient()->getCoordinate() - 1]->value = new double(p->getValue());
+					info->value = new double(p->getValue());
 				}
 				break;
 			case SBML_SPATIAL_BOUNDARYCONDITION://boundary condition
@@ -227,14 +224,14 @@ void setParameterInfo(Model *model, vector<variableInfo*> &varInfoList, int Xdiv
 						if (model->getRule(info->id) == 0 && p->isSetValue()) {
 							info->isResolved = true;
 							info->isUniform = true;
-							sInfo->boundaryInfo[boundaryIndex]->value = new double(p->getValue());
+							info->value = new double(p->getValue());
 						}
 					}
 				}
 			}
 			break;
 			case SBML_SPATIAL_SPATIALSYMBOLREFERENCE: {//spatial symbol reference
-				//  if (pPlugin->getSpatialSymbolReference()->getType() == "coordinateComponent")
+				                                   //  if (pPlugin->getSpatialSymbolReference()->getType() == "coordinateComponent")
 				cc = geometry->getCoordinateComponent(pPlugin->getSpatialSymbolReference()->getSpatialRef());
 				double min = cc->getBoundaryMin()->getValue();
 				double max = cc->getBoundaryMax()->getValue();
