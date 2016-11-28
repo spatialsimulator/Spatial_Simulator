@@ -113,5 +113,6 @@ void checkMemPosition(std::vector<GeometryInfo*> geoInfoList, unsigned int Xinde
         }
  			}
 		}
+		cerr << endl;
 	}
 }

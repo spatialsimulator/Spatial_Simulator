@@ -44,11 +44,10 @@ extern "C" {
 void spatialSimulator(optionList options)
 {
 	SBMLDocument *doc = 0;
-	if( options.docFlag != 0) {
-    // from java
+	if(options.docFlag != 0) {
+		// from java
 		doc = readSBMLFromString(options.document);
-    freopen("operation.log", "w", stdout);
-    freopen("operation.log", "w", stderr);
+		freopen("spatial_simulator_operation.log", "w", stdout);
 	} else {
 		doc = readSBML(options.fname);
 	}
@@ -131,8 +130,8 @@ void spatialSimulator(optionList options)
 	string fname(options.fname);
 	fname = fname.substr(static_cast<unsigned long>(fname.find_last_of("/")) + 1, static_cast<unsigned long>(fname.find_last_of("."))- static_cast<unsigned long>(fname.find_last_of("/")) - 1);
 	if(fname.empty())
-    fname = model->getId();
-  cout << fname << endl;
+		fname = model->getId();
+	cout << "File name: \n" << fname << endl;
 	if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir -p result/" + fname).c_str());
 
 	bool isImageBased = false;
@@ -396,8 +395,8 @@ void spatialSimulator(optionList options)
 	delete[] tmp_isDomain;
   //merge external and internal analytic volumes and get boundary points of the geometry
 	for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
-		AnalyticGeometry *analyticGeo = static_cast<AnalyticGeometry*>(geometry->getGeometryDefinition(i));
 		if (geometry->getGeometryDefinition(i)->isAnalyticGeometry()) {
+			AnalyticGeometry *analyticGeo = static_cast<AnalyticGeometry*>(geometry->getGeometryDefinition(i));
 			for (j = 0; j < analyticGeo->getNumAnalyticVolumes(); j++) {
 				AnalyticVolume *analyticVolEx = analyticGeo->getAnalyticVolume(j);
 				GeometryInfo *geoInfoEx = searchAvolInfoByDomainType(geoInfoList, analyticVolEx->getDomainType().c_str());
@@ -499,7 +498,7 @@ void spatialSimulator(optionList options)
 	//membrane compartment
 	for (i = 0; i < numOfCompartments; i++) {
 		cPlugin = static_cast<SpatialCompartmentPlugin*>(loc->get(i)->getPlugin(SpatialExtension::getPackageName()));
-		if (cPlugin == 0 || !(cPlugin -> isSetCompartmentMapping())) continue;
+		if (cPlugin == 0 || !(cPlugin->isSetCompartmentMapping())) continue;
 		DomainType *dType = geometry->getDomainType(cPlugin->getCompartmentMapping()->getDomainType());
 		GeometryInfo *geoInfo = searchAvolInfoByCompartment(geoInfoList, loc->get(i)->getId().c_str());
 		if (geoInfo == 0) {
@@ -1239,15 +1238,16 @@ void spatialSimulator(optionList options)
 		}
 	}
 	clock_t sim_end = clock();
-	cout << "simulation_time: "<< ((sim_end - sim_start) / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-	cout << "reaction_time: "<< (re_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-	cout << "diffusion_time: "<< (diff_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-	cout << "advection_time: "<< (ad_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-	cout << "update_time: "<< (update_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-	cout << "assign_time: "<< (assign_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-	cout << "output_time: "<< (output_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+	cout << endl;
+  cout << "simulation_time: "<< ((sim_end - sim_start) / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+  cout << "reaction_time: "<< (re_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+  cout << "diffusion_time: "<< (diff_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+  cout << "advection_time: "<< (ad_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+  cout << "update_time: "<< (update_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+  cout << "assign_time: "<< (assign_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
+  cout << "output_time: "<< (output_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
 
-	//free
+  //free
   delete[] geo_edge;//mashimo
 //for (i = 0; i < freeConstList.size(); i++) {
 //delete freeConstList[i];
