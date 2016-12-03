@@ -6,36 +6,16 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
-#include "spatialsim/spatialsim.h"
-#include <sbml/xml/XMLError.h>
-#include "sbml/SBMLTypes.h"
 #include <iostream>
-#include <sys/stat.h>
+#include "spatialsim/spatialsim.h"
 
 using namespace std;
-using namespace libsbml;
 
 int main(int argc, char *argv[])
 {
 	clock_t start = clock();
-	if (argc == 1) printErrorMessage();
-
-	SBMLDocument *doc = readSBML(argv[argc - 1]);
-	if (doc->getErrorLog()->contains(XMLFileUnreadable) || doc->getErrorLog()->contains(BadlyFormedXML)
-	    || doc->getErrorLog()->contains(MissingXMLEncoding) || doc->getErrorLog()->contains(BadXMLDecl)) {
-		doc->printErrors();
-		delete doc;
-		exit(1);
-	}
-
-	struct stat st;
-	if(stat("./result", &st) != 0) system("mkdir ./result");
-	if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial")) {//PDE
-		spatialSimulator(getOptionList(argc, argv, doc));
-	} else {//ODE
-	}
+  spatialSimulator(argc, argv);
 	clock_t end = clock();
 	cerr << "time: " << ((end - start) / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-	delete doc;
 	return 0;
 }

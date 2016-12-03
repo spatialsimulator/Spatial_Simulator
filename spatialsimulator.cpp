@@ -35,13 +35,32 @@ using namespace libsbml;
 extern "C" {
 #endif
 
-void spatialSimulator(optionList options)
+void spatialSimulator(int argc, char **argv){
+  if (argc == 1) printErrorMessage();
+  SBMLDocument *doc = readSBML(argv[argc - 1]);
+  if (doc->getErrorLog()->contains(XMLFileUnreadable) || doc->getErrorLog()->contains(BadlyFormedXML)
+      || doc->getErrorLog()->contains(MissingXMLEncoding) || doc->getErrorLog()->contains(BadXMLDecl)) {
+    doc->printErrors();
+    delete doc;
+    exit(1);
+  }
+struct stat st;
+  if(stat("./result", &st) != 0) system("mkdir ./result");
+  if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial")) {//PDE
+    simulate(getOptionList(argc, argv, doc));
+  } else {//ODE
+  }
+
+  delete doc;
+}
+
+void simulate(optionList options)
 {
 	SBMLDocument *doc = 0;
 	if(options.docFlag != 0) {
 		// from java
 		doc = readSBMLFromString(options.document);
-		freopen("spatial_simulator_operation.log", "w", stdout);
+		//freopen("spatial_simulator_operation.log", "w", stdout);
 	} else {
 		doc = readSBML(options.fname);
 	}

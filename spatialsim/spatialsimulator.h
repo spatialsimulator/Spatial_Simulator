@@ -8,7 +8,10 @@
 extern "C" {
 #endif
 
-void spatialSimulator(optionList options);
+void spatialSimulator(int argc, char **argv);
+
+void simulate(optionList options);
+
 bool isResolvedAll(std::vector<variableInfo*> &dependence);
 
 #ifdef __cplusplus
