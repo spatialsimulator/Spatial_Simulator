@@ -89,7 +89,7 @@ void outputImg(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, i
     colorBarArea->copyTo(*Roi_cbArea);
     //================= value area frame & number =====================
     setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY, Xdiv, Ydiv, fname, s_id, magnification);
-    ss << "./result/" << fname << "/img/" << s_id << "/" << file_num << ".png";
+    ss << "./result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
     imwrite(ss.str(), *image);
     ss.str("");
     delete valueMat;
@@ -182,7 +182,7 @@ void outputImg_slice(libsbml::Model *model, std::vector<variableInfo*> &varInfoL
     colorBarArea->copyTo(*Roi_cbArea);
     //================= value area frame & number =====================
     setDetail_slice(image, indent, areaSize, t, min0, max0, min1, max1, Xdiv, Ydiv, Zdiv, fname, s_id, magnification, slice ,slicedim);
-    ss << "./result/" << fname << "/img/" << s_id << "/" << file_num << ".png";
+    ss << "./result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
     imwrite(ss.str(), *image);
     ss.str("");
     delete valueMat;
