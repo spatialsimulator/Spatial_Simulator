@@ -5,7 +5,7 @@ ALL_SRCS := $(wildcard *.cpp)
 SRCS := $(filter-out main.cpp, $(ALL_SRCS))
 OBJS = $(SRCS:.cpp=.o)
 CC = g++
-CFLAGS = -Wall -Wextra -Weverything -g -c -O2 -fno-common -fPIC
+CFLAGS = -Wall -g -c -O2 -fno-common -fPIC
 HDFFLAGS = -I/opt/local/include
 OPENCVFLAGS = `pkg-config --cflags opencv`
 LDFLAGS = -L/usr/local/lib -lsbml -lz -L.
