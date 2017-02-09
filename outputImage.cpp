@@ -522,7 +522,8 @@ void setDetail(cv::Mat* image, int* indent, int* areaSize, double t, double minX
   fix[0] = ceil(textSize.width / 2.0);
   fix[1] = ceil(textSize.height / 2.0) + ltics + textSize.height * 3;
   putText(*image, "x", Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  putText(*image, "y", Point(indent[0] / 2 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  //putText(*image, "y", Point(indent[0] / 2 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  putText(*image, "y", Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   //=============== X scale ======================
   stringstream ss;
   for (i = 0; i < 6; ++i) {
@@ -616,11 +617,11 @@ void setDetail_slice(cv::Mat* image, int* indent, int* areaSize, double t, doubl
   fix[0] = textSize.width / 2;
   fix[1] = textSize.height / 2 + ltics + textSize.height * 3;
   putText(*image, axis[0], Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  putText(*image, axis[1], Point(indent[0] / 2 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  putText(*image, axis[1], Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   //=============== X scale ======================
   stringstream ss;
   for (i = 0; i < 6; ++i) {
-    ss << min0 + (max0 - min0) * i / 5;
+    ss << (int)(min0 + (max0 - min0) * i / 5);
     textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
     fix[0] = textSize.width / 2;
     fix[1] = textSize.height / 2 + ltics + textSize.height * 3 / 2;
@@ -629,7 +630,7 @@ void setDetail_slice(cv::Mat* image, int* indent, int* areaSize, double t, doubl
   }
   //=============== Y scale ======================
   for (i = 0; i < 6; ++i) {
-    ss << min1 + (max1 - min1) * i / 5;
+    ss << (int)(min1 + (max1 - min1) * i / 5);
     textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
     fix[0] = textSize.width + ltics + textSize.height * 3 / 2;
     putText(*image, ss.str().c_str(), left_bottom + Point(-fix[0], -(areaSize[1] * i / 5) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);

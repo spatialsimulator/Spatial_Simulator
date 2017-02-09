@@ -50,7 +50,7 @@ void spatialSimulator(int argc, char **argv){
     delete doc;
     exit(1);
   }
-struct stat st;
+  struct stat st;
   if(stat("./result", &st) != 0) system("mkdir ./result");
   if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial")) {//PDE
     simulate(getOptionList(argc, argv, doc));
