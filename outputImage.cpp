@@ -13,10 +13,11 @@
 #include <string>
 #include <vector>
 #include <ctime>
+#include <sys/stat.h>
 
-using namespace libsbml;
 using namespace cv;
 using namespace std;
+using namespace libsbml;
 Vec3b infVec(192, 192, 192);
 Vec3b nanVec(255, 192, 255);
 
@@ -193,6 +194,70 @@ void outputImg_slice(libsbml::Model *model, std::vector<variableInfo*> &varInfoL
   delete colorBarArea;
 }
 
+void outputGrayImage(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double t, double range_min, double range_max, std::string fname, int file_num){
+  int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1;
+
+  stringstream ss, dir_name;
+  string s_id;
+  unsigned int i;
+  unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
+  ListOfSpecies *los = model->getListOfSpecies();
+  variableInfo *sInfo;
+  for (i = 0; i < numOfSpecies; ++i) {
+    sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
+    s_id = los->get(i)->getId();
+    dir_name << "./result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num;
+    struct stat st;
+    if(stat(dir_name.str().c_str(), &st) != 0)
+      system(string("mkdir " + dir_name.str()).c_str());
+    dir_name.str("");
+   //================== value area =====================
+    for(int z = 0; z < Zindex; z++){
+      Mat* valueMat = new Mat(Size(Xdiv, Ydiv), CV_8U, Scalar::all(0));
+      Mat* valueMat_sparse = new Mat(Size(Xindex, Yindex), CV_8U, Scalar::all(0));
+      if (sInfo->inVol && z % 2 == 0) {
+        makeValueMatSlice_gray(valueMat, sInfo->value, Xindex, Yindex, z, range_min, range_max);
+        sparseMat(valueMat, valueMat_sparse);//縦横２倍
+      } else if (!sInfo->inVol) {
+        makeMemValueMatSlice_gray(valueMat_sparse, sInfo->value, geo_edge, Xindex, Yindex, z, range_min, range_max);
+      }
+
+      ss << "./result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << "/" << setfill('0') << setw(4) << z << ".tiff";
+      imwrite(ss.str(), *valueMat_sparse);
+
+      ss.str("");
+      delete valueMat;
+      delete valueMat_sparse;
+    }
+  }
+}
+
+void outputGeo3dImage(std::vector<GeometryInfo*> geoInfoList, int Xdiv, int Ydiv, int Zdiv, std::string fname){
+  int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 -1;
+  for(int i = 0; i < geoInfoList.size(); i++){
+    GeometryInfo *geoInfo = geoInfoList[i];
+    string sid = geoInfo->domainTypeId;
+    if(geoInfo -> isVol == false){
+      for (int z = 0; z < Zindex; z++){
+        Mat* memMat = new Mat(Size(Xindex, Yindex), CV_8U, Scalar::all(0));
+        for (int y = 0; y < Yindex; y++) {
+          for (int x = 0; x < Xindex; x++) {
+            int index = z * Xindex * Yindex + (Yindex - 1 - y) * Xindex + x;
+            if (geoInfo->isDomain[index]) {
+              memMat->at<unsigned char>(y, x) = 255;
+            }
+          }
+        }
+        stringstream ss;
+        ss << "./result/" << fname << "/img/geometry/" << sid << "/"<<setfill('0') << setw(4) << z << ".tiff";
+        imwrite(ss.str(), *memMat);
+        ss.str("");
+        delete memMat;
+      }
+    }
+  }
+}
+
 void makeValueMat(cv::Mat* mat, double* value, int Xindex, int Yindex, double range_min, double range_max) {
   int X, Y, index;
   double value_level = 0;
@@ -228,6 +293,18 @@ void makeValueMat(cv::Mat* mat, double* value, int Xindex, int Yindex, double ra
       else {
         cout << "unknown invalid value" << endl;
       }
+    }
+  }
+}
+
+void makeValueMatSlice_gray(cv::Mat* mat, double* value, int Xindex, int Yindex, int slice, double range_min, double range_max){
+  int X, Y, index;
+  double value_level = 0;
+  for (Y = 0; Y < Yindex; Y++) {
+    for (X = 0; X < Xindex; X++) {
+      index = slice * Xindex * Yindex + (Yindex - 1 - Y * 2) * Xindex + X * 2;
+      value_level = (value[index] - range_min) / (range_max - range_min) * 255;
+      mat->at<unsigned char>(Y, X) = (int) value_level;
     }
   }
 }
@@ -349,6 +426,20 @@ void makeMemValueMat_slice(cv::Mat* mat, double* value, int* geo_edge, int Xinde
         else {
           cout << "unknown invalid value" << endl;
         }
+      }
+    }
+  }
+}
+
+void makeMemValueMatSlice_gray(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, int slice, double range_min, double range_max) {
+  int x, y, index;
+  double value_level = 0;
+  for (y = 0; y < mat->rows; ++y) {
+    for (x = 0; x < mat->cols; ++x) {
+      index = slice * Xindex * Yindex + (Yindex - 1 - y) * Xindex + x;
+      if (geo_edge[index] == 1 || geo_edge[index] == 2) { // not needed?
+        value_level = (value[index] - range_min) / (range_max - range_min) * 255;
+        mat->at<unsigned char>(y, x) = value_level;
       }
     }
   }

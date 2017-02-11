@@ -840,9 +840,9 @@ void simulate(optionList options)
 	for (i = 0; i < numOfSpecies; i++) {
 		s = los->get(i);
 		variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
-		if (sInfo != 0 && stat(string("./result/" + fname + "/img/" + s->getId()).c_str(), &st) != 0) {
-				system(string("mkdir ./result/" + fname + "/img/" + s->getId()).c_str());
-			}
+    if (sInfo != 0 && stat(string("./result/" + fname + "/img/" + s->getId()).c_str(), &st) != 0) {
+      system(string("mkdir ./result/" + fname + "/img/" + s->getId()).c_str());
+    }
   }
 
   //draw geometries
@@ -1033,6 +1033,13 @@ void simulate(optionList options)
 		}
 	}
 
+  for(i = 0; i < memList.size(); i++){
+    string sid = memList[i];
+    if(stat(string("./result/" + fname + "/img/geometry/" + sid).c_str(), &st) != 0) {//added by mashimo
+      system(string("mkdir -p ./result/" + fname + "/img/geometry/" + sid).c_str());
+    }
+  }
+  outputGeo3dImage(geoInfoList, Xdiv, Ydiv, Zdiv, fname);
 	cout << "finished" << endl << endl;
 
 	//simulation
@@ -1061,7 +1068,8 @@ void simulate(optionList options)
             outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim);
           }
         }
-        else output3D_uint8(varInfoList, los, Xindex, Yindex, Zindex, file_num, fname, range_max);
+        //else output3D_uint8(varInfoList, los, Xindex, Yindex, Zindex, file_num, fname, range_max);
+        else outputGrayImage(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, *sim_time, range_min, range_max, fname, file_num);
       }
       outputValueData(varInfoList, los, Xdiv, Ydiv, Zdiv, dimension, file_num, fname);
 			file_num++;

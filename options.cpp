@@ -43,12 +43,12 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
 		.out_step = 1,
 		.range_max = 1.0,
 		.range_min = 0.0,
-		.sliceFlag = 1,
+		.sliceFlag = 0,
 		.slice = 0,
 		.slicedim = 'z',
 		.fname = 0,
 		.docFlag = 0,
-		.outputFlag=0
+		.outputFlag = 0
 	};
 	int opt_result;
 

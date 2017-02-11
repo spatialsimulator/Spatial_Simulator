@@ -10,13 +10,21 @@ void outputImg(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, i
 
 void outputImg_slice(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim);
 
+void outputGrayImage(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double t, double range_min, double range_max, std::string fname, int file_num);
+
+void outputGeo3dImage(std::vector<GeometryInfo*> geoInfoList, int Xdiv, int Ydiv, int Zdiv, std::string fname);
+
 void makeValueMat(cv::Mat* valueMat, double* value, int Xindex, int Yindex, double range_min, double range_max);
 
 void makeValueMat_slice(cv::Mat* valueMat, double* value, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim);
 
+void makeValueMatSlice_gray(cv::Mat* mat, double* value, int Xindex, int Yindex, int slice, double range_min, double range_max);
+
 void makeMemValueMat(cv::Mat* valueMat, double* value, int* geo_edge, int Xindex, int Yindex, double range_min, double range_max);
 
 void makeMemValueMat_slice(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim);
+
+void makeMemValueMatSlice_gray(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, int slice, double range_min, double range_max);
 
 void sparseMat(cv::Mat* origin, cv::Mat* result);
 

@@ -41,7 +41,6 @@ void setSpeciesInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoLi
 	unsigned int numOfVolIndexes = Xindex * Yindex * Zindex;
 	for (i = 0; i < numOfSpecies; i++) {
 		Species *s = los->get(i);
-		//ReqSBasePlugin* reqplugin = static_cast<ReqSBasePlugin*>(s->getPlugin(ReqExtension::getPackageName());
 		SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(SpatialExtension::getPackageName()));
 		//species have spatial extension
 		if (splugin->getIsSpatial()) {
@@ -59,9 +58,6 @@ void setSpeciesInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoLi
 			//species value is specified by initial amount, initial value, rule or initial assignment
 			//species is spatially defined
 
-			//ChangedMath* cm = reqplugin -> getListOfChangedMaths()-> get(0); //may need changes
-
-			//if (cm -> getViableWithoutChange()) {
 			if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
 				info->value = new double[numOfVolIndexes];
 				fill_n(info->value, numOfVolIndexes, 0);
@@ -87,9 +83,8 @@ void setSpeciesInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoLi
 						}
 					}
 				}
-				// }
 			}
-    info -> isResolved = true;
+      info -> isResolved = true;
 		}
 	}
 }
