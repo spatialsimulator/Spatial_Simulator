@@ -221,7 +221,6 @@ void outputGrayImage(libsbml::Model *model, std::vector<variableInfo*> &varInfoL
       } else if (!sInfo->inVol) {
         makeMemValueMatSlice_gray(valueMat_sparse, sInfo->value, geo_edge, Xindex, Yindex, z, range_min, range_max);
       }
-
       ss << "./result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << "/" << setfill('0') << setw(4) << z << ".tiff";
       imwrite(ss.str(), *valueMat_sparse);
 
@@ -434,13 +433,12 @@ void makeMemValueMat_slice(cv::Mat* mat, double* value, int* geo_edge, int Xinde
 void makeMemValueMatSlice_gray(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, int slice, double range_min, double range_max) {
   int x, y, index;
   double value_level = 0;
-  for (y = 0; y < mat->rows; ++y) {
-    for (x = 0; x < mat->cols; ++x) {
+
+  for (y = 0; y < Yindex; ++y) {
+    for (x = 0; x < Xindex; ++x) {
       index = slice * Xindex * Yindex + (Yindex - 1 - y) * Xindex + x;
-      if (geo_edge[index] == 1 || geo_edge[index] == 2) { // not needed?
-        value_level = (value[index] - range_min) / (range_max - range_min) * 255;
-        mat->at<unsigned char>(y, x) = value_level;
-      }
+      value_level = (value[index] - range_min) / (range_max - range_min) * 255;
+      mat->at<unsigned char>(y, x) = value_level;
     }
   }
 }

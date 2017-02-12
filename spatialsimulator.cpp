@@ -257,9 +257,7 @@ void simulate(optionList options)
 				}
 				geoInfo->isVol = true;
 				ast = const_cast<ASTNode*>(analyticVol->getMath());
-				//cout << "before: " << SBML_formulaToString(ast) << endl;
 				rearrangeAST(ast);
-				//cout << "after: " << SBML_formulaToString(ast) << endl;
 				numOfASTNodes = 0;
 				countAST(ast, numOfASTNodes);
 				geoInfo->rpInfo = new reversePolishInfo();
@@ -304,15 +302,13 @@ void simulate(optionList options)
 						}
 
 						int *uncompr;
-						uLong length;
+						int length;
 						if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_UNCOMPRESSED) {
 							length = samField->getUncompressedLength();
-							uncompr = (int*)calloc(sizeof(int), length);
-							samField->getUncompressed(uncompr);
+							samField->getUncompressedData(uncompr, length);
 						} else if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_DEFLATED) {
 							length = samField->getUncompressedLength();
-							uncompr = (int*)calloc(sizeof(int), length);
-							samField->getUncompressed(uncompr);
+							samField->getUncompressedData(uncompr, length);
 						} else {
 							cerr << "base64 not supported" << endl;
 							exit(1);
