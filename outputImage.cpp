@@ -211,7 +211,7 @@ void outputGrayImage(libsbml::Model *model, std::vector<variableInfo*> &varInfoL
     if(stat(dir_name.str().c_str(), &st) != 0)
       system(string("mkdir " + dir_name.str()).c_str());
     dir_name.str("");
-   //================== value area =====================
+    //================== value area =====================
     for(int z = 0; z < Zindex; z++){
       Mat* valueMat = new Mat(Size(Xdiv, Ydiv), CV_8U, Scalar::all(0));
       Mat* valueMat_sparse = new Mat(Size(Xindex, Yindex), CV_8U, Scalar::all(0));
@@ -257,41 +257,45 @@ void outputGeo3dImage(std::vector<GeometryInfo*> geoInfoList, int Xdiv, int Ydiv
   }
 }
 
+Vec3b getRBGValue(double value, double range_min, double range_max){
+  double value_level = (value - range_min) / (range_max - range_min) * 5;
+  if(value_level < 0) {//~0
+    return Vec3b(139.0, 0, 0);//BGR
+  }
+  else if(0 <= value_level && value_level < 1) {//0~1
+    return Vec3b(139.0 + value_level * (255.0 - 139.0), value_level * 255.0, 0);
+  }
+  else if(1 <= value_level && value_level < 2) {//1~2
+    return Vec3b(255.0 - (value_level - 1) * 255.0, 255, value_level - 1 * 255.0);
+  }
+  else if(2 <= value_level && value_level < 4) {//2~4
+    return Vec3b(0, 255, (value_level - 2.0) / 2.0 * 255.0);
+  }
+  else if(4 <= value_level && value_level <= 5) {//4~5
+    return Vec3b(0, 255.0 - (value_level - 4.0) * 255.0, 255);
+  }
+  else if (5 < value_level){//~5
+    return Vec3b(0, 0, 255);
+  }
+  else if (isnan(value)) {//nan
+    return nanVec;
+  }
+  else if (isinf(value)) {//inf
+    return infVec;
+  }
+  else {
+    cerr << "unknown invalid value" << endl;
+    return 0;
+  }
+}
+
 void makeValueMat(cv::Mat* mat, double* value, int Xindex, int Yindex, double range_min, double range_max) {
   int X, Y, index;
   double value_level = 0;
   for (Y = 0; Y < mat->rows; ++Y) {
     for (X = 0; X < mat->cols; ++X) {
       index = (Yindex - 1 - Y * 2) * Xindex + X * 2;//疎行列用 なんかこうしないと逆になっちゃう
-      value_level = (value[index] - range_min) / (range_max - range_min) * 5;
-      if(value_level < 0) {//~0
-        mat->at<Vec3b>(Y, X) = Vec3b(139.0, 0, 0);//BGR
-      }
-      else if(0 <= value_level && value_level < 1) {//0~1
-        mat->at<Vec3b>(Y, X) = Vec3b(139.0 + value_level * (255.0 - 139.0), value_level * 255.0, 0);
-      }
-      else if(1 <= value_level && value_level < 2) {//1~2
-        mat->at<Vec3b>(Y, X) = Vec3b(255.0 - (value_level - 1) * 255.0, 255, value_level - 1 * 255.0);
-      }
-      else if(2 <= value_level && value_level < 4) {//2~4
-        mat->at<Vec3b>(Y, X) = Vec3b(0, 255, (value_level - 2.0) / 2.0 * 255.0);
-      }
-      else if(4 <= value_level && value_level <= 5) {//4~5
-        mat->at<Vec3b>(Y, X) = Vec3b(0, 255.0 - (value_level - 4.0) * 255.0, 255);
-      }
-      else if (5 < value_level){//~5
-        //mat->at<Vec3b>(Y, X) = Vec3b(0, 255, 255);
-        mat->at<Vec3b>(Y, X) = Vec3b(0, 0, 255);
-      }
-      else if (isnan(value[index])) {//nan
-        mat->at<Vec3b>(Y, X) = nanVec;
-      }
-      else if (isinf(value[index])) {//inf
-        mat->at<Vec3b>(Y, X) = infVec;
-      }
-      else {
-        cout << "unknown invalid value" << endl;
-      }
+      mat->at<Vec3b>(Y, X) = getRBGValue(value[index], range_min, range_max);
     }
   }
 }
@@ -316,34 +320,7 @@ void makeValueMat_slice(cv::Mat* mat, double* value, int Xindex, int Yindex, int
       if (slicedim == 'x') index = (Zindex - 1 - y * 2) * Xindex * Yindex + (x * 2) * Xindex + slice;
       if (slicedim == 'y') index = (Zindex - 1 - y * 2) * Xindex * Yindex + slice * Xindex + x * 2;
       if (slicedim == 'z') index = slice * Xindex * Yindex + (Yindex - 1 - y * 2) * Xindex + x * 2;
-      value_level = (value[index] - range_min) / (range_max - range_min) * 5;
-      if(value_level < 0) {//~0
-        mat->at<Vec3b>(y, x) = Vec3b(139.0, 0, 0);//BGR
-      }
-      else if(0 <= value_level && value_level < 1) {//0~1
-        mat->at<Vec3b>(y, x) = Vec3b(139.0 + value_level * (255.0 - 139.0), value_level * 255.0, 0);
-      }
-      else if(1 <= value_level && value_level < 2) {//1~2
-        mat->at<Vec3b>(y, x) = Vec3b(255.0 - (value_level - 1) * 255.0, 255, value_level - 1 * 255.0);
-      }
-      else if(2 <= value_level && value_level < 4) {//2~4
-        mat->at<Vec3b>(y, x) = Vec3b(0, 255, (value_level - 2.0) / 2.0 * 255.0);
-      }
-      else if(4 <= value_level && value_level <= 5) {//4~5
-        mat->at<Vec3b>(y, x) = Vec3b(0, 255.0 - (value_level - 4.0) * 255.0, 255);
-      }
-      else if (5 < value_level){//~5
-        mat->at<Vec3b>(y, x) = Vec3b(0, 255, 255);
-      }
-      else if (isnan(value[index])) {//nan
-        mat->at<Vec3b>(y, x) = nanVec;
-      }
-      else if (isinf(value[index])) {//inf
-        mat->at<Vec3b>(y, x) = infVec;
-      }
-      else {
-        cout << "unknown invalid value" << endl;
-      }
+      mat->at<Vec3b>(y, x) = getRBGValue(value[index], range_min, range_max);
     }
   }
 }
@@ -355,34 +332,7 @@ void makeMemValueMat(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int
     for (X = 0; X < Xindex; ++X) {
       index = (Yindex - 1 - Y) * Xindex + X;//疎行列用 なんかこうしないと逆になっちゃう
       if (geo_edge[index] == 1 || geo_edge[index] == 2) {
-        value_level = (value[index] - range_min) / (range_max - range_min) * 5;
-        if(value_level < 0) {//~0
-          mat->at<Vec3b>(Y, X) = Vec3b(139.0, 0, 0);//BGR
-        }
-        else if(0 <= value_level && value_level < 1) {//0~1
-          mat->at<Vec3b>(Y, X) = Vec3b(139.0 + value_level * (255.0 - 139.0), value_level * 255.0, 0);
-        }
-        else if(1 <= value_level && value_level < 2) {//1~2
-          mat->at<Vec3b>(Y, X) = Vec3b(255.0 - (value_level - 1) * 255.0, 255, value_level - 1 * 255.0);
-        }
-        else if(2 <= value_level && value_level < 4) {//2~4
-          mat->at<Vec3b>(Y, X) = Vec3b(0, 255, (value_level - 2.0) / 2.0 * 255.0);
-        }
-        else if(4 <= value_level && value_level <= 5) {//4~5
-          mat->at<Vec3b>(Y, X) = Vec3b(0, 255.0 - (value_level - 4.0) * 255.0, 255);
-        }
-        else if (5 < value_level){//~5
-          mat->at<Vec3b>(Y, X) = Vec3b(0, 255, 255);
-        }
-        else if (isnan(value[index])) {//nan
-          mat->at<Vec3b>(Y, X) = nanVec;
-        }
-        else if (isinf(value[index])) {//inf
-          mat->at<Vec3b>(Y, X) = infVec;
-        }
-        else {
-          cout << "unknown invalid value" << endl;
-        }
+        mat->at<Vec3b>(Y, X) = getRBGValue(value[index], range_min, range_max);
       }
     }
   }
@@ -397,34 +347,7 @@ void makeMemValueMat_slice(cv::Mat* mat, double* value, int* geo_edge, int Xinde
       if (slicedim == 'y') index = (Zindex - 1 - y) * Xindex * Yindex + slice * Xindex + x;
       if (slicedim == 'z') index = slice * Xindex * Yindex + (Yindex - 1 - y) * Xindex + x;
       if (geo_edge[index] == 1 || geo_edge[index] == 2) {
-        value_level = (value[index] - range_min) / (range_max - range_min) * 5;
-        if(value_level < 0) {//~0
-          mat->at<Vec3b>(y, x) = Vec3b(139.0, 0, 0);//BGR
-        }
-        else if(0 <= value_level && value_level < 1) {//0~1
-          mat->at<Vec3b>(y, x) = Vec3b(139.0 + value_level * (255.0 - 139.0), value_level * 255.0, 0);
-        }
-        else if(1 <= value_level && value_level < 2) {//1~2
-          mat->at<Vec3b>(y, x) = Vec3b(255.0 - (value_level - 1) * 255.0, 255, value_level - 1 * 255.0);
-        }
-        else if(2 <= value_level && value_level < 4) {//2~4
-          mat->at<Vec3b>(y, x) = Vec3b(0, 255, (value_level - 2.0) / 2.0 * 255.0);
-        }
-        else if(4 <= value_level && value_level <= 5) {//4~5
-          mat->at<Vec3b>(y, x) = Vec3b(0, 255.0 - (value_level - 4.0) * 255.0, 255);
-        }
-        else if (5 < value_level){//~5
-          mat->at<Vec3b>(y, x) = Vec3b(0, 255, 255);
-        }
-        else if (isnan(value[index])) {//nan
-          mat->at<Vec3b>(y, x) = nanVec;
-        }
-        else if (isinf(value[index])) {//inf
-          mat->at<Vec3b>(y, x) = infVec;
-        }
-        else {
-          cout << "unknown invalid value" << endl;
-        }
+        mat->at<Vec3b>(y, x) = getRBGValue(value[index], range_min, range_max);
       }
     }
   }

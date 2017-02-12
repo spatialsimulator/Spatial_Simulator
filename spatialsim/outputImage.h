@@ -14,6 +14,8 @@ void outputGrayImage(libsbml::Model *model, std::vector<variableInfo*> &varInfoL
 
 void outputGeo3dImage(std::vector<GeometryInfo*> geoInfoList, int Xdiv, int Ydiv, int Zdiv, std::string fname);
 
+cv::Vec3b getRBGValue(double value, double range_min, double range_max);
+
 void makeValueMat(cv::Mat* valueMat, double* value, int Xindex, int Yindex, double range_min, double range_max);
 
 void makeValueMat_slice(cv::Mat* valueMat, double* value, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim);
