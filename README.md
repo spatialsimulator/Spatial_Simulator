@@ -1,10 +1,8 @@
-<<<<<<< HEAD
 Spatial Simulator
 ======================
 
 =======
 # Spatial SBML Simulator with HDF5+OpenCV
->>>>>>> 5643f34e81c6512fa1c159c20e644569e11f7765
 This program is a PDE simulator for SBML models.
 By using this program, users may simulate their spatially extended SBML models.
 

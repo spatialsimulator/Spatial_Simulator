@@ -523,7 +523,6 @@ void cipCSLR(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, d
 	double *val_delta =  new double[Xindex * Yindex * Zindex];
 	fill_n(val_delta, Xindex * Yindex * Zindex, 0);
 	boundaryType type;
-	for (int j = 0; j < Xindex * Yindex * Zindex; j++) val_delta[j] = 0.0;
 	if (sInfo->adCInfo[0] != 0) {//x-direction
 		for (i = 0; i < sInfo->geoi->domainIndex.size(); i++) {
 			index = sInfo->geoi->domainIndex[i];
