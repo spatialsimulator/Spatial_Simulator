@@ -66,7 +66,6 @@ void simulate(optionList options)
 	if(options.docFlag != 0) {
 		// from java
 		doc = readSBMLFromString(options.document);
-		//freopen("spatial_simulator_operation.log", "w", stdout);
 	} else {
 		doc = readSBML(options.fname);
 	}
@@ -155,7 +154,7 @@ void simulate(optionList options)
 
 	bool isImageBased = false;
 	for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
-		if (geometry->getGeometryDefinition(i)->isSampledFieldGeometry()) {
+		if (geometry->getGeometryDefinition(i)->isSampledFieldGeometry() && geometry->getGeometryDefinition(i)->getIsActive()) {
 			//SampleFieldGeometry
 			//SampledFieldGeometry *sfGeo	= static_cast<SampledFieldGeometry*>(geometry->getGeometryDefinition(i));
 			SampledField *samField = geometry->getListOfSampledFields()->get(0); //may need changes
