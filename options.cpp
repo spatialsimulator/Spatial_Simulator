@@ -53,7 +53,6 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
   int opt_result;
 
   while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:p")) != -1) {
-    cout << (char) opt_result << endl;
     switch(opt_result) {
       case 'x':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
