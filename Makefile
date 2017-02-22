@@ -69,6 +69,6 @@ deploy:
 	@echo "Creating jar"
 	@if [ ! -d $(MYLIBDIR) ]; then\
 		@mkdir $(MYLIBDIR);\
-		fi
+	fi
 	@cp $(MYLIB) $(MYLIBDIR)
 	@jar cvf $(MYJAR) $(MYLIBDIR)
