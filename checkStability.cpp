@@ -5,7 +5,7 @@
 #include <cmath>
 
 using namespace std;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 
 double checkDiffusionStab(variableInfo* sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, double dt)
 {

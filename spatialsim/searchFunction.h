@@ -5,8 +5,11 @@
 #include <vector>
 
 variableInfo* searchInfoById(std::vector<variableInfo*> &varInfoList, const char *varName);
+
 GeometryInfo* searchAvolInfoByDomainType(std::vector<GeometryInfo*> &geoInfoList, const char *dtId);
+
 GeometryInfo* searchAvolInfoByDomain(std::vector<GeometryInfo*> &geoInfoList, const char *dId);
+
 GeometryInfo* searchAvolInfoByCompartment(std::vector<GeometryInfo*> &geoInfoList, const char *cId);
 
 #endif

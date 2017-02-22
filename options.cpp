@@ -7,7 +7,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 
 void printErrorMessage()
 {

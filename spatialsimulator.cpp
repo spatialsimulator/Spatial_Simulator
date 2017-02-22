@@ -32,7 +32,7 @@
 #include <zlib.h>
 #include <sys/stat.h>
 
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 using namespace H5;
 using namespace cv;
 using namespace std;

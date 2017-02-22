@@ -8,7 +8,7 @@
 #include <fstream>
 
 using namespace std;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 
 void outputTimeCourse(Model *model, vector<variableInfo*> &varInfoList, vector<const char*> memList, variableInfo *xInfo, variableInfo *yInfo, variableInfo *zInfo, double *sim_time, double end_time, double dt, unsigned int dimension, int Xindex, int Yindex, int Zindex, int file_num, string fname)
 {

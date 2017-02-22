@@ -5,7 +5,7 @@
 #include <vector>
 
 using namespace std;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 
 void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &varInfoList, int index_max)
 {

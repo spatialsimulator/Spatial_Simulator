@@ -5,7 +5,7 @@
 #include <iostream>
 #include <vector>
 
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 using namespace std;
 
 void checkGeometry(GeometryInfo* geoInfo, std::string plane, int* isD, int X, int Y, int Z, unsigned int Xindex, unsigned int Yindex, unsigned int Zindex) {

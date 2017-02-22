@@ -6,7 +6,7 @@
 #include <vector>
 
 using namespace std;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 
 void freeVarInfo(vector<variableInfo*> &varInfoList)
 {

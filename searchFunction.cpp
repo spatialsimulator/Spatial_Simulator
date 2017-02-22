@@ -3,7 +3,7 @@
 #include <vector>
 
 using namespace std;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 
 variableInfo* searchInfoById(vector<variableInfo*> &varInfoList, const char *varName)
 {

@@ -4,7 +4,10 @@
 #include "mystruct.h"
 #include "sbml/SBMLTypes.h"
 
-optionList getOptionList(int argc, char **argv, libsbml::SBMLDocument *doc);
+LIBSBML_CPP_NAMESPACE_USE
+
+optionList getOptionList(int argc, char **argv, SBMLDocument *doc);
+
 void printErrorMessage();
 
 #endif

@@ -6,12 +6,14 @@
 #include <string>
 #include <vector>
 
-void makeHDF(std::string fname, libsbml::ListOfSpecies* los);
+LIBSBML_CPP_NAMESPACE_USE
 
-void make3DHDF(std::string fname, libsbml::ListOfSpecies* los);
+void makeHDF(std::string fname, ListOfSpecies* los);
 
-void outputValueData(std::vector<variableInfo*> &varInfoList, libsbml::ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int dimension, int file_num, std::string fname);
+void make3DHDF(std::string fname, ListOfSpecies* los);
 
-void output3D_uint8(std::vector<variableInfo*> &varInfoList, libsbml::ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int file_num, std::string fname, double range_max);
+void outputValueData(std::vector<variableInfo*> &varInfoList, ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int dimension, int file_num, std::string fname);
+
+void output3D_uint8(std::vector<variableInfo*> &varInfoList, ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int file_num, std::string fname, double range_max);
 
 #endif

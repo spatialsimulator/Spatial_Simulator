@@ -5,6 +5,8 @@
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include <vector>
 
+LIBSBML_CPP_NAMESPACE_USE
+
 typedef enum _materialTYpe {
 	reactants = 0, products
 }materialType;
@@ -45,8 +47,8 @@ typedef struct _GeometryInfo {
 	const char *domainTypeId;
 	const char *domainId;
   std::vector <const char *> domainIdList;
-  libsbml::AdjacentDomains *adjacent0;
-	libsbml::AdjacentDomains *adjacent1;
+  AdjacentDomains *adjacent0;
+	AdjacentDomains *adjacent1;
 	_GeometryInfo *adjacentGeo1;
 	_GeometryInfo *adjacentGeo2;
 	boundaryType *bType;
@@ -61,9 +63,9 @@ typedef struct _GeometryInfo {
 }GeometryInfo;
 
 typedef struct _variableInfo {
-  libsbml::Species *sp;
-	libsbml::Compartment *com;
-	libsbml::Parameter *para;
+  Species *sp;
+	Compartment *com;
+	Parameter *para;
 	const char* id;
 	double *value;
 	double *delta;
@@ -85,7 +87,7 @@ typedef struct _reactionInfo {
 	double *value;
 	reversePolishInfo *rpInfo;
 	bool isMemTransport;
-  libsbml::Reaction *reaction;
+  Reaction *reaction;
   std::vector<_variableInfo*> spRefList;
 	std::vector<bool> isVariable;
 	std::vector<double> srStoichiometry;

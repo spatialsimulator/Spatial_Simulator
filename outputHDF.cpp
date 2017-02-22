@@ -12,7 +12,7 @@
 #include <sstream>
 
 using namespace H5;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 using namespace std;
 
 const string FILENAME = "TimeCourseData.h5";

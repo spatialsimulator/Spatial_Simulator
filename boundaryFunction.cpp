@@ -5,7 +5,7 @@
 #include <vector>
 
 using namespace std;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 
 void setBoundaryType(Model *model, vector<variableInfo*> &varInfoList, vector<GeometryInfo*> &geoInfoList, int Xindex, int Yindex, int Zindex, unsigned int dimension)
 {

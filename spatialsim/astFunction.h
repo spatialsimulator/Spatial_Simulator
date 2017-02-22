@@ -5,12 +5,14 @@
 #include "sbml/SBMLTypes.h"
 #include <vector>
 
-void rearrangeAST(libsbml::ASTNode *ast);
+LIBSBML_CPP_NAMESPACE_USE
 
-void countAST(libsbml::ASTNode *ast, int &numOfASTNode);
+void rearrangeAST(ASTNode *ast);
 
-void parseAST(libsbml::ASTNode *ast, reversePolishInfo *rpInfo, std::vector<variableInfo*> &varInfoList, int index_max);
+void countAST(ASTNode *ast, int &numOfASTNode);
 
-void parseDependence(const libsbml::ASTNode *ast, std::vector<variableInfo*> &dependence, std::vector<variableInfo*> &varInfoList);
+void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, std::vector<variableInfo*> &varInfoList, int index_max);
+
+void parseDependence(const ASTNode *ast, std::vector<variableInfo*> &dependence, std::vector<variableInfo*> &varInfoList);
 
 #endif

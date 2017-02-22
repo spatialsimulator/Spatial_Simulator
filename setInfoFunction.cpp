@@ -10,7 +10,7 @@
 #include <iostream>
 
 using namespace std;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 
 void setCompartmentInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList)
 {

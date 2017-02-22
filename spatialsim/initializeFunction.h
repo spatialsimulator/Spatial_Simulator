@@ -4,7 +4,9 @@
 #include "mystruct.h"
 
 void InitializeVarInfo(variableInfo *varInfo);
+
 void InitializeAVolInfo(GeometryInfo *geoInfo);
+
 void InitializeVoronoiInfo(voronoiInfo *vorI, int numOfVolIndexes);
 
 #endif

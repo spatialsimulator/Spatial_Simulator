@@ -17,7 +17,7 @@
 
 using namespace cv;
 using namespace std;
-using namespace libsbml;
+LIBSBML_CPP_NAMESPACE_USE
 Vec3b infVec(192, 192, 192);
 Vec3b nanVec(255, 192, 255);
 
