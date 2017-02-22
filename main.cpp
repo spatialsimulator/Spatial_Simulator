@@ -7,7 +7,7 @@
 //============================================================================
 
 #include <iostream>
-#include "spatialsim/spatialsim.h"
+#include "../include/spatialsim/spatialsim.h"
 
 using namespace std;
 

@@ -10,4 +10,5 @@ TAGS
 .DS_Store
 GPATH
 GRTAGS
-GTAGS
+GRTAGS
+build/
