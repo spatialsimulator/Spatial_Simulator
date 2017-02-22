@@ -12,7 +12,7 @@
 using namespace std;
 LIBSBML_CPP_NAMESPACE_USE
 
-void setCompartmentInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList)
+void setCompartmentInfo(Model *model, std::vector<variableInfo*> &varInfoList)
 {
 	ListOfCompartments *loc = model->getListOfCompartments();
 	unsigned int numOfCompartments = static_cast<unsigned int>(model->getNumCompartments());
@@ -32,7 +32,7 @@ void setCompartmentInfo(libsbml::Model *model, std::vector<variableInfo*> &varIn
 	}
 }
 
-void setSpeciesInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
+void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
 {
 	ListOfSpecies *los = model->getListOfSpecies();
 	unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
@@ -41,7 +41,7 @@ void setSpeciesInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoLi
 	unsigned int numOfVolIndexes = Xindex * Yindex * Zindex;
 	for (i = 0; i < numOfSpecies; i++) {
 		Species *s = los->get(i);
-		SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin(SpatialExtension::getPackageName()));
+		SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin("spatial"));
 		//species have spatial extension
 		if (splugin->getIsSpatial()) {
 			variableInfo *info = new variableInfo;
@@ -89,9 +89,9 @@ void setSpeciesInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoLi
 	}
 }
 
-void setParameterInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
+void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
 {
-	SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(SpatialExtension::getPackageName()));
+	SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin("spatial"));
 	Geometry *geometry = spPlugin->getGeometry();
 	ListOfParameters *lop = model->getListOfParameters();
 	unsigned int numOfParameters = static_cast<unsigned int>(model->getNumParameters());
@@ -120,7 +120,7 @@ void setParameterInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfo
 	}
 	for (i = 0; i < numOfParameters; i++) {
 		Parameter *p = lop->get(i);
-		SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin(SpatialExtension::getPackageName()));
+		SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin("spatial"));
 		variableInfo *info = new variableInfo;
 		BoundaryCondition *bcon;
 		CoordinateComponent *cc;
@@ -286,7 +286,7 @@ void setParameterInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfo
 	}
 }
 
-void setReactionInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<reactionInfo*> &fast_rInfoList, unsigned int numOfVolIndexes)
+void setReactionInfo(Model *model, std::vector<variableInfo*> &varInfoList, vector<reactionInfo*> &rInfoList, vector<reactionInfo*> &fast_rInfoList, unsigned int numOfVolIndexes)
 {
 	ListOfReactions *lor = model->getListOfReactions();
 	unsigned int numOfReactions = static_cast<unsigned int>(model->getNumReactions());
@@ -395,7 +395,7 @@ void setReactionInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoL
   }
 }
 
-void setRateRuleInfo(libsbml::Model *model, std::vector<variableInfo*> &varInfoList, std::vector<reactionInfo*> &rInfoList, unsigned int numOfVolIndexes)
+void setRateRuleInfo(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<reactionInfo*> &rInfoList, unsigned int numOfVolIndexes)
 {
 	unsigned int numOfRules = static_cast<unsigned int>(model->getNumRules());
 	unsigned int i;

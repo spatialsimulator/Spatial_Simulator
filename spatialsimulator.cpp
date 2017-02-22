@@ -93,7 +93,7 @@ void simulate(optionList options)
 	ListOfCompartments *loc = model->getListOfCompartments();
 	SpatialCompartmentPlugin *cPlugin = 0;
 	//sbml spatial package
-	SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin(SpatialExtension::getPackageName()));
+	SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin("spatial"));
 	Geometry *geometry = spPlugin->getGeometry();
 
 	//size of list
@@ -236,7 +236,7 @@ void simulate(optionList options)
 				//use the first compartment that is mapped to the domaintype
 				for(k = 0; k< numOfCompartments; k++) {
 					c  = loc->get(k);
-					cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin(SpatialExtension::getPackageName()));
+					cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin("spatiaspatiall"));
 					if(analyticVol->getDomainType() == cPlugin->getCompartmentMapping()->getDomainType())
 						break;
 				}
@@ -290,7 +290,7 @@ void simulate(optionList options)
 			for (j = 0; j < numOfCompartments; j++) {
 				Compartment *c = loc->get(j);
 				if (c->getSpatialDimensions() == volDimension) {
-					cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin(SpatialExtension::getPackageName()));
+					cPlugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin("spatial"));
 					if (cPlugin != 0) {
 						SampledField *samField = geometry->getListOfSampledFields()->get(sfGeo->getSampledField());
 						SampledVolume *samVol = 0;
@@ -511,7 +511,7 @@ void simulate(optionList options)
 
 	//membrane compartment
 	for (i = 0; i < numOfCompartments; i++) {
-		cPlugin = static_cast<SpatialCompartmentPlugin*>(loc->get(i)->getPlugin(SpatialExtension::getPackageName()));
+		cPlugin = static_cast<SpatialCompartmentPlugin*>(loc->get(i)->getPlugin("spatial"));
 		if (cPlugin == 0 || !(cPlugin->isSetCompartmentMapping())) continue;
 		DomainType *dType = geometry->getDomainType(cPlugin->getCompartmentMapping()->getDomainType());
 		GeometryInfo *geoInfo = searchAvolInfoByCompartment(geoInfoList, loc->get(i)->getId().c_str());
@@ -926,7 +926,7 @@ void simulate(optionList options)
           for (j = 0; j < numOfParameters; ++j) {
             if (info->id == lop->get(j)->getId()) {
               info->para = lop->get(j);
-              SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(lop->get(j)->getPlugin(SpatialExtension::getPackageName()));
+              SpatialParameterPlugin *pPlugin = static_cast<SpatialParameterPlugin*>(lop->get(j)->getPlugin("spatial"));
               if (pPlugin->isSpatialParameter()) {//Spatial Parameter
                 cout << "-> spatial parameter" << endl;
                 string spId;
@@ -1190,7 +1190,7 @@ void simulate(optionList options)
 				info->geoi = searchAvolInfoByCompartment(geoInfoList, info->sp->getCompartment().c_str());
 			reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
 		} else {//parameter mashimo
-        if ((static_cast<SpatialParameterPlugin*>(info->para->getPlugin(SpatialExtension::getPackageName())))->isSpatialParameter()) {
+        if ((static_cast<SpatialParameterPlugin*>(info->para->getPlugin("spatial")))->isSpatialParameter()) {
           //reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, isAllArea);
           reversePolishInitial(info->geoi->domainIndex, info->rpInfo, info->value, info->rpInfo->listNum, Xindex, Yindex, Zindex, false);
         } else {

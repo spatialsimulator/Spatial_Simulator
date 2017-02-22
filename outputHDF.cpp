@@ -18,14 +18,14 @@ using namespace std;
 const string FILENAME = "TimeCourseData.h5";
 const string IMGFILENAME = "ImageData.h5";
 
-void makeHDF(std::string fname, libsbml::ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
+void makeHDF(std::string fname, ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
   H5File file("./result/" + fname + "/HDF5/" + FILENAME, H5F_ACC_TRUNC);
   for (unsigned int i = 0; i < los->size(); ++i) {
     file.createGroup(los->get(i)->getId());
   }
 }
 
-void make3DHDF(std::string fname, libsbml::ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
+void make3DHDF(std::string fname, ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
   H5File file("./result/" + fname + "/HDF5/" + IMGFILENAME, H5F_ACC_TRUNC);
   for (unsigned int i = 0; i < los->size(); ++i) {
     file.createGroup(los->get(i)->getId());
@@ -38,7 +38,7 @@ void outputGeoData() {
 
 }
 
-void outputValueData(std::vector<variableInfo*>&varInfoList, libsbml::ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int dimension, int file_num, std::string fname) {
+void outputValueData(std::vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int dimension, int file_num, std::string fname) {
   int Xindex = Xdiv * 2 - 1, Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1;
   int i, X, Y, Z;
   string s_id;
@@ -83,7 +83,7 @@ void outputValueData(std::vector<variableInfo*>&varInfoList, libsbml::ListOfSpec
   }
 }
 
-void output3D_uint8 (std::vector<variableInfo*>&varInfoList, libsbml::ListOfSpecies* los, int Xindex, int Yindex, int Zindex, int file_num, std::string fname, double range_max) {
+void output3D_uint8 (std::vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xindex, int Yindex, int Zindex, int file_num, std::string fname, double range_max) {
   int i, X, Y, Z, index;
   uint8_t ***value;
   value = new uint8_t**[Xindex];
