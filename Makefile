@@ -68,7 +68,6 @@ $(PROG): main.o $(MYLIB)
 clean:
 	rm -rf $(PROG) $(OBJS) main.o $(MYLIB) $(MYJAR)
 
-HEADERS = $(wildcard spatialsim/*.h)
 .PHONY: deploy
 deploy:
 	@echo "Creating jar"
