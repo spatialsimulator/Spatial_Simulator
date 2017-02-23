@@ -15,33 +15,36 @@ VER_CURRENT := $(VER_COMPAT).0
 # Compiler/Linker flags
 CC = g++
 #CFLAGS = -Wall -g -c -O2 -fno-common -fPIC
-CCFLAGS = -Wall -c -O2 -fno-common -fPIC
+#CCFLAGS = -Wall -c -O2 -fno-common -fPIC
 OPENCVFLAGS = `pkg-config --cflags opencv`
+OPENCVLD_PATH_FLAGS = `pkg-config --libs-only-L opencv`
+OPENCVLD_LIB_FLAGS  = `pkg-config --libs-only-l opencv`
 LDFLAGS = -L. -L/usr/local/lib -lsbml -lz
-OPENCVLDFLAGS = `pkg-config --libs opencv`
 
 UNAME_S := $(shell uname -s)
 # MacOSX + MacPorts
 ifeq ($(UNAME_S),Darwin)
+	CCFLAGS = -Wall -c -O2 -fno-common -fPIC
 	LDFLAGS := -L/opt/local/lib $(LDFLAGS)
 	HDFFLAGS = -I/opt/local/include
 	#HDFLDFLAGS = -L/opt/local/lib/hdf5-18/lib -lhdf5 -lhdf5_cpp
 	HDFLDFLAGS = -lhdf5 -lhdf5_cpp
 	MYLIB = libspatialsim.dylib
-	MYLIBFLAGS = -dynamiclib -install_name $(MYLIB) -compatibility_version 1.0 -current_version 1.0.0
+	MYLIBFLAGS = -dynamiclib -install_name $(MYLIB) -compatibility_version $(VER_COMPAT) -current_version $(VER_CURRENT)
 	MYLIBDIR = darwin/
 	SBMLLIB = libsbml.5.dylib
-	INSTALL_NAME_TOOL_CMD = install_name_tool -change $(SBMLLIB) ./$(SBMLLIB) $(MYLIB)
+	POST_LINK_CMD = install_name_tool -change $(SBMLLIB) ./$(SBMLLIB) $(MYLIB)
 endif
 # Linux (Docker image)
 ifeq ($(UNAME_S),Linux)
+	CCFLAGS = -Wall -c -O2 -fPIC -D_GLIBCXX_USE_CXX11_ABI=0
 	HDFFLAGS = -I/usr/include/hdf5/serial/
-	HDFLDFLAGS = -lhdf5_cpp
+	HDFLDFLAGS = -lhdf5_cpp -lhdf5_serial
 	MYLIB = libspatialsim.so
-	MYLIBFLAGS = -shared -fPIC -Wl,-soname,$(MYLIB).$(VER_MAJOR) -o $(MYLIB).$(VER_CURRENT)
+	MYLIBFLAGS = -shared -fPIC -Wl,-no-as-needed -Wl,-soname,$(MYLIB) #.$(VER_MAJOR)
 	MYLIBDIR = linux-x86-64/
 	SBMLLIB = libsbml.5.so
-	INSTALL_NAME_TOOL_CMD = echo "Skipping install_name_tool..."
+	POST_LINK_CMD = echo "Skipping install_name_tool..."
 endif
 
 MYJAR = libspatialsimj.jar
@@ -54,11 +57,11 @@ all: $(PROG)
 	$(CC) $(CCFLAGS) $(HDFFLAGS) $(OPENCVFLAGS) -c $<
 
 $(MYLIB): $(OBJS)
-	$(CC) -o $@ $^ $(MYLIBFLAGS) $(LDFLAGS) $(OPENCVLDFLAGS) $(HDFLDFLAGS) -v
-	$(INSTALL_NAME_TOOL_CMD)
+	$(CC) -o $@ $^ $(MYLIBFLAGS) $(OPENCVLD_PATH_FLAGS) $(LDFLAGS) $(OPENCVLD_LIB_FLAGS) $(HDFLDFLAGS) -v
+	$(POST_LINK_CMD)
 
 $(PROG): main.o $(MYLIB)
-	$(CC) -o $@ main.o $(LDFLAGS) $(OPENCVLDFLAGS) $(HDFLDFLAGS) -lspatialsim
+	$(CC) -o $@ main.o -Wl,-no-as-needed -lspatialsim $(LDFLAGS) $(OPENCVLD_LIB_FLAGS) $(HDFLDFLAGS)
 
 .PHONY: clean
 clean:
