@@ -61,7 +61,7 @@ $(MYLIB): $(OBJS)
 	$(POST_LINK_CMD)
 
 $(PROG): main.o $(MYLIB)
-	$(CC) -o $@ main.o -Wl,-no-as-needed -lspatialsim $(LDFLAGS) $(OPENCVLD_LIB_FLAGS) $(HDFLDFLAGS)
+	$(CC) -o $@ main.o -lspatialsim $(LDFLAGS) $(OPENCVLD_LIB_FLAGS) $(HDFLDFLAGS)
 
 .PHONY: clean
 clean:
