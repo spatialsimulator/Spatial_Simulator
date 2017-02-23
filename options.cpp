@@ -48,6 +48,7 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .slicedim = 'z',
     .fname = 0,
     .docFlag = 0,
+    .document = 0,
     .outputFlag = 0,
 };
   int opt_result;
