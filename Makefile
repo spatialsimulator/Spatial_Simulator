@@ -64,11 +64,12 @@ $(PROG): main.o $(MYLIB)
 clean:
 	rm -rf $(PROG) $(OBJS) main.o $(MYLIB) $(MYJAR)
 
+HEADERS = $(wildcard spatialsim/*.h)
 .PHONY: deploy
 deploy:
 	@echo "Creating jar"
 	@if [ ! -d $(MYLIBDIR) ]; then\
-		@mkdir $(MYLIBDIR);\
+		/bin/mkdir $(MYLIBDIR);\
 	fi
 	@cp $(MYLIB) $(MYLIBDIR)
 	@jar cvf $(MYJAR) $(MYLIBDIR)
