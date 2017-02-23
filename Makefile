@@ -37,7 +37,8 @@ ifeq ($(UNAME_S),Darwin)
 endif
 # Linux (Docker image)
 ifeq ($(UNAME_S),Linux)
-	CCFLAGS = -Wall -c -O2 -fPIC -D_GLIBCXX_USE_CXX11_ABI=0
+	#CCFLAGS = -Wall -c -O2 -fPIC -D_GLIBCXX_USE_CXX11_ABI=0
+	CCFLAGS = -Wall -c -O2 -fPIC
 	HDFFLAGS = -I/usr/include/hdf5/serial/
 	HDFLDFLAGS = -lhdf5_cpp -lhdf5_serial
 	MYLIB = libspatialsim.so
@@ -61,7 +62,7 @@ $(MYLIB): $(OBJS)
 	$(POST_LINK_CMD)
 
 $(PROG): main.o $(MYLIB)
-	$(CC) -o $@ main.o -lspatialsim $(LDFLAGS) $(OPENCVLD_LIB_FLAGS) $(HDFLDFLAGS)
+	$(CC) -o $@ main.o $(OPENCVLD_PATH_FLAGS) -lspatialsim $(LDFLAGS) $(OPENCVLD_LIB_FLAGS) $(HDFLDFLAGS)
 
 .PHONY: clean
 clean:
