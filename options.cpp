@@ -11,19 +11,19 @@ LIBSBML_CPP_NAMESPACE_USE
 
 void printErrorMessage()
 {
-  cout << "illegal option" << endl;
-  cout << "how to use" << endl;
-  cout << "-x #(int): the number of points at x coordinate (ex. -x 100)" << endl;
-  cout << "-y #(int): the number of points at y coordinate (ex. -y 100)" << endl;
-  cout << "-z #(int): the number of points at z coordinate (ex. -z 100)" << endl;
-  cout << "-t #(double or int): simulation time (ex. -t 10)" << endl;
-  cout << "-d #(double or int): delta t (ex. -d 0.01)" << endl;
-  cout << "-o #(int): output results every # step(ex. -o 10)" << endl;
-  cout << "-c #(double or int): max of color bar range # (ex. -c 1)" << endl;
-  cout << "-C #(double or int): min of color bar range # (ex. -c 1)" << endl;
-  cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;
-  cout << "-p: create simulation image" << endl;
-  cout << "-O: path to output directory" << endl;
+  cout << "Usage          : spatialsimulator [option] filename(SBML file only)" << endl;
+  cout << " -x #(int)     : the number of points at x coordinate (ex. -x 100)" << endl;
+  cout << " -y #(int)     : the number of points at y coordinate (ex. -y 100)" << endl;
+  cout << " -z #(int)     : the number of points at z coordinate (ex. -z 100)" << endl;
+  cout << " -t #(double)  : simulation time (ex. -t 10)" << endl;
+  cout << " -d #(double)  : delta t (ex. -d 0.01)" << endl;
+  cout << " -o #(int)     : output results every # steps (ex. -o 10)" << endl;
+  cout << " -c #(double)  : max of color bar range (ex. -c 10)" << endl;
+  cout << " -C #(double)  : min of color bar range (ex. -C 1)" << endl;
+  cout << " -s char#(int) : {x,y,z} and the number of slice (only 3D) (ex. -s z10)" << endl;
+  cout << " -p            : create simulation image" << endl;
+  cout << " -O            : path to output directory" << endl << endl;
+  cout << "(ex)           : ./spatialsimulator -t 0.1 -d 0.001 -o 10 -c 10 sam2d.xml" << endl;
   exit(1);
 }
 
