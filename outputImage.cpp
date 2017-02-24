@@ -104,6 +104,10 @@ void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_e
 void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1, magnification = 1;
   int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2], division[2], index[2];
+  if (slicedim != 'x' && slicedim != 'y' && slicedim != 'z') {
+    cerr << "Error in outputImge_slice(): slicedim should be either 'x', 'y' or 'z'." << endl;
+    return;
+  }
   if (slicedim == 'x') {
     index[0] = Yindex;
     index[1] = Zindex;
@@ -313,6 +317,10 @@ void makeValueMatSlice_gray(cv::Mat* mat, double* value, int Xindex, int Yindex,
 
 void makeValueMat_slice(cv::Mat* mat, double* value, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim) {
   int x, y, index;
+  if (slicedim != 'x' && slicedim != 'y' && slicedim != 'z') {
+    cerr << "Error in makeValueMat_slice(): slicedim should be either 'x', 'y' or 'z'." << endl;
+    return;
+  }
   for (y = 0; y < mat->rows; ++y) {
     for (x = 0; x < mat->cols; ++x) {
       if (slicedim == 'x') index = (Zindex - 1 - y * 2) * Xindex * Yindex + (x * 2) * Xindex + slice;
@@ -337,6 +345,10 @@ void makeMemValueMat(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int
 
 void makeMemValueMat_slice(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim) {
   int x, y, index;
+  if (slicedim != 'x' && slicedim != 'y' && slicedim != 'z') {
+    cerr << "Error in makeMemValueMat_slice(): slicedim should be either 'x', 'y' or 'z'." << endl;
+    return;
+  }
   for (y = 0; y < mat->rows; ++y) {
     for (x = 0; x < mat->cols; ++x) {
       if (slicedim == 'x') index = (Zindex - 1 - y) * Xindex * Yindex + x * Xindex + slice;
@@ -406,7 +418,14 @@ void addMemToValueMat(cv::Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv) {
 }
 
 void addMemToValueMat_slice(cv::Mat* valueMat, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, int slice, char slicedim) {
-  int Xindex = Xdiv * 2 - 1, Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1, index;
+  int Xindex = Xdiv * 2 - 1;
+  int Yindex = Ydiv * 2 - 1;
+  int Zindex = Zdiv * 2 - 1;
+  int index;
+  if (slicedim != 'x' && slicedim != 'y' && slicedim != 'z') {
+    cerr << "Error in addMemToValueMat_slice(): slicedim should be either 'x', 'y' or 'z'." << endl;
+    return;
+  }
   for (int y = 0; y < valueMat->rows; ++y) {
     for (int x = 0; x < valueMat->cols; ++x) {
       if (slicedim == 'x') index = (Zindex - 1 - y) * Yindex * Xindex + x * Xindex + slice;
