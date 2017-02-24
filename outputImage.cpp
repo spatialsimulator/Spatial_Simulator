@@ -233,7 +233,7 @@ void outputGrayImage(Model *model, std::vector<variableInfo*> &varInfoList, int*
 
 void outputGeo3dImage(std::vector<GeometryInfo*> geoInfoList, int Xdiv, int Ydiv, int Zdiv, std::string fname){
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 -1;
-  for(int i = 0; i < geoInfoList.size(); i++){
+  for(unsigned int i = 0; i < geoInfoList.size(); i++){
     GeometryInfo *geoInfo = geoInfoList[i];
     string sid = geoInfo->domainTypeId;
     if(geoInfo -> isVol == false){

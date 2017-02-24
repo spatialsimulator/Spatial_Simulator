@@ -9,23 +9,13 @@ LIBSBML_CPP_NAMESPACE_USE
 
 double checkDiffusionStab(variableInfo* sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, double dt)
 {
-	int X = 0, Y = 0, Z = 0, index = 0;
+	int index = 0;
 	unsigned int j;
-	int Xplus2 = 0, Xminus2 = 0, Yplus2 = 0, Yminus2 = 0, Zplus2 = 0, Zminus2 = 0;
 	int dcIndex = 0;
 	GeometryInfo *geoInfo = sInfo->geoi;
 	double min_dt = dt;
 	for (j = 0; j < geoInfo->domainIndex.size(); j++) {
 		index = geoInfo->domainIndex[j];
-		Z = index / (Xindex * Yindex);
-		Y = (index - Z * Xindex * Yindex) / Xindex;
-		X = index - Z * Xindex * Yindex - Y * Xindex;
-		Xplus2 = Z * Yindex * Xindex + Y * Xindex + (X + 2);
-		Xminus2 = Z * Yindex * Xindex + Y * Xindex + (X - 2);
-		Yplus2 = Z * Yindex * Xindex + (Y + 2) * Xindex + X;
-		Yminus2 = Z * Yindex * Xindex + (Y - 2) * Xindex + X;
-		Zplus2 = (Z + 2) * Yindex * Xindex + Y * Xindex + X;
-		Zminus2 = (Z - 2) * Yindex * Xindex + Y * Xindex + X;
 		if (sInfo->geoi->isDomain[index] == 1) {
 			if (sInfo->diffCInfo[0] != 0) {//x-diffusion
 				if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;
@@ -52,24 +42,14 @@ double checkDiffusionStab(variableInfo* sInfo, double deltaX, double deltaY, dou
 
 double checkMemDiffusionStab(variableInfo *sInfo, voronoiInfo* vorI, int Xindex, int Yindex, double dt, unsigned int dimension)
 {
-	int X = 0, Y = 0, Z = 0, index = 0;
+	int index = 0;
 	unsigned int i, j;
-	int Xplus2 = 0, Xminus2 = 0, Yplus2 = 0, Yminus2 = 0, Zplus2 = 0, Zminus2 = 0;
 	int dcIndex = 0;
 	GeometryInfo *geoInfo = sInfo->geoi;
 	double area = 0.0;
 	double min_dt = dt;
 	for (i = 0; i < geoInfo->domainIndex.size(); i++) {
 		index = geoInfo->domainIndex[i];
-		Z = index / (Xindex * Yindex);
-		Y = (index - Z * Xindex * Yindex) / Xindex;
-		X = index - Z * Xindex * Yindex - Y * Xindex;
-		Xplus2 = Z * Yindex * Xindex + Y * Xindex + (X + 2);
-		Xminus2 = Z * Yindex * Xindex + Y * Xindex + (X - 2);
-		Yplus2 = Z * Yindex * Xindex + (Y + 2) * Xindex + X;
-		Yminus2 = Z * Yindex * Xindex + (Y - 2) * Xindex + X;
-		Zplus2 = (Z + 2) * Yindex * Xindex + Y * Xindex + X;
-		Zminus2 = (Z - 2) * Yindex * Xindex + Y * Xindex + X;
 
 		if (sInfo->diffCInfo[0] != 0) {
 			if (sInfo->diffCInfo[0]->isUniform == false) {
@@ -116,15 +96,12 @@ double checkMemDiffusionStab(variableInfo *sInfo, voronoiInfo* vorI, int Xindex,
 
 double checkAdvectionStab(variableInfo* sInfo, double deltaX, double deltaY, double deltaZ, double dt, int Xindex, int Yindex, unsigned int dimension)
 {
-	int index, X, Y, Z;
+	int index;
 	unsigned int i;
 	double ux = 1.0, uy = 1.0, uz = 1.0;
 	double min_dt = dt;
 	for (i = 0; i < sInfo->geoi->domainIndex.size(); i++) {
 		index = sInfo->geoi->domainIndex[i];
-		Z = index / (Xindex * Yindex);
-		Y = (index - Z * Xindex * Yindex) / Xindex;
-		X = index - Z * Xindex * Yindex - Y * Xindex;
 		if (dimension >= 1) {
 			if (sInfo->adCInfo[0] != 0) {
 				if (sInfo->adCInfo[0]->isUniform) ux = sInfo->adCInfo[0]->value[0];

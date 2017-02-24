@@ -15,18 +15,15 @@ LIBSBML_CPP_NAMESPACE_USE
 
 void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rpInfo, double *value, int numOfASTNodes, int Xindex, int Yindex, int Zindex, bool isAllArea)
 {
-	int X, Y, Z, it_end = 0;
+  unsigned int it_end = 0;
 	int st_index = 0;
 	unsigned int index = 0;
 	double rpStack[stackMax] = {0};
-	if (!isAllArea) it_end = static_cast<int>(indexList.size());
+	if (!isAllArea) it_end = static_cast<unsigned int>(indexList.size());
 	else it_end = Xindex * Yindex * Zindex;
 	for (unsigned int j = 0; j < it_end; j++) {
 		if (!isAllArea) index = indexList[j];
 		else index = j;
-		Z = index / (Xindex * Yindex);
-		Y = (index - Z * Xindex * Yindex) / Xindex;
-		X = index - Z * Xindex * Yindex - Y * Xindex;
 		st_index = 0;
 		for (unsigned int i = 0; i < numOfASTNodes; i++) {
 			if (rpInfo->varList[i] != 0) {//set variable into the stack
@@ -198,7 +195,7 @@ void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rp
 
 void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int Yindex, int Zindex, double dt, unsigned int m, unsigned int numOfReactants, bool isReaction)
 {
-	int X, Y, Z, i, j;
+	int i, j;
 	int k;
 	int st_index = 0, index = 0, numOfVolIndexes = Xindex * Yindex * Zindex;
 	double rpStack[stackMax] = {0};
@@ -210,9 +207,6 @@ void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int
 	int numOfASTNodes = rInfo->rpInfo->listNum;
 	for (j = 0; j < (int)geoInfo->domainIndex.size(); j++) {
 		index = geoInfo->domainIndex[j];
-		Z = index / (Xindex * Yindex);
-		Y = (index - Z * Xindex * Yindex) / Xindex;
-		X = index - Z * Xindex * Yindex - Y * Xindex;
 		st_index = 0;
 		for (i = 0; i < numOfASTNodes; i++) {
 			if (variable[i] != 0) {//set variable into the stack
@@ -1278,9 +1272,8 @@ void calcMemTransport(reactionInfo *rInfo, GeometryInfo *geoInfo, normalUnitVect
 
 void calcMemDiffusion(variableInfo *sInfo, voronoiInfo *vorI, int Xindex, int Yindex, int Zindex, unsigned int m, double dt, unsigned int dimension)
 {
-	int X = 0, Y = 0, Z = 0, index = 0;
+	int index = 0;
 	unsigned int i, j;
-	int Xplus2 = 0, Xminus2 = 0, Yplus2 = 0, Yminus2 = 0, Zplus2 = 0, Zminus2 = 0;
 	int numOfVolIndexes = Xindex * Yindex * Zindex;
 	int dcIndex = 0;
 	double* val = sInfo->value;
@@ -1298,15 +1291,6 @@ void calcMemDiffusion(variableInfo *sInfo, voronoiInfo *vorI, int Xindex, int Yi
   // double Dx = deltaX, Dy = deltaY, Dz = deltaZ;
   for (i = 0; i < geoInfo->domainIndex.size(); i++) {
     index = geoInfo->domainIndex[i];
-    Z = index / (Xindex * Yindex);
-    Y = (index - Z * Xindex * Yindex) / Xindex;
-    X = index - Z * Xindex * Yindex - Y * Xindex;
-    Xplus2 = Z * Yindex * Xindex + Y * Xindex + (X + 2);
-    Xminus2 = Z * Yindex * Xindex + Y * Xindex + (X - 2);
-    Yplus2 = Z * Yindex * Xindex + (Y + 2) * Xindex + X;
-    Yminus2 = Z * Yindex * Xindex + (Y - 2) * Xindex + X;
-    Zplus2 = (Z + 2) * Yindex * Xindex + Y * Xindex + X;
-    Zminus2 = (Z - 2) * Yindex * Xindex + Y * Xindex + X;
     //cout << geoInfo->isDomain[index] << flush;//mashimo
     if (sInfo->diffCInfo[0] != 0) {
       if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;

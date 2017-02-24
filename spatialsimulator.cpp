@@ -72,7 +72,8 @@ void simulate(optionList options)
 
 	struct stat st;
 	unsigned int i, j, k;
-	int X = 0, Y = 0, Z = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0, index = 0;
+	//int X = 0, Y = 0, Z = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0, index = 0;
+	int X = 0, Y = 0, Z = 0, t = 0, count = 0, file_num = 0, percent = 0, index = 0;
 	double *sim_time = new double(0.0);
 	double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
 	double Xsize = 0.0, Ysize = 0.0, Zsize = 0.0;
@@ -1163,7 +1164,7 @@ void simulate(optionList options)
 					Z = index / (Xindex * Yindex);
 					Y = (index - Z * Xindex * Yindex) / Xindex;
 					X = index - Z * Xindex * Yindex - Y * Xindex;
-					divIndex = (Z / 2) * Ydiv * Xdiv + (Y / 2) * Xdiv + (X / 2);
+					//int divIndex = (Z / 2) * Ydiv * Xdiv + (Y / 2) * Xdiv + (X / 2);
 					//update values for the next time
 					sInfo->value[index] += dt * (sInfo->delta[index] + 2.0 * sInfo->delta[numOfVolIndexes + index] + 2.0 * sInfo->delta[2 * numOfVolIndexes + index] + sInfo->delta[3 * numOfVolIndexes + index]) / 6.0;
 					for (k = 0; k < 4; k++) sInfo->delta[k * numOfVolIndexes + index] = 0.0;
