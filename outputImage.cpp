@@ -291,7 +291,6 @@ Vec3b getRBGValue(double value, double range_min, double range_max){
 
 void makeValueMat(cv::Mat* mat, double* value, int Xindex, int Yindex, double range_min, double range_max) {
   int X, Y, index;
-  double value_level = 0;
   for (Y = 0; Y < mat->rows; ++Y) {
     for (X = 0; X < mat->cols; ++X) {
       index = (Yindex - 1 - Y * 2) * Xindex + X * 2;//疎行列用 なんかこうしないと逆になっちゃう
@@ -314,7 +313,6 @@ void makeValueMatSlice_gray(cv::Mat* mat, double* value, int Xindex, int Yindex,
 
 void makeValueMat_slice(cv::Mat* mat, double* value, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim) {
   int x, y, index;
-  double value_level = 0;
   for (y = 0; y < mat->rows; ++y) {
     for (x = 0; x < mat->cols; ++x) {
       if (slicedim == 'x') index = (Zindex - 1 - y * 2) * Xindex * Yindex + (x * 2) * Xindex + slice;
@@ -327,7 +325,6 @@ void makeValueMat_slice(cv::Mat* mat, double* value, int Xindex, int Yindex, int
 
 void makeMemValueMat(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, double range_min, double range_max) {
   int X, Y, index;
-  double value_level = 0;
   for (Y = 0; Y < Yindex; ++Y) {
     for (X = 0; X < Xindex; ++X) {
       index = (Yindex - 1 - Y) * Xindex + X;//疎行列用 なんかこうしないと逆になっちゃう
@@ -340,7 +337,6 @@ void makeMemValueMat(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int
 
 void makeMemValueMat_slice(cv::Mat* mat, double* value, int* geo_edge, int Xindex, int Yindex, int Zindex, double range_min, double range_max, int slice, char slicedim) {
   int x, y, index;
-  double value_level = 0;
   for (y = 0; y < mat->rows; ++y) {
     for (x = 0; x < mat->cols; ++x) {
       if (slicedim == 'x') index = (Zindex - 1 - y) * Xindex * Yindex + x * Xindex + slice;

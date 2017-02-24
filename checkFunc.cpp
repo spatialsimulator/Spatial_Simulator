@@ -67,7 +67,7 @@ void checkGeometry(GeometryInfo* geoInfo, std::string plane, int* isD, int X, in
   if (indexMax > NWindex && indexMin < NWindex && isD[NWindex] == 1)return;
   cout << geoInfo->compartmentId << endl;
   cout << "bad geometry: (" << X << "," << Y << "," << Z << ") plane:" << plane << endl;
-  int ns, ew;
+  int ns;
   if(plane == "xy") ns = Xindex * Yindex;
   if(plane == "yz") ns = 1;
   if(plane == "xz") ns = Xindex;
@@ -94,7 +94,6 @@ void checkGeometry(GeometryInfo* geoInfo, std::string plane, int* isD, int X, in
 void checkMemPosition(std::vector<GeometryInfo*> geoInfoList, unsigned int Xindex, unsigned int Yindex, unsigned int Zindex, unsigned int dimension) {
 	unsigned int X, Y, Z, i, j, index;
 	unsigned int size = static_cast<unsigned int>(geoInfoList.size());
-	int badX=0,badY=0,badZ=0;
 	GeometryInfo* geoInfo;
 
 	for (i = 0; i < size; ++i) {
