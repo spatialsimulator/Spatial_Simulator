@@ -24,7 +24,7 @@ typedef struct _reversePolishInfo {
 	double **deltaList;
 	double **constList;
 	int *opfuncList;
-	int listNum;
+	unsigned int listNum;
 }reversePolishInfo;
 
 typedef struct _boundaryType {

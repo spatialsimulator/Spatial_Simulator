@@ -78,7 +78,7 @@ void simulate(optionList options)
 	double *sim_time = new double(0.0);
 	double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
 	double Xsize = 0.0, Ysize = 0.0, Zsize = 0.0;
-	int numOfASTNodes = 0;
+	unsigned int numOfASTNodes = 0;
 	char *xaxis = 0, *yaxis = 0, *zaxis = 0;
 
 	cout << "validating model..." << endl;
@@ -99,11 +99,11 @@ void simulate(optionList options)
 	Geometry *geometry = spPlugin->getGeometry();
 
 	//size of list
-	unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
-	unsigned int numOfReactions = static_cast<unsigned int>(model->getNumReactions());
-	unsigned int numOfCompartments = static_cast<unsigned int>(model->getNumCompartments());
-	unsigned int numOfParameters = static_cast<unsigned int>(model->getNumParameters());
-	unsigned int numOfRules = static_cast<unsigned int>(model->getNumRules());
+	unsigned int numOfSpecies = model->getNumSpecies();
+	unsigned int numOfReactions = model->getNumReactions();
+	unsigned int numOfCompartments = model->getNumCompartments();
+	unsigned int numOfParameters = model->getNumParameters();
+	unsigned int numOfRules = model->getNumRules();
 
 	vector<variableInfo*> varInfoList = vector<variableInfo*>();
 	varInfoList.reserve(numOfCompartments + numOfSpecies + numOfParameters);

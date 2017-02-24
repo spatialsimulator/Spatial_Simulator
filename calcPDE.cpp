@@ -13,7 +13,7 @@
 using namespace std;
 LIBSBML_CPP_NAMESPACE_USE
 
-void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rpInfo, double *value, int numOfASTNodes, int Xindex, int Yindex, int Zindex, bool isAllArea)
+void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rpInfo, double *value, unsigned int numOfASTNodes, int Xindex, int Yindex, int Zindex, bool isAllArea)
 {
   unsigned int it_end = 0;
 	int st_index = 0;
@@ -196,7 +196,6 @@ void reversePolishInitial(vector<unsigned int> &indexList, reversePolishInfo *rp
 void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int Yindex, int Zindex, double dt, unsigned int m, unsigned int numOfReactants, bool isReaction)
 {
 	int i, j;
-	int k;
 	int st_index = 0, index = 0, numOfVolIndexes = Xindex * Yindex * Zindex;
 	double rpStack[stackMax] = {0};
 	double rk[4] = {0, 0.5, 0.5, 1.0};
@@ -380,10 +379,10 @@ void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int
 		}
 		st_index--;
 		if (isReaction) {//Reaction
-			for (k = 0; k < numOfReactants; k++) {//reactants
+			for (unsigned int k = 0; k < numOfReactants; k++) {//reactants
 				if (rInfo->isVariable[k]) rInfo->spRefList[k]->delta[m * numOfVolIndexes + index] -= rInfo->srStoichiometry[k] * rpStack[st_index];
 			}
-			for (k = numOfReactants; k < (int)rInfo->spRefList.size(); k++) {//products
+			for (unsigned int k = numOfReactants; k < rInfo->spRefList.size(); k++) {//products
 				if (rInfo->isVariable[k]) rInfo->spRefList[k]->delta[m * numOfVolIndexes + index] += rInfo->srStoichiometry[k] * rpStack[st_index];
 			}
 		} else if (rInfo->isVariable[0]) {//RateRule
@@ -887,7 +886,8 @@ void calcBoundary(variableInfo *sInfo, double deltaX, double deltaY, double delt
 
 void calcMemTransport(reactionInfo *rInfo, GeometryInfo *geoInfo, normalUnitVector *nuVec, int Xindex, int Yindex, int Zindex, double dt, unsigned int m, double deltaX, double deltaY, double deltaZ, unsigned int dimension, unsigned int numOfReactants)
 {
-	int X, Y, Z, i, j, k;
+	int X, Y, Z, i, k;
+  unsigned int j;
 	int st_index = 0, index = 0, numOfVolIndexes = Xindex * Yindex * Zindex;
 	int Xplus1 = 0, Xminus1 = 0, Yplus1 = 0, Yminus1 = 0, Zplus1 = 0, Zminus1 = 0;
 	int Xplus3 = 0, Xminus3 = 0, Yplus3 = 0, Yminus3 = 0, Zplus3 = 0, Zminus3 = 0;
@@ -925,7 +925,7 @@ void calcMemTransport(reactionInfo *rInfo, GeometryInfo *geoInfo, normalUnitVect
 			for (i = 0; i < numOfASTNodes; i++) {
 				if (variable[i] != 0) {//set variable into the stack
 					if (d != 0 && d[i] != 0) {
-						for (j = 0; j < static_cast<int>(rInfo->spRefList.size()); j++) {
+						for (j = 0; j < rInfo->spRefList.size(); j++) {
 							//search compartment of equation's symbol
 							if (variable[i] == rInfo->spRefList[j]->value) {
 								symbolInfo = rInfo->spRefList[j];
@@ -1225,7 +1225,7 @@ void calcMemTransport(reactionInfo *rInfo, GeometryInfo *geoInfo, normalUnitVect
 					}
 				}
 			}
-			for (j = numOfReactants; j < (int)rInfo->spRefList.size(); j++) {//products
+			for (j = numOfReactants; j < rInfo->spRefList.size(); j++) {//products
 				if (rInfo->isVariable[j]) {
 					if (geoInfo->bType[index].isBofXp || geoInfo->bType[index].isBofXm) {//x transport or x binding
 						//transport

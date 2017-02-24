@@ -9,7 +9,7 @@ LIBSBML_CPP_NAMESPACE_USE
 
 void rearrangeAST(ASTNode *ast);
 
-void countAST(ASTNode *ast, int &numOfASTNode);
+void countAST(ASTNode *ast, unsigned int &numOfASTNode);
 
 void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, std::vector<variableInfo*> &varInfoList, int index_max);
 

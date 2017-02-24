@@ -90,7 +90,7 @@ void parseAST(ASTNode *ast, reversePolishInfo *rpInfo, vector<variableInfo*> &va
 	if (index == index_max) index = 0;
 }
 
-void countAST(ASTNode *ast, int &numOfASTNodes)
+void countAST(ASTNode *ast, unsigned int &numOfASTNodes)
 {
 	for (unsigned int i = 0; i < ast->getNumChildren(); i++) {
 		countAST(ast->getChild(i), numOfASTNodes);

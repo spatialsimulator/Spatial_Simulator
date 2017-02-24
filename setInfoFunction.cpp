@@ -292,7 +292,7 @@ void setReactionInfo(Model *model, std::vector<variableInfo*> &varInfoList, vect
 	unsigned int numOfReactions = static_cast<unsigned int>(model->getNumReactions());
 	unsigned int i, j, k;
 	ASTNode *ast = 0;
-	int numOfASTNodes = 0;
+	unsigned int numOfASTNodes = 0;
 	Species *s;
 	for (i = 0; i < numOfReactions; i++) {
 		Reaction *r = lor->get(i);
@@ -362,7 +362,7 @@ void setReactionInfo(Model *model, std::vector<variableInfo*> &varInfoList, vect
       rInfo->value = new double[numOfVolIndexes];
       fill_n(rInfo->value, numOfVolIndexes, 0);
       ast = const_cast<ASTNode*>(kl->getMath());
-      int tmp = 0;
+      unsigned int tmp = 0;
       countAST(ast, tmp);
       //cout << "before reaction: " << SBML_formulaToString(ast) << endl;
       //cerr << "num_of_nodes: " << tmp << endl;
@@ -400,7 +400,7 @@ void setRateRuleInfo(Model *model, std::vector<variableInfo*> &varInfoList, std:
 	unsigned int numOfRules = static_cast<unsigned int>(model->getNumRules());
 	unsigned int i;
 	ASTNode *ast = 0;
-	int numOfASTNodes = 0;
+	unsigned int numOfASTNodes = 0;
 	Species *s;
 	for (i = 0; i < numOfRules; i++) {
 		if (model->getRule(i)->isRate()) {
