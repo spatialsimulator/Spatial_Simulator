@@ -18,34 +18,28 @@ using namespace std;
 const string FILENAME = "TimeCourseData.h5";
 const string IMGFILENAME = "ImageData.h5";
 
-void makeHDF(std::string fname, ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
-  H5File file("./result/" + fname + "/HDF5/" + FILENAME, H5F_ACC_TRUNC);
+void makeHDF(std::string fname, ListOfSpecies* los, std::string outpath) {//シミュレーション開始前にファイルを作成
+  H5File file(outpath + "/result/" + fname + "/HDF5/" + FILENAME, H5F_ACC_TRUNC);
   for (unsigned int i = 0; i < los->size(); ++i) {
     file.createGroup(los->get(i)->getId());
   }
 }
 
-void make3DHDF(std::string fname, ListOfSpecies* los) {//シミュレーション開始前にファイルを作成
-  H5File file("./result/" + fname + "/HDF5/" + IMGFILENAME, H5F_ACC_TRUNC);
+void make3DHDF(std::string fname, ListOfSpecies* los, std::string outpath) {//シミュレーション開始前にファイルを作成
+  H5File file(outpath + "/result/" + fname + "/HDF5/" + IMGFILENAME, H5F_ACC_TRUNC);
   for (unsigned int i = 0; i < los->size(); ++i) {
     file.createGroup(los->get(i)->getId());
   }
 }
 
-void outputGeoData() {
-  //H5File file("./result/" + fname + "/HDF5/" + IMGFILENAME, H5F_ACC_RDWR);
-  //file.createGroup("geometry");
-
-}
-
-void outputValueData(std::vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int dimension, int file_num, std::string fname) {
+void outputValueData(std::vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xdiv, int Ydiv, int Zdiv, int dimension, int file_num, std::string fname, std::string outpath) {
   int Xindex = Xdiv * 2 - 1, Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1;
   int i, X, Y, Z;
   string s_id;
   stringstream ss;
   ss << file_num;
   hsize_t dim[dimension];
-  H5File file("./result/" + fname + "/HDF5/" + FILENAME, H5F_ACC_RDWR);
+  H5File file(outpath + "/result/" + fname + "/HDF5/" + FILENAME, H5F_ACC_RDWR);
   DataSpace *dataspace;
   DataSet* dataset;
   Group spGroup;
@@ -83,7 +77,7 @@ void outputValueData(std::vector<variableInfo*>&varInfoList, ListOfSpecies* los,
   }
 }
 
-void output3D_uint8 (std::vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xindex, int Yindex, int Zindex, int file_num, std::string fname, double range_max) {
+void output3D_uint8 (std::vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xindex, int Yindex, int Zindex, int file_num, std::string fname, double range_max, std::string outpath) {
   int i, X, Y, Z, index;
   uint8_t ***value;
   value = new uint8_t**[Xindex];
@@ -103,7 +97,7 @@ void output3D_uint8 (std::vector<variableInfo*>&varInfoList, ListOfSpecies* los,
   dim[0] = Xindex;
   dim[1] = Yindex;
   dim[2] = Zindex;
-  H5File file("./result/" + fname + "/HDF5/" + IMGFILENAME, H5F_ACC_RDWR);
+  H5File file(outpath + "/result/" + fname + "/HDF5/" + IMGFILENAME, H5F_ACC_RDWR);
   DataSpace dataspace = DataSpace(3, dim);
   DataSet* dataset;
   Group spGroup;

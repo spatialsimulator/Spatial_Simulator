@@ -152,6 +152,7 @@ typedef struct _optionList{
   int docFlag;
   char *document;
   int outputFlag;
+  char *outpath;
 }optionList;
 
 #endif /* MYSTRUCT_H_ */
