@@ -51,7 +51,7 @@ void spatialSimulator(int argc, char **argv){
     exit(1);
   }
   struct stat st;
-  if(stat("./result", &st) != 0) system("mkdir ./result");
+  //if(stat("./result", &st) != 0) system("mkdir ./result");
   if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial")) {//PDE
     simulate(getOptionList(argc, argv, doc));
   } else {//ODE
@@ -69,8 +69,9 @@ void simulate(optionList options)
 	} else {
 		doc = readSBML(options.fname);
 	}
-
-	struct stat st;
+  cout << "fname " << options.fname << endl;
+  cout << "outpath " << options.outpath << endl;
+  struct stat st;
 	unsigned int i, j, k;
 	int X = 0, Y = 0, Z = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0, index = 0;
 	double *sim_time = new double(0.0);
@@ -136,6 +137,7 @@ void simulate(optionList options)
 	char slicedim = options.slicedim;
 	bool sliceFlag = (options.sliceFlag != 0);
 	bool outputImageFlag = (options.outputFlag != 0);
+  string outpath(options.outpath);
 	//div
 	if (dimension <= 1) {
 		Ydiv = 1;
@@ -150,7 +152,8 @@ void simulate(optionList options)
 	if(fname.empty())
 		fname = model->getId();
 	cout << "File name: \n" << fname << endl;
-	if (stat(string("result/" + fname).c_str(), &st) != 0) system(string("mkdir -p result/" + fname).c_str());
+  if (stat(string(outpath + "/result/" + fname).c_str(), &st) != 0)
+    system(string("mkdir -p " + outpath + "/result/" + fname).c_str());
 
 	bool isImageBased = false;
 	for (i = 0; i < geometry->getNumGeometryDefinitions(); i++) {
@@ -815,28 +818,28 @@ void simulate(optionList options)
 	}
 	cout << "finished" << endl << endl;
 	//make directories to output result (txt and img)
-	if(stat(string("./result/" + fname + "/txt").c_str(), &st) != 0) {
-		system(string("mkdir ./result/" + fname + "/txt").c_str());
+	if(stat(string(outpath + "/result/" + fname + "/txt").c_str(), &st) != 0) {
+		system(string("mkdir "+ outpath + "/result/" + fname + "/txt").c_str());
 	}
-	if(stat(string("./result/" + fname + "/txt/geometry").c_str(), &st) != 0) {
-		system(string("mkdir ./result/" + fname + "/txt/geometry").c_str());
+	if(stat(string(outpath + "/result/" + fname + "/txt/geometry").c_str(), &st) != 0) {
+		system(string("mkdir " + outpath + "/result/" + fname + "/txt/geometry").c_str());
 	}
-	if(stat(string("./result/" + fname + "/img").c_str(), &st) != 0) {
-		system(string("mkdir ./result/" + fname + "/img").c_str());
+	if(stat(string(outpath + "/result/" + fname + "/img").c_str(), &st) != 0) {
+		system(string("mkdir " + outpath + "/result/" + fname + "/img").c_str());
 	}
-  if(stat(string("./result/" + fname + "/HDF5").c_str(), &st) != 0) {//added by mashimo
-    system(string("mkdir ./result/" + fname + "/HDF5").c_str());
+  if(stat(string(outpath + "/result/" + fname + "/HDF5").c_str(), &st) != 0) {//added by mashimo
+    system(string("mkdir " + outpath + "/result/" + fname + "/HDF5").c_str());
   }
 
-  makeHDF(fname, los);//added by mashimo
+  makeHDF(fname, los, outpath);//added by mashimo
   if (dimension == 3)
-    make3DHDF(fname, los);
+    make3DHDF(fname, los, outpath);
 
 	for (i = 0; i < numOfSpecies; i++) {
 		s = los->get(i);
 		variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
-    if (sInfo != 0 && stat(string("./result/" + fname + "/img/" + s->getId()).c_str(), &st) != 0) {
-      system(string("mkdir ./result/" + fname + "/img/" + s->getId()).c_str());
+    if (sInfo != 0 && stat(string(outpath + "/result/" + fname + "/img/" + s->getId()).c_str(), &st) != 0) {
+      system(string("mkdir " + outpath + "/result/" + fname + "/img/" + s->getId()).c_str());
     }
   }
 
@@ -1030,11 +1033,11 @@ void simulate(optionList options)
 
   for(i = 0; i < memList.size(); i++){
     string sid = memList[i];
-    if(stat(string("./result/" + fname + "/img/geometry/" + sid).c_str(), &st) != 0) {//added by mashimo
-      system(string("mkdir -p ./result/" + fname + "/img/geometry/" + sid).c_str());
+    if(stat(string(outpath + "/result/" + fname + "/img/geometry/" + sid).c_str(), &st) != 0) {//added by mashimo
+      system(string("mkdir -p " + outpath + "/result/" + fname + "/img/geometry/" + sid).c_str());
     }
   }
-  outputGeo3dImage(geoInfoList, Xdiv, Ydiv, Zdiv, fname);
+  outputGeo3dImage(geoInfoList, Xdiv, Ydiv, Zdiv, fname, outpath);
 	cout << "finished" << endl << endl;
 
 	//simulation
@@ -1049,24 +1052,24 @@ void simulate(optionList options)
 		out_start = clock();
 		if (count % out_step == 0) {
 			if (dimension == 2) {
-        outputImg(model, varInfoList, geo_edge, Xdiv, Ydiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize, *sim_time, range_min, range_max, fname, file_num);
+        outputImg(model, varInfoList, geo_edge, Xdiv, Ydiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize, *sim_time, range_min, range_max, fname, file_num, outpath);
        }
       else if (dimension == 3) {
         if (sliceFlag) {
           if (slicedim == 'x') {
-            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, yInfo->value[0], yInfo->value[0] + Ysize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim);
+            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, yInfo->value[0], yInfo->value[0] + Ysize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim, outpath);
           }
           else if (slicedim == 'y') {
-            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim);
+            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim, outpath);
           }
           else if (slicedim == 'z') {
-            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim);
+            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim, outpath);
           }
         }
         //else output3D_uint8(varInfoList, los, Xindex, Yindex, Zindex, file_num, fname, range_max);
-        else outputGrayImage(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, *sim_time, range_min, range_max, fname, file_num);
+        else outputGrayImage(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, *sim_time, range_min, range_max, fname, file_num, outpath);
       }
-      outputValueData(varInfoList, los, Xdiv, Ydiv, Zdiv, dimension, file_num, fname);
+      outputValueData(varInfoList, los, Xdiv, Ydiv, Zdiv, dimension, file_num, fname, outpath);
 			file_num++;
 		}
 		out_end = clock();
@@ -1280,7 +1283,8 @@ void simulate(optionList options)
 	freeRInfo(rInfoList);
 	if(options.fname != 0)
 		delete options.fname;
-	delete sim_time;
+  delete options.outpath;
+  delete sim_time;
 	delete[] nuVec;
 	delete[] vorI;
   delete allAreaInfo->isDomain;//mashimo
