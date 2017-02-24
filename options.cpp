@@ -54,7 +54,6 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .outpath = 0,
   };
   int opt_result;
-  char *outpath ;
   while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:p:O:")) != -1) {
     switch(opt_result) {
       case 'x':
