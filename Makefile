@@ -45,7 +45,7 @@ ifeq ($(UNAME_S),Linux)
 	MYLIBFLAGS = -shared -fPIC -Wl,-no-as-needed -Wl,-soname,$(MYLIB) #.$(VER_MAJOR)
 	MYLIBDIR = linux-x86-64/
 	SBMLLIB = libsbml.5.so
-	POST_LINK_CMD = echo "Skipping install_name_tool..."
+	POST_LINK_CMD = @echo "Skipping install_name_tool..."
 endif
 
 MYJAR = libspatialsimj.jar
