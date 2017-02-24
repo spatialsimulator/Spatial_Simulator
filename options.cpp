@@ -23,6 +23,7 @@ void printErrorMessage()
   cout << "-C #(double or int): min of color bar range # (ex. -c 1)" << endl;
   cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;
   cout << "-p: create simulation image" << endl;
+  cout << "-O: path to output directory" << endl;
   exit(1);
 }
 
@@ -50,10 +51,11 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .docFlag = 0,
     .document = 0,
     .outputFlag = 0,
-};
+    .outpath = 0,
+  };
   int opt_result;
-
-  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:p")) != -1) {
+  char *outpath ;
+  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:p:O:")) != -1) {
     switch(opt_result) {
       case 'x':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
@@ -116,14 +118,25 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
       case 'p':
         options.outputFlag = 1;
         break;
+      case 'O':
+        options.outpath = static_cast<char*>(malloc(sizeof(char) * strlen(optarg) + 1));
+        strncpy(options.outpath, optarg, strlen(optarg) + 1);
+        break;
       default:
         printErrorMessage();
         break;
     }
   }
 
+  if(options.outpath == NULL){
+    options.outpath = static_cast<char*>(malloc(sizeof(char) * strlen(".") + 1));
+    strncpy(options.outpath, ".", strlen(".") + 1);
+  }
+
   char *fname = argv[optind];
   options.fname = static_cast<char*>(malloc(sizeof(char) * strlen(fname) + 1));
   strncpy(options.fname, fname, strlen(fname) + 1);
+
+
   return options;
 }

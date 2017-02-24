@@ -26,7 +26,7 @@ Vec3b nanVec(255, 192, 255);
 #define cbAreaX 100
 #define cbAreaY 420
 
-void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num) {
+void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, magnification = 1;
   int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2];
   areaSize[0] = Xindex;//空間領域は膜も描画できるようにこう
@@ -90,7 +90,7 @@ void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_e
     colorBarArea->copyTo(*Roi_cbArea);
     //================= value area frame & number =====================
     setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY, Xdiv, Ydiv, fname, s_id, magnification);
-    ss << "./result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
+    ss << outpath << "/result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
     imwrite(ss.str(), *image);
     ss.str("");
     delete valueMat;
@@ -101,7 +101,7 @@ void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_e
   delete colorBarArea;
 }
 
-void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim) {
+void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1, magnification = 1;
   int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2], division[2], index[2];
   if (slicedim == 'x') {
@@ -183,7 +183,7 @@ void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int*
     colorBarArea->copyTo(*Roi_cbArea);
     //================= value area frame & number =====================
     setDetail_slice(image, indent, areaSize, t, min0, max0, min1, max1, Xdiv, Ydiv, Zdiv, fname, s_id, magnification, slice ,slicedim);
-    ss << "./result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
+    ss << outpath << "/result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
     imwrite(ss.str(), *image);
     ss.str("");
     delete valueMat;
@@ -194,7 +194,7 @@ void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int*
   delete colorBarArea;
 }
 
-void outputGrayImage(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double t, double range_min, double range_max, std::string fname, int file_num){
+void outputGrayImage(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath){
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1;
 
   stringstream ss, dir_name;
@@ -206,7 +206,7 @@ void outputGrayImage(Model *model, std::vector<variableInfo*> &varInfoList, int*
   for (i = 0; i < numOfSpecies; ++i) {
     sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
     s_id = los->get(i)->getId();
-    dir_name << "./result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num;
+    dir_name << outpath << "/result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num;
     struct stat st;
     if(stat(dir_name.str().c_str(), &st) != 0)
       system(string("mkdir " + dir_name.str()).c_str());
@@ -231,7 +231,7 @@ void outputGrayImage(Model *model, std::vector<variableInfo*> &varInfoList, int*
   }
 }
 
-void outputGeo3dImage(std::vector<GeometryInfo*> geoInfoList, int Xdiv, int Ydiv, int Zdiv, std::string fname){
+void outputGeo3dImage(std::vector<GeometryInfo*> geoInfoList, int Xdiv, int Ydiv, int Zdiv, std::string fname, std::string outpath){
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 -1;
   for(unsigned int i = 0; i < geoInfoList.size(); i++){
     GeometryInfo *geoInfo = geoInfoList[i];
@@ -248,7 +248,7 @@ void outputGeo3dImage(std::vector<GeometryInfo*> geoInfoList, int Xdiv, int Ydiv
           }
         }
         stringstream ss;
-        ss << "./result/" << fname << "/img/geometry/" << sid << "/"<<setfill('0') << setw(4) << z << ".tiff";
+        ss << outpath << "/result/" << fname << "/img/geometry/" << sid << "/"<<setfill('0') << setw(4) << z << ".tiff";
         imwrite(ss.str(), *memMat);
         ss.str("");
         delete memMat;
