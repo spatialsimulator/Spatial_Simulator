@@ -60,7 +60,7 @@ void outputValueData(std::vector<variableInfo*>&varInfoList, ListOfSpecies* los,
             value[Z / 2 * Ydiv * Xdiv + Y / 2 * Xdiv + X / 2] = sInfo->value[Z * Yindex * Xindex + Y * Xindex + X];
       dataset = new DataSet(spGroup.createDataSet(ss.str(), PredType::NATIVE_DOUBLE, *dataspace));
       dataset->write(value, PredType::NATIVE_DOUBLE);
-      delete value;
+      delete[] value;
       delete dataset;
       delete dataspace;
     }

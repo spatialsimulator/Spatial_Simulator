@@ -136,7 +136,6 @@ void simulate(optionList options)
 	int slice = options.slice;
 	char slicedim = options.slicedim;
 	bool sliceFlag = (options.sliceFlag != 0);
-	bool outputImageFlag = (options.outputFlag != 0);
   string outpath(options.outpath);
 	//div
 	if (dimension <= 1) {
