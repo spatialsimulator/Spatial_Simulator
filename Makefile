@@ -14,8 +14,6 @@ VER_CURRENT := $(VER_COMPAT).0
 
 # Compiler/Linker flags
 CC = g++
-#CFLAGS = -Wall -g -c -O2 -fno-common -fPIC
-#CCFLAGS = -Wall -c -O2 -fno-common -fPIC
 OPENCVFLAGS = `pkg-config --cflags opencv`
 OPENCVLD_PATH_FLAGS = `pkg-config --libs-only-L opencv`
 OPENCVLD_LIB_FLAGS  = `pkg-config --libs-only-l opencv`
@@ -34,6 +32,7 @@ ifeq ($(UNAME_S),Darwin)
 	MYLIBDIR = darwin/
 	SBMLLIB = libsbml.5.dylib
 	POST_LINK_CMD = install_name_tool -change $(SBMLLIB) ./$(SBMLLIB) $(MYLIB)
+	INSTALL_PREFIX = /usr/local
 endif
 # Linux (Docker image)
 ifeq ($(UNAME_S),Linux)
@@ -46,6 +45,7 @@ ifeq ($(UNAME_S),Linux)
 	MYLIBDIR = linux-x86-64/
 	SBMLLIB = libsbml.5.so
 	POST_LINK_CMD = @echo "Skipping install_name_tool..."
+	INSTALL_PREFIX = /usr
 endif
 
 MYJAR = libspatialsimj.jar
@@ -64,15 +64,26 @@ $(MYLIB): $(OBJS)
 $(PROG): main.o $(MYLIB)
 	$(CC) -o $@ main.o $(OPENCVLD_PATH_FLAGS) -lspatialsim $(LDFLAGS) $(OPENCVLD_LIB_FLAGS) $(HDFLDFLAGS)
 
-.PHONY: clean
-clean:
-	rm -rf $(PROG) $(OBJS) main.o $(MYLIB) $(MYJAR)
-
 .PHONY: deploy
-deploy:
+deploy: $(PROG)
 	@echo "Creating jar"
-	@if [ ! -d $(MYLIBDIR) ]; then\
-		/bin/mkdir $(MYLIBDIR);\
-	fi
+	test -d $(MYLIBDIR) || mkdir $(MYLIBDIR)
 	@cp $(MYLIB) $(MYLIBDIR)
 	@jar cvf $(MYJAR) $(MYLIBDIR)
+
+.PHONY: install
+install: $(PROG)
+	@echo "Install $(PROG) and $(MYLIB)"
+	install -m 0755 $(PROG) $(INSTALL_PREFIX)/bin
+	install -m 0644 $(MYLIB) $(INSTALL_PREFIX)/lib
+
+.PHONY: uninstall
+uninstall:
+	@echo "Uninstall $(PROG) and $(MYLIB)"
+	rm -f $(INSTALL_PREFIX)/bin/$(PROG)
+	rm -f $(INSTALL_PREFIX)/lib/$(MYLIB)
+
+.PHONY: clean
+clean:
+	rm -f $(PROG) $(OBJS) main.o $(MYLIB) $(MYJAR)
+
