@@ -31,6 +31,7 @@
 #include <vector>
 #include <zlib.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 LIBSBML_CPP_NAMESPACE_USE
 using namespace H5;
@@ -42,7 +43,9 @@ extern "C" {
 #endif
 
 void spatialSimulator(int argc, char **argv){
-  if (argc == 1) printErrorMessage();
+  if (argc == 1 || access(argv[argc - 1], F_OK) == -1) {
+    printErrorMessage(argv[0]);
+  }
   SBMLDocument *doc = readSBML(argv[argc - 1]);
   if (doc->getErrorLog()->contains(XMLFileUnreadable) || doc->getErrorLog()->contains(BadlyFormedXML)
       || doc->getErrorLog()->contains(MissingXMLEncoding) || doc->getErrorLog()->contains(BadXMLDecl)) {
