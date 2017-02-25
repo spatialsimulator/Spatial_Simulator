@@ -1,8 +1,12 @@
 # Application name
 PROG = spatialsimulator
 
+# Variables
+INSTALL_PREFIX = /usr/local
+MYHEADERDIR = spatialsim
+
 # Code
-HEADERS = $(wildcard spatialsim/*.h)
+HEADERS = $(wildcard $(MYHEADERDIR)/*.h)
 ALL_SRCS := $(wildcard *.cpp)
 SRCS := $(filter-out main.cpp, $(ALL_SRCS))
 OBJS = $(SRCS:.cpp=.o)
@@ -34,11 +38,10 @@ ifeq ($(UNAME_S),Darwin)
 	POST_LINK_CMD = install_name_tool -change $(SBMLLIB) ./$(SBMLLIB) $(MYLIB)
 	LDD_CMD = otool -L
 	AWK_ARG = print $$1
-	INSTALL_PREFIX = /usr/local
 endif
 # Linux (Docker image)
 ifeq ($(UNAME_S),Linux)
-	#CCFLAGS = -Wall -c -O2 -fPIC -D_GLIBCXX_USE_CXX11_ABI=0
+	INSTALL_PREFIX = /usr
 	CCFLAGS = -Wall -c -O2 -fPIC
 	HDFFLAGS = -I/usr/include/hdf5/serial/
 	HDFLDFLAGS = -lhdf5_cpp -lhdf5_serial
@@ -49,7 +52,6 @@ ifeq ($(UNAME_S),Linux)
 	POST_LINK_CMD = @echo "Skipping install_name_tool..."
 	LDD_CMD = ldd
 	AWK_ARG = print $$3
-	INSTALL_PREFIX = /usr
 endif
 
 MYJAR = libspatialsimj.jar
@@ -83,12 +85,14 @@ install: $(PROG)
 	@echo "Install $(PROG) and $(MYLIB)"
 	install -m 0755 $(PROG) $(INSTALL_PREFIX)/bin
 	install -m 0644 $(MYLIB) $(INSTALL_PREFIX)/lib
+	cp -r $(MYHEADERDIR) $(INSTALL_PREFIX)/include
 
 .PHONY: uninstall
 uninstall:
 	@echo "Uninstall $(PROG) and $(MYLIB)"
-	rm -f $(INSTALL_PREFIX)/bin/$(PROG)
-	rm -f $(INSTALL_PREFIX)/lib/$(MYLIB)
+	rm -f  $(INSTALL_PREFIX)/bin/$(PROG)
+	rm -f  $(INSTALL_PREFIX)/lib/$(MYLIB)
+	rm -rf $(INSTALL_PREFIX)/include/$(MYHEADERDIR)
 
 .PHONY: clean
 clean:
