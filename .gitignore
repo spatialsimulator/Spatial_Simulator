@@ -2,6 +2,7 @@ main
 result/
 *.o
 libspatialsim.dylib
+libspatialsim.so
 spatialsimulator
 TAGS
 *.jar
