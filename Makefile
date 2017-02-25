@@ -32,6 +32,8 @@ ifeq ($(UNAME_S),Darwin)
 	MYLIBDIR = darwin/
 	SBMLLIB = libsbml.5.dylib
 	POST_LINK_CMD = install_name_tool -change $(SBMLLIB) ./$(SBMLLIB) $(MYLIB)
+	LDD_CMD = otool -L
+	AWK_ARG = print $$1
 	INSTALL_PREFIX = /usr/local
 endif
 # Linux (Docker image)
@@ -45,6 +47,8 @@ ifeq ($(UNAME_S),Linux)
 	MYLIBDIR = linux-x86-64/
 	SBMLLIB = libsbml.5.so
 	POST_LINK_CMD = @echo "Skipping install_name_tool..."
+	LDD_CMD = ldd
+	AWK_ARG = print $$3
 	INSTALL_PREFIX = /usr
 endif
 
@@ -69,6 +73,9 @@ deploy: $(PROG)
 	@echo "Creating jar"
 	test -d $(MYLIBDIR) || mkdir $(MYLIBDIR)
 	@cp $(MYLIB) $(MYLIBDIR)
+	@cp `$(LDD_CMD) $(MYLIB) | grep opencv  | awk '{$(AWK_ARG)}'` $(MYLIBDIR)
+	@cp `$(LDD_CMD) $(MYLIB) | grep hdf     | awk '{$(AWK_ARG)}'` $(MYLIBDIR)
+	@cp `$(LDD_CMD) $(MYLIB) | grep libsbml | awk '{$(AWK_ARG)}'` $(MYLIBDIR)
 	@jar cvf $(MYJAR) $(MYLIBDIR)
 
 .PHONY: install
