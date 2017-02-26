@@ -4,9 +4,9 @@
 
 2.実行方法
 	% ./main -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -C 5 -s z30 hoge.xml (./main以下の順番は適当でいい)
-	  -x: x軸方向のメッシュ数
-	  -y: y軸方向のメッシュ数
-	  -z: z軸方向のメッシュ数
+	  -x: x軸方向のメッシュ数 (analytic geometry のみ有効)
+	  -y: y軸方向のメッシュ数 (analytic geometry のみ有効)
+	  -z: z軸方向のメッシュ数 (analytic geometry のみ有効)
 	  -t: 終了時間
 	  -d: 時間刻み
 	  -o: 何ステップごとに結果出力するか

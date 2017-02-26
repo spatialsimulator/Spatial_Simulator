@@ -13,9 +13,9 @@ void printErrorMessage(char *str)
 {
   cout << "Usage          : " << str << " [option] filename(SBML file only)" << endl;
   cout << " -h            : show this message" << endl;
-  cout << " -x #(int)     : the number of points at x coordinate (ex. -x 100)" << endl;
-  cout << " -y #(int)     : the number of points at y coordinate (ex. -y 100)" << endl;
-  cout << " -z #(int)     : the number of points at z coordinate (ex. -z 100)" << endl;
+  cout << " -x #(int)     : the number of points at x coordinate (for analytic geometry only) (ex. -x 100)" << endl;
+  cout << " -y #(int)     : the number of points at y coordinate (for analytic geometry only) (ex. -y 100)" << endl;
+  cout << " -z #(int)     : the number of points at z coordinate (for analytic geometry only) (ex. -z 100)" << endl;
   cout << " -t #(double)  : simulation time (ex. -t 10)" << endl;
   cout << " -d #(double)  : delta t (ex. -d 0.01)" << endl;
   cout << " -o #(int)     : output results every # steps (ex. -o 10)" << endl;

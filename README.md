@@ -28,9 +28,9 @@ By using this program, users may simulate their spatially extended SBML models.
 
 | Options | Definitions|
 |:--------:|:------------|
-|-x | x軸方向のメッシュ数|
-|-y | y軸方向のメッシュ数|
-|-z | z軸方向のメッシュ数|
+|-x | x軸方向のメッシュ数 (analytic geometry のみ有効)|
+|-y | y軸方向のメッシュ数 (analytic geometry のみ有効)|
+|-z | z軸方向のメッシュ数 (analytic geometry のみ有効)|
 |-t | 終了時間|
 |-d | 時間刻み|
 |-o | 何ステップごとに結果出力するか|
@@ -50,7 +50,7 @@ By using this program, users may simulate their spatially extended SBML models.
   今はそれを直して使っている(ex.xmlを参照)
 
 + VCellとy軸の方向が逆だから、VCellからエクスポートしたファイルを使うときは上下逆さになることに注意
-
+```
       自分のやつ             VCell
           y ^                              - - - -> x
                 |                                  |
@@ -58,7 +58,7 @@ By using this program, users may simulate their spatially extended SBML models.
                 |                                  |
                 - - - ->                y  v
                           x
-
+```
 + AlgebraicRule, FastReaction未実装
 
 + 陰解法
