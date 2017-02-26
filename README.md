@@ -51,13 +51,13 @@ By using this program, users may simulate their spatially extended SBML models.
 
 + VCellとy軸の方向が逆だから、VCellからエクスポートしたファイルを使うときは上下逆さになることに注意
 ```
-      自分のやつ             VCell
-          y ^                              - - - -> x
-                |                                  |
-                |                                  |
-                |                                  |
-                - - - ->                y  v
-                          x
+      spatialsimulator             VCell
+        y ^                      - - - -> x
+          |                      |
+          |                      |
+          |                      |
+          - - - ->            y  v
+                  x
 ```
 + AlgebraicRule, FastReaction未実装
 
