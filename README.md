@@ -24,7 +24,7 @@ By using this program, users may simulate their spatially extended SBML models.
     % make
 ###Run###
 
-    % ./spatialsimulator  -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -c 5 -C 0 -s z30 hoge.xml
+    % ./spatialsimulator  -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -c 0 -C 5 -s z30 hoge.xml
 
 | Options | Definitions|
 |:--------:|:------------|
@@ -34,8 +34,8 @@ By using this program, users may simulate their spatially extended SBML models.
 |-t | 終了時間|
 |-d | 時間刻み|
 |-o | 何ステップごとに結果出力するか|
-|-c | 結果を画像出力するときのカラーバーのレンジの最高値 (最低値は0としている)|
-|-C | レンジの最低値（少しダサいので今後修正）|
+|-C | 結果を画像出力するときのカラーバーのレンジの最高値 (最低値は0としている)|
+|-c | レンジの最低値（少しダサいので今後修正）|
 |-s | どのスライスの何番目を見るかを指定|
 |hoge.xml | モデルが記述されたSBMLファイル|
 

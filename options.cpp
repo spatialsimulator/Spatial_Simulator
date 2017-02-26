@@ -19,12 +19,12 @@ void printErrorMessage(char *str)
   cout << " -t #(double)  : simulation time (ex. -t 10)" << endl;
   cout << " -d #(double)  : delta t (ex. -d 0.01)" << endl;
   cout << " -o #(int)     : output results every # steps (ex. -o 10)" << endl;
-  cout << " -c #(double)  : max of color bar range (ex. -c 10)" << endl;
-  cout << " -C #(double)  : min of color bar range (ex. -C 1)" << endl;
+  cout << " -c #(double)  : min of color bar range (ex. -c 1)" << endl;
+  cout << " -C #(double)  : max of color bar range (ex. -C 10)" << endl;
   cout << " -s char#(int) : {x,y,z} and the number of slice (only 3D) (ex. -s z10)" << endl;
 //cout << " -p            : create simulation image" << endl;
   cout << " -O outDir     : path to output directory" << endl << endl;
-  cout << "(ex)           : " << str << " -t 0.1 -d 0.001 -o 10 -c 10 sam2d.xml" << endl;
+  cout << "(ex)           : " << str << " -t 0.1 -d 0.001 -o 10 -C 10 sam2d.xml" << endl;
   exit(1);
 }
 
@@ -97,13 +97,13 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
         }
         options.out_step = atoi(optarg);
         break;
-      case 'c':
+      case 'C':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
           if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
         options.range_max = atof(optarg);
         break;
-      case 'C':
+      case 'c':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
           if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
