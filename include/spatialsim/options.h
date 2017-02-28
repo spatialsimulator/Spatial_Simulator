@@ -8,6 +8,6 @@ LIBSBML_CPP_NAMESPACE_USE
 
 optionList getOptionList(int argc, char **argv, SBMLDocument *doc);
 
-void printErrorMessage();
+void printErrorMessage(char *str);
 
 #endif
