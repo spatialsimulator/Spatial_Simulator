@@ -9,21 +9,22 @@
 using namespace std;
 LIBSBML_CPP_NAMESPACE_USE
 
-void printErrorMessage()
+void printErrorMessage(char *str)
 {
-  cout << "illegal option" << endl;
-  cout << "how to use" << endl;
-  cout << "-x #(int): the number of points at x coordinate (ex. -x 100)" << endl;
-  cout << "-y #(int): the number of points at y coordinate (ex. -y 100)" << endl;
-  cout << "-z #(int): the number of points at z coordinate (ex. -z 100)" << endl;
-  cout << "-t #(double or int): simulation time (ex. -t 10)" << endl;
-  cout << "-d #(double or int): delta t (ex. -d 0.01)" << endl;
-  cout << "-o #(int): output results every # step(ex. -o 10)" << endl;
-  cout << "-c #(double or int): max of color bar range # (ex. -c 1)" << endl;
-  cout << "-C #(double or int): min of color bar range # (ex. -c 1)" << endl;
-  cout << "-s #(char and int): xyz and the number of slice (only 3D) # (ex. -s z10)" << endl;
-  cout << "-p: create simulation image" << endl;
-  cout << "-O: path to output directory" << endl;
+  cout << "Usage          : " << str << " [option] filename(SBML file only)" << endl;
+  cout << " -h            : show this message" << endl;
+  cout << " -x #(int)     : the number of points at x coordinate (for analytic geometry only) (ex. -x 100)" << endl;
+  cout << " -y #(int)     : the number of points at y coordinate (for analytic geometry only) (ex. -y 100)" << endl;
+  cout << " -z #(int)     : the number of points at z coordinate (for analytic geometry only) (ex. -z 100)" << endl;
+  cout << " -t #(double)  : simulation time (ex. -t 10)" << endl;
+  cout << " -d #(double)  : delta t (ex. -d 0.01)" << endl;
+  cout << " -o #(int)     : output results every # steps (ex. -o 10)" << endl;
+  cout << " -c #(double)  : min of color bar range (ex. -c 1)" << endl;
+  cout << " -C #(double)  : max of color bar range (ex. -C 10)" << endl;
+  cout << " -s char#(int) : {x,y,z} and the number of slice (only 3D) (ex. -s z10)" << endl;
+//cout << " -p            : create simulation image" << endl;
+  cout << " -O outDir     : path to output directory" << endl << endl;
+  cout << "(ex)           : " << str << " -t 0.1 -d 0.001 -o 10 -C 10 sam2d.xml" << endl;
   exit(1);
 }
 
@@ -49,80 +50,86 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .slicedim = 'z',
     .fname = 0,
     .docFlag = 0,
+    .document = 0,
     .outputFlag = 0,
     .outpath = 0,
   };
+  char *myname = argv[0];
   int opt_result;
-  char *outpath ;
-  while ((opt_result = getopt(argc - 1, argv, "x:y:z:t:d:o:c:C:s:p:O:")) != -1) {
+  while ((opt_result = getopt(argc, argv, "x:y:z:t:d:o:c:C:s:O:h")) != -1) {
     switch(opt_result) {
+      case 'h':
+        printErrorMessage(myname);
+        break;
       case 'x':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
-          if (!isdigit(optarg[i])) printErrorMessage();
+          if (!isdigit(optarg[i])) printErrorMessage(myname);
         }
         options.Xdiv = atoi(optarg) + 1;
         break;
       case 'y':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
-          if (!isdigit(optarg[i])) printErrorMessage();
+          if (!isdigit(optarg[i])) printErrorMessage(myname);
         }
         options.Ydiv = atoi(optarg) + 1;
         break;
       case 'z':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
-          if (!isdigit(optarg[i])) printErrorMessage();
+          if (!isdigit(optarg[i])) printErrorMessage(myname);
         }
         options.Zdiv = atoi(optarg) + 1;
         break;
       case 't':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
-          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
         options.end_time = atof(optarg);
         break;
       case 'd':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
-          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
         options.dt = atof(optarg);
         break;
       case 'o':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
-          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
         options.out_step = atoi(optarg);
         break;
-      case 'c':
+      case 'C':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
-          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
         options.range_max = atof(optarg);
         break;
-      case 'C':
+      case 'c':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
-          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
         options.range_min = atof(optarg);
         break;
       case 's':
-        if (optarg[0] != 'x' && optarg[0] != 'y' && optarg[0] != 'z') printErrorMessage();
+        if (optarg[0] != 'x' && optarg[0] != 'y' && optarg[0] != 'z') printErrorMessage(myname);
         else options.slicedim = optarg[0];
         for (unsigned int i = 1; i < string(optarg).size(); i++) {
-          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage();
+          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
         options.sliceFlag = true;
         options.slice = atoi(optarg + 1) * 2;
-        if (dimension != 3) printErrorMessage();
+        if (dimension != 3) printErrorMessage(myname);
         break;
+      /*
       case 'p':
         options.outputFlag = 1;
         break;
+      */
       case 'O':
         options.outpath = static_cast<char*>(malloc(sizeof(char) * strlen(optarg) + 1));
         strncpy(options.outpath, optarg, strlen(optarg) + 1);
         break;
       default:
-        printErrorMessage();
+        printErrorMessage(myname);
         break;
     }
   }
@@ -131,11 +138,16 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     options.outpath = static_cast<char*>(malloc(sizeof(char) * strlen(".") + 1));
     strncpy(options.outpath, ".", strlen(".") + 1);
   }
+  argc -= optind;
+  argv += optind;
 
-  char *fname = argv[optind];
+  if(argc < 1){
+    printErrorMessage(myname);
+  }
+
+  char *fname = argv[0];
   options.fname = static_cast<char*>(malloc(sizeof(char) * strlen(fname) + 1));
   strncpy(options.fname, fname, strlen(fname) + 1);
-
 
   return options;
 }

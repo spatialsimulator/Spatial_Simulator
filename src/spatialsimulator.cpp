@@ -31,6 +31,7 @@
 #include <vector>
 #include <zlib.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 LIBSBML_CPP_NAMESPACE_USE
 using namespace H5;
@@ -42,7 +43,9 @@ extern "C" {
 #endif
 
 void spatialSimulator(int argc, char **argv){
-  if (argc == 1) printErrorMessage();
+  if (argc == 1 || access(argv[argc - 1], F_OK) == -1) {
+    printErrorMessage(argv[0]);
+  }
   SBMLDocument *doc = readSBML(argv[argc - 1]);
   if (doc->getErrorLog()->contains(XMLFileUnreadable) || doc->getErrorLog()->contains(BadlyFormedXML)
       || doc->getErrorLog()->contains(MissingXMLEncoding) || doc->getErrorLog()->contains(BadXMLDecl)) {
@@ -50,7 +53,7 @@ void spatialSimulator(int argc, char **argv){
     delete doc;
     exit(1);
   }
-  struct stat st;
+  //struct stat st;
   //if(stat("./result", &st) != 0) system("mkdir ./result");
   if (doc->getModel()->getPlugin("spatial") != 0 && doc->getPkgRequired("spatial")) {//PDE
     simulate(getOptionList(argc, argv, doc));
@@ -73,11 +76,12 @@ void simulate(optionList options)
   cout << "outpath " << options.outpath << endl;
   struct stat st;
 	unsigned int i, j, k;
-	int X = 0, Y = 0, Z = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0, index = 0;
+	//int X = 0, Y = 0, Z = 0, divIndex = 0, t = 0, count = 0, file_num = 0, percent = 0, index = 0;
+	int X = 0, Y = 0, Z = 0, t = 0, count = 0, file_num = 0, percent = 0, index = 0;
 	double *sim_time = new double(0.0);
 	double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
 	double Xsize = 0.0, Ysize = 0.0, Zsize = 0.0;
-	int numOfASTNodes = 0;
+	unsigned int numOfASTNodes = 0;
 	char *xaxis = 0, *yaxis = 0, *zaxis = 0;
 
 	cout << "validating model..." << endl;
@@ -98,11 +102,11 @@ void simulate(optionList options)
 	Geometry *geometry = spPlugin->getGeometry();
 
 	//size of list
-	unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
-	unsigned int numOfReactions = static_cast<unsigned int>(model->getNumReactions());
-	unsigned int numOfCompartments = static_cast<unsigned int>(model->getNumCompartments());
-	unsigned int numOfParameters = static_cast<unsigned int>(model->getNumParameters());
-	unsigned int numOfRules = static_cast<unsigned int>(model->getNumRules());
+	unsigned int numOfSpecies = model->getNumSpecies();
+	unsigned int numOfReactions = model->getNumReactions();
+	unsigned int numOfCompartments = model->getNumCompartments();
+	unsigned int numOfParameters = model->getNumParameters();
+	unsigned int numOfRules = model->getNumRules();
 
 	vector<variableInfo*> varInfoList = vector<variableInfo*>();
 	varInfoList.reserve(numOfCompartments + numOfSpecies + numOfParameters);
@@ -136,7 +140,6 @@ void simulate(optionList options)
 	int slice = options.slice;
 	char slicedim = options.slicedim;
 	bool sliceFlag = (options.sliceFlag != 0);
-	bool outputImageFlag = (options.outputFlag != 0);
   string outpath(options.outpath);
 	//div
 	if (dimension <= 1) {
@@ -1166,7 +1169,7 @@ void simulate(optionList options)
 					Z = index / (Xindex * Yindex);
 					Y = (index - Z * Xindex * Yindex) / Xindex;
 					X = index - Z * Xindex * Yindex - Y * Xindex;
-					divIndex = (Z / 2) * Ydiv * Xdiv + (Y / 2) * Xdiv + (X / 2);
+					//int divIndex = (Z / 2) * Ydiv * Xdiv + (Y / 2) * Xdiv + (X / 2);
 					//update values for the next time
 					sInfo->value[index] += dt * (sInfo->delta[index] + 2.0 * sInfo->delta[numOfVolIndexes + index] + 2.0 * sInfo->delta[2 * numOfVolIndexes + index] + sInfo->delta[3 * numOfVolIndexes + index]) / 6.0;
 					for (k = 0; k < 4; k++) sInfo->delta[k * numOfVolIndexes + index] = 0.0;

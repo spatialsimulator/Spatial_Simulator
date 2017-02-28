@@ -28,7 +28,7 @@ void freeVarInfo(vector<variableInfo*> &varInfoList)
 			info->boundaryInfo = 0;
 			//rpinfo
 			if (info->rpInfo != 0) {
-				for(int j = 0; j < info->rpInfo->listNum; j++) {
+				for(unsigned int j = 0; j < info->rpInfo->listNum; j++) {
 					if(info->rpInfo->constList[j] != 0) {
 						delete[] info->rpInfo->constList[j];
 						info->rpInfo->constList[j] = 0;
@@ -70,7 +70,7 @@ void freeAvolInfo(vector<GeometryInfo*> &geoInfoList)
 	for (size_t i = 0; i < geoInfoList.size(); i++) {
 		GeometryInfo *geoInfo = geoInfoList[i];
 		if (geoInfo->rpInfo != 0) {
-			     for(int j = 0; j < geoInfo->rpInfo->listNum; j++){
+			     for(unsigned int j = 0; j < geoInfo->rpInfo->listNum; j++){
 			       if(geoInfo -> rpInfo -> constList[j] != 0) {
 			         delete[] geoInfo -> rpInfo -> constList[j];
 			         geoInfo -> rpInfo -> constList[j] = 0;
@@ -122,7 +122,7 @@ void freeRInfo(vector<reactionInfo*> &rInfoList)
 			delete[] rInfo->rpInfo->deltaList;
 			rInfo->rpInfo->deltaList = 0;
 			//constList
-			for(int j = 0; j < rInfo->rpInfo->listNum; j++) {
+			for(unsigned int j = 0; j < rInfo->rpInfo->listNum; j++) {
 				if(rInfo->rpInfo->constList[j] != 0) {
 					delete[] rInfo->rpInfo->constList[j];
 					rInfo->rpInfo->constList[j] = 0;

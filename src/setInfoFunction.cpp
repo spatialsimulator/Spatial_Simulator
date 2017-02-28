@@ -292,7 +292,7 @@ void setReactionInfo(Model *model, std::vector<variableInfo*> &varInfoList, vect
 	unsigned int numOfReactions = static_cast<unsigned int>(model->getNumReactions());
 	unsigned int i, j, k;
 	ASTNode *ast = 0;
-	int numOfASTNodes = 0;
+	unsigned int numOfASTNodes = 0;
 	Species *s;
 	for (i = 0; i < numOfReactions; i++) {
 		Reaction *r = lor->get(i);
@@ -362,7 +362,7 @@ void setReactionInfo(Model *model, std::vector<variableInfo*> &varInfoList, vect
       rInfo->value = new double[numOfVolIndexes];
       fill_n(rInfo->value, numOfVolIndexes, 0);
       ast = const_cast<ASTNode*>(kl->getMath());
-      int tmp = 0;
+      unsigned int tmp = 0;
       countAST(ast, tmp);
       //cout << "before reaction: " << SBML_formulaToString(ast) << endl;
       //cerr << "num_of_nodes: " << tmp << endl;
@@ -400,7 +400,7 @@ void setRateRuleInfo(Model *model, std::vector<variableInfo*> &varInfoList, std:
 	unsigned int numOfRules = static_cast<unsigned int>(model->getNumRules());
 	unsigned int i;
 	ASTNode *ast = 0;
-	int numOfASTNodes = 0;
+	unsigned int numOfASTNodes = 0;
 	Species *s;
 	for (i = 0; i < numOfRules; i++) {
 		if (model->getRule(i)->isRate()) {
@@ -1704,16 +1704,8 @@ voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variab
   int xyPlaneX[2] = {0}, xyPlaneY[2] = {0};
   int yzPlaneY[2] = {0}, yzPlaneZ[2] = {0};
   int xzPlaneX[2] = {0}, xzPlaneZ[2] = {0};
-  int Xdiv = (Xindex + 1) / 2;
-  int Ydiv = (Yindex + 1) / 2;
-  int Zdiv = (Zindex + 1) / 2;
-  //double X_proj = 0.0, Y_proj = 0.0, Z_proj = 0.0;//unused variable
-  double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
   double inner_pro = 0.0;
   double d_ij = 0.0, d_ji = 0.0, s_ij = 0.0, s_ji = 0.0;
-  deltaX = Xsize / (double)(Xdiv - 1);
-  deltaY = Ysize / (double)(Ydiv - 1);
-  if (dimension >= 3) deltaZ = Zsize / (double)(Zdiv - 1);
 
   for (i = 0; i < geoInfoList.size(); i++) {
     if (!geoInfoList[i]->isVol) {
@@ -1803,9 +1795,9 @@ voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variab
           //nx2 = cos(theta) * (nuVec[index].nx * cos(phi) + nuVec[index].ny * sin(phi)) - nuVec[index].nz * sin(theta);
           //ny2 = -nuVec[index].nx * sin(phi) + nuVec[index].ny * cos(phi);
           //nz2 = sin(theta) * (nuVec[index].nx * cos(phi) + nuVec[index].ny * sin(phi)) + nuVec[index].nz * cos(theta);
-          double rotRj_XY_x[2] = {0.0}, rotRj_XY_y[2] = {0.0}, rotRj_XY_z[2] = {0.0};
-          double rotRj_YZ_x[2] = {0.0}, rotRj_YZ_y[2] = {0.0}, rotRj_YZ_z[2] = {0.0};
-          double rotRj_XZ_x[2] = {0.0}, rotRj_XZ_y[2] = {0.0}, rotRj_XZ_z[2] = {0.0};
+          double rotRj_XY_x[2] = {0.0}, rotRj_XY_y[2] = {0.0};
+          double rotRj_YZ_x[2] = {0.0}, rotRj_YZ_y[2] = {0.0};
+          double rotRj_XZ_x[2] = {0.0}, rotRj_XZ_y[2] = {0.0};
 
           double rotRi_x = cos(theta) * (xInfo->value[index] * cos(phi) + yInfo->value[index] * sin(phi)) - zInfo->value[index] * sin(theta);
           double rotRi_y = -xInfo->value[index] * sin(phi) + yInfo->value[index] * cos(phi);
@@ -1817,11 +1809,9 @@ voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variab
             for (l = 0; l < 2; l++) {
               rotRj_XY_x[l] = cos(theta) * (planeAD[index].XYcontour[l].nx * cos(phi) + planeAD[index].XYcontour[l].ny * sin(phi)) - planeAD[index].XYcontour[l].nz * sin(theta);
               rotRj_XY_y[l] = -planeAD[index].XYcontour[l].nx * sin(phi) + planeAD[index].XYcontour[l].ny * cos(phi);
-              rotRj_XY_z[l] = sin(theta) * (planeAD[index].XYcontour[l].nx * cos(phi) + planeAD[index].XYcontour[l].ny * sin(phi)) + planeAD[index].XYcontour[l].nz * cos(theta);
 
               rotRj_YZ_x[l] = cos(theta) * (planeAD[index].YZcontour[l].nx * cos(phi) + planeAD[index].YZcontour[l].ny * sin(phi)) - planeAD[index].YZcontour[l].nz * sin(theta);
               rotRj_YZ_y[l] = -planeAD[index].YZcontour[l].nx * sin(phi) + planeAD[index].YZcontour[l].ny * cos(phi);
-              rotRj_YZ_z[l] = sin(theta) * (planeAD[index].YZcontour[l].nx * cos(phi) + planeAD[index].YZcontour[l].ny * sin(phi)) + planeAD[index].YZcontour[l].nz * cos(theta);
             }
             //cout << (rotRj_XY_z[0] - rotRi_z) << endl;
             //cout << sqrt(pow(rotRj_XY_x[0] - rotRi_x, 2) + pow(rotRj_XY_y[0] - rotRi_y, 2) + pow(rotRj_XY_z[0] - rotRi_z, 2)) << " " << vorI[index].diXY[0] << endl;
@@ -1874,11 +1864,9 @@ voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variab
             for (l = 0; l < 2; l++) {
               rotRj_XY_x[l] = cos(theta) * (planeAD[index].XYcontour[l].nx * cos(phi) + planeAD[index].XYcontour[l].ny * sin(phi)) - planeAD[index].XYcontour[l].nz * sin(theta);
               rotRj_XY_y[l] = -planeAD[index].XYcontour[l].nx * sin(phi) + planeAD[index].XYcontour[l].ny * cos(phi);
-              rotRj_XY_z[l] = sin(theta) * (planeAD[index].XYcontour[l].nx * cos(phi) + planeAD[index].XYcontour[l].ny * sin(phi)) + planeAD[index].XYcontour[l].nz * cos(theta);
 
               rotRj_XZ_x[l] = cos(theta) * (planeAD[index].XZcontour[l].nx * cos(phi) + planeAD[index].XZcontour[l].ny * sin(phi)) - planeAD[index].XZcontour[l].nz * sin(theta);
               rotRj_XZ_y[l] = -planeAD[index].XZcontour[l].nx * sin(phi) + planeAD[index].XZcontour[l].ny * cos(phi);
-              rotRj_XZ_z[l] = sin(theta) * (planeAD[index].XZcontour[l].nx * cos(phi) + planeAD[index].XZcontour[l].ny * sin(phi)) + planeAD[index].XZcontour[l].nz * cos(theta);
             }
             double Px[4] = {0.0}, Py[4] = {0.0};
             double cp_x[2] = {0.0}, cp_y[2] = {0.0};
@@ -1928,11 +1916,9 @@ voronoiInfo* setVoronoiInfo(normalUnitVector *nuVec, variableInfo *xInfo, variab
             for (l = 0; l < 2; l++) {
               rotRj_YZ_x[l] = cos(theta) * (planeAD[index].YZcontour[l].nx * cos(phi) + planeAD[index].YZcontour[l].ny * sin(phi)) - planeAD[index].YZcontour[l].nz * sin(theta);
               rotRj_YZ_y[l] = -planeAD[index].YZcontour[l].nx * sin(phi) + planeAD[index].YZcontour[l].ny * cos(phi);
-              rotRj_YZ_z[l] = sin(theta) * (planeAD[index].YZcontour[l].nx * cos(phi) + planeAD[index].YZcontour[l].ny * sin(phi)) + planeAD[index].YZcontour[l].nz * cos(theta);
 
               rotRj_XZ_x[l] = cos(theta) * (planeAD[index].XZcontour[l].nx * cos(phi) + planeAD[index].XZcontour[l].ny * sin(phi)) - planeAD[index].XZcontour[l].nz * sin(theta);
               rotRj_XZ_y[l] = -planeAD[index].XZcontour[l].nx * sin(phi) + planeAD[index].XZcontour[l].ny * cos(phi);
-              rotRj_XZ_z[l] = sin(theta) * (planeAD[index].XZcontour[l].nx * cos(phi) + planeAD[index].XZcontour[l].ny * sin(phi)) + planeAD[index].XZcontour[l].nz * cos(theta);
             }
             double Px[4] = {0.0}, Py[4] = {0.0};
             double cp_x[2] = {0.0}, cp_y[2] = {0.0};
@@ -2113,15 +2099,17 @@ voronoiInfo* setVoronoiInfo_modify(normalUnitVector *nuVec, variableInfo *xInfo,
   int xyPlaneX[2] = {0}, xyPlaneY[2] = {0};
   int yzPlaneY[2] = {0}, yzPlaneZ[2] = {0};
   int xzPlaneX[2] = {0}, xzPlaneZ[2] = {0};
+  double inner_pro = 0.0;
+  double d_ij = 0.0, d_ji = 0.0, s_ij = 0.0, s_ji = 0.0;
+  /*
   int Xdiv = (Xindex + 1) / 2;
   int Ydiv = (Yindex + 1) / 2;
   int Zdiv = (Zindex + 1) / 2;
   double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
-  double inner_pro = 0.0;
-  double d_ij = 0.0, d_ji = 0.0, s_ij = 0.0, s_ji = 0.0;
   deltaX = Xsize / (double)(Xdiv - 1);
   deltaY = Ysize / (double)(Ydiv - 1);
   if (dimension >= 3) deltaZ = Zsize / (double)(Zdiv - 1);
+  */
 
   if (dimension == 2) {
     for (i = 0; i < geoInfoList.size(); i++) {
@@ -2255,9 +2243,9 @@ voronoiInfo* setVoronoiInfo_modify(normalUnitVector *nuVec, variableInfo *xInfo,
           double phi = 0.0, theta = 0.0;
           phi = atan2(nuVec[index].ny, nuVec[index].nx);
           theta = acos(nuVec[index].nz);
-          double rotRj_XY_x[2] = {0.0}, rotRj_XY_y[2] = {0.0}, rotRj_XY_z[2] = {0.0};
-          double rotRj_YZ_x[2] = {0.0}, rotRj_YZ_y[2] = {0.0}, rotRj_YZ_z[2] = {0.0};
-          double rotRj_XZ_x[2] = {0.0}, rotRj_XZ_y[2] = {0.0}, rotRj_XZ_z[2] = {0.0};
+          double rotRj_XY_x[2] = {0.0}, rotRj_XY_y[2] = {0.0};
+          double rotRj_YZ_x[2] = {0.0}, rotRj_YZ_y[2] = {0.0};
+          double rotRj_XZ_x[2] = {0.0}, rotRj_XZ_y[2] = {0.0};
 
           double rotRi_x = cos(theta) * (xInfo->value[index] * cos(phi) + yInfo->value[index] * sin(phi)) - zInfo->value[index] * sin(theta);
           double rotRi_y = -xInfo->value[index] * sin(phi) + yInfo->value[index] * cos(phi);
@@ -2268,11 +2256,9 @@ voronoiInfo* setVoronoiInfo_modify(normalUnitVector *nuVec, variableInfo *xInfo,
             for (l = 0; l < 2; l++) {
               rotRj_XY_x[l] = cos(theta) * (planeAD[index].XYcontour[l].nx * cos(phi) + planeAD[index].XYcontour[l].ny * sin(phi)) - planeAD[index].XYcontour[l].nz * sin(theta);
               rotRj_XY_y[l] = -planeAD[index].XYcontour[l].nx * sin(phi) + planeAD[index].XYcontour[l].ny * cos(phi);
-              rotRj_XY_z[l] = sin(theta) * (planeAD[index].XYcontour[l].nx * cos(phi) + planeAD[index].XYcontour[l].ny * sin(phi)) + planeAD[index].XYcontour[l].nz * cos(theta);
 
               rotRj_YZ_x[l] = cos(theta) * (planeAD[index].YZcontour[l].nx * cos(phi) + planeAD[index].YZcontour[l].ny * sin(phi)) - planeAD[index].YZcontour[l].nz * sin(theta);
               rotRj_YZ_y[l] = -planeAD[index].YZcontour[l].nx * sin(phi) + planeAD[index].YZcontour[l].ny * cos(phi);
-              rotRj_YZ_z[l] = sin(theta) * (planeAD[index].YZcontour[l].nx * cos(phi) + planeAD[index].YZcontour[l].ny * sin(phi)) + planeAD[index].YZcontour[l].nz * cos(theta);
             }
             double Px[4] = {0.0}, Py[4] = {0.0};
             double cp_x[2] = {0.0}, cp_y[2] = {0.0};
@@ -2320,11 +2306,9 @@ voronoiInfo* setVoronoiInfo_modify(normalUnitVector *nuVec, variableInfo *xInfo,
             for (l = 0; l < 2; l++) {
               rotRj_XY_x[l] = cos(theta) * (planeAD[index].XYcontour[l].nx * cos(phi) + planeAD[index].XYcontour[l].ny * sin(phi)) - planeAD[index].XYcontour[l].nz * sin(theta);
               rotRj_XY_y[l] = -planeAD[index].XYcontour[l].nx * sin(phi) + planeAD[index].XYcontour[l].ny * cos(phi);
-              rotRj_XY_z[l] = sin(theta) * (planeAD[index].XYcontour[l].nx * cos(phi) + planeAD[index].XYcontour[l].ny * sin(phi)) + planeAD[index].XYcontour[l].nz * cos(theta);
 
               rotRj_XZ_x[l] = cos(theta) * (planeAD[index].XZcontour[l].nx * cos(phi) + planeAD[index].XZcontour[l].ny * sin(phi)) - planeAD[index].XZcontour[l].nz * sin(theta);
               rotRj_XZ_y[l] = -planeAD[index].XZcontour[l].nx * sin(phi) + planeAD[index].XZcontour[l].ny * cos(phi);
-              rotRj_XZ_z[l] = sin(theta) * (planeAD[index].XZcontour[l].nx * cos(phi) + planeAD[index].XZcontour[l].ny * sin(phi)) + planeAD[index].XZcontour[l].nz * cos(theta);
             }
             double Px[4] = {0.0}, Py[4] = {0.0};
             double cp_x[2] = {0.0}, cp_y[2] = {0.0};
@@ -2372,11 +2356,9 @@ voronoiInfo* setVoronoiInfo_modify(normalUnitVector *nuVec, variableInfo *xInfo,
             for (l = 0; l < 2; l++) {
               rotRj_YZ_x[l] = cos(theta) * (planeAD[index].YZcontour[l].nx * cos(phi) + planeAD[index].YZcontour[l].ny * sin(phi)) - planeAD[index].YZcontour[l].nz * sin(theta);
               rotRj_YZ_y[l] = -planeAD[index].YZcontour[l].nx * sin(phi) + planeAD[index].YZcontour[l].ny * cos(phi);
-              rotRj_YZ_z[l] = sin(theta) * (planeAD[index].YZcontour[l].nx * cos(phi) + planeAD[index].YZcontour[l].ny * sin(phi)) + planeAD[index].YZcontour[l].nz * cos(theta);
 
               rotRj_XZ_x[l] = cos(theta) * (planeAD[index].XZcontour[l].nx * cos(phi) + planeAD[index].XZcontour[l].ny * sin(phi)) - planeAD[index].XZcontour[l].nz * sin(theta);
               rotRj_XZ_y[l] = -planeAD[index].XZcontour[l].nx * sin(phi) + planeAD[index].XZcontour[l].ny * cos(phi);
-              rotRj_XZ_z[l] = sin(theta) * (planeAD[index].XZcontour[l].nx * cos(phi) + planeAD[index].XZcontour[l].ny * sin(phi)) + planeAD[index].XZcontour[l].nz * cos(theta);
             }
             double Px[4] = {0.0}, Py[4] = {0.0};
             double cp_x[2] = {0.0}, cp_y[2] = {0.0};
