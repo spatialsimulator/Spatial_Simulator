@@ -11,28 +11,26 @@ include_directories(${SPATIALSIM_INCLUDE_DIR})
 
 # static library
 if(NOT without-static)
-  add_library(spatialsim-static STATIC ${SPATIALSIM_SOURCES})
-  target_link_libraries(spatialsim-static ${LIBSBML_LIBRARIES} ${OpenCV_LIBRARIES} ${HDF5_LIBRARIES})
-  install(TARGETS spatialsim-static
+  add_library(spatialsimulator-static STATIC ${SPATIALSIM_SOURCES})
+  target_link_libraries(spatialsimulator-static ${LIBSBML_LIBRARIES} ${OpenCV_LIBRARIES} ${HDF5_LIBRARIES})
+  install(TARGETS spatialsimulator-static
     ARCHIVE DESTINATION lib
     )
 endif()
 
 # shared library
 if(NOT without-shared)
-  add_library(spatialsim SHARED ${SPATIALSIM_SOURCES} )
-  target_link_libraries(spatialsim ${LIBSBML_LIBRARIES} ${OpenCV_LIBRARIES} ${HDF5_CXX_LIBRARIES})
-  set_target_properties(spatialsim PROPERTIES VERSION "${LIB_VERSION}" SOVERSION "${LIB_COMPAT_VERSION}" )
-  install(TARGETS spatialsim
+  add_library(spatialsimulator SHARED ${SPATIALSIM_SOURCES} )
+  target_link_libraries(spatialsimulator ${LIBSBML_LIBRARIES} ${OpenCV_LIBRARIES} ${HDF5_CXX_LIBRARIES})
+  set_target_properties(spatialsimulator PROPERTIES VERSION "${LIB_VERSION}" SOVERSION "${LIB_COMPAT_VERSION}" )
+  install(TARGETS spatialsimulator
     LIBRARY DESTINATION lib
     )
-    #install(FILES "${SPATIALSIM_INCLUDE_DIR}/*.h" DESTINATION include)
 endif()
 
 # executable
 add_executable(spatialsimulator-bin ${MAIN_FILES} )
-#target_link_libraries(spatialsimulator-bin ${LIBSBML_LIBRARIES} ${OPENCV_LIBRARIES} ${HDF5_CXX_LIBRARIES})
-target_link_libraries(spatialsimulator-bin spatialsim)
+target_link_libraries(spatialsimulator-bin spatialsimulator)
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 SET_TARGET_PROPERTIES(spatialsimulator-bin PROPERTIES OUTPUT_NAME spatialsimulator LINKER_LANGUAGE CXX)
 install(TARGETS spatialsimulator-bin
