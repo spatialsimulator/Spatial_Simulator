@@ -10,8 +10,6 @@ set(LIB_COMPAT_VERSION ${LIB_VERSION_MAJOR}.${LIB_VERSION_MINOR})
 ENABLE_LANGUAGE(C)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -g -c -O2")
-
 #variables
 set(SPATIALSIM_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 set(SPATIALSIM_SOURCE_DIR ${PROJECT_SOURCE_DIR}/src)
@@ -19,7 +17,6 @@ set(MAIN_FILES ${SPATIALSIM_SOURCE_DIR}/main.cpp)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-#mark_as_advanced(CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 
 #cmake modules
 include(cmake/find_libsbml.cmake)
@@ -32,7 +29,6 @@ if(NOT ${OpenCV_FOUND})
 endif()
 
 ##HDF5
-#include(FindHDF5)
 find_package(HDF5 COMPONENTS HL REQUIRED )
 if(NOT ${HDF5_FOUND})
   message(FATAL_ERROR "HDF5 not found")
@@ -43,8 +39,19 @@ endif()
 add_subdirectory(${SPATIALSIM_INCLUDE_DIR})
 ##sources
 add_subdirectory(${SPATIALSIM_SOURCE_DIR})
-#include(CPack)
-get_cmake_property(_variableNames VARIABLES)
-foreach (_variableName ${_variableNames})
-  #  message(STATUS "${_variableName} = ${${_variableName}}")
-endforeach()
+
+########### Add uninstall target ###############
+#CONFIGURE_FILE(
+#  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
+#  "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
+#  IMMEDIATE @ONLY)
+#ADD_CUSTOM_TARGET(uninstall
+#  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake")
+#
+########### Create jar  ###############
+CONFIGURE_FILE(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/cmake_create_jar.cmake.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_create_jar.cmake"
+  IMMEDIATE @ONLY)
+ADD_CUSTOM_TARGET(deploy
+  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_create_jar.cmake")

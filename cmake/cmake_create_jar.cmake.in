@@ -1,0 +1,23 @@
+
+if(@CMAKE_SYSTEM_NAME@ STREQUAL "Darwin")
+  set(MYLIBDIR  @CMAKE_BINARY_DIR@/darwin)
+  set(MYLIB lib/lib@PROJECT_NAME@.@LIB_VERSION@.dylib)
+elseif(@CMAKE_SYSTEM_NAME@ STREQUAL "Linux")
+  set(MYLIBDIR  @CMAKE_BINARY_DIR@/linux-x86-64)
+  set(MYLIB lib/lib@PROJECT_NAME@.@LIB_VERSION@.so)
+else()
+endif()
+
+include(GetPrerequisites)
+get_prerequisites(${MYLIB} DEPENDENCIES 0 0 "" "")
+
+execute_process(COMMAND mkdir ${MYLIBDIR} WORKING_DIRECTORY @CMAKE_BINARY_DIR@)
+
+foreach(DEPENDENCY_FILE ${DEPENDENCIES})
+  gp_resolve_item("${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" "${DEPENDENCY_FILE}" "" "" resolved_file)
+  execute_process(COMMAND cp ${resolved_file} ${MYLIBDIR})
+endforeach()
+
+set(MYJAR "libspatialsimj.jar")
+file(RELATIVE_PATH MYOUTDIR @CMAKE_BINARY_DIR@ ${MYLIBDIR})
+execute_process(COMMAND jar cvf ${MYJAR} ${MYOUTDIR})
