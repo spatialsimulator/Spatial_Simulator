@@ -51,7 +51,6 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .fname = 0,
     .docFlag = 0,
     .document = 0,
-    .outputFlag = 0,
     .outpath = 0,
   };
   char *myname = argv[0];
@@ -119,11 +118,6 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
         options.slice = atoi(optarg + 1) * 2;
         if (dimension != 3) printErrorMessage(myname);
         break;
-      /*
-      case 'p':
-        options.outputFlag = 1;
-        break;
-      */
       case 'O':
         options.outpath = static_cast<char*>(malloc(sizeof(char) * strlen(optarg) + 1));
         strncpy(options.outpath, optarg, strlen(optarg) + 1);
