@@ -152,10 +152,12 @@ void simulate(optionList options)
 	//filename
 	string fname(options.fname);
 	fname = fname.substr(static_cast<unsigned long>(fname.find_last_of("/")) + 1, static_cast<unsigned long>(fname.find_last_of("."))- static_cast<unsigned long>(fname.find_last_of("/")) - 1);
-	if(fname.empty() && model -> isSetId())
-		fname = model->getId();
-  else
-    fname = "model1";
+  if(fname.empty()){
+    if(model -> isSetId())
+      fname = model->getId();
+    else
+      fname = "model";
+  }
 	cout << "File name: \n" << fname << endl;
   if (stat(string(outpath + "/result/" + fname).c_str(), &st) != 0)
     system(string("mkdir -p " + outpath + "/result/" + fname).c_str());
