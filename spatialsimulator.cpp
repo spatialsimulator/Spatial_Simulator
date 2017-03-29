@@ -825,12 +825,6 @@ void simulate(optionList options)
 	}
 	cout << "finished" << endl << endl;
 	//make directories to output result (txt and img)
-	if(stat(string(outpath + "/result/" + fname + "/txt").c_str(), &st) != 0) {
-		system(string("mkdir "+ outpath + "/result/" + fname + "/txt").c_str());
-	}
-	if(stat(string(outpath + "/result/" + fname + "/txt/geometry").c_str(), &st) != 0) {
-		system(string("mkdir " + outpath + "/result/" + fname + "/txt/geometry").c_str());
-	}
 	if(stat(string(outpath + "/result/" + fname + "/img").c_str(), &st) != 0) {
 		system(string("mkdir " + outpath + "/result/" + fname + "/img").c_str());
 	}
