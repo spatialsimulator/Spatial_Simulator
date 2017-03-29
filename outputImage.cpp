@@ -225,7 +225,7 @@ void outputGrayImage(Model *model, std::vector<variableInfo*> &varInfoList, int*
       } else if (!sInfo->inVol) {
         makeMemValueMatSlice_gray(valueMat_sparse, sInfo->value, geo_edge, Xindex, Yindex, z, range_min, range_max);
       }
-      ss << "./result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << "/" << setfill('0') << setw(4) << z << ".tiff";
+      ss << outpath << "/result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << "/" << setfill('0') << setw(4) << z << ".tiff";
       imwrite(ss.str(), *valueMat_sparse);
 
       ss.str("");
