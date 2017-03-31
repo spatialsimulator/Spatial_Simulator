@@ -75,6 +75,8 @@ void outputValueData(std::vector<variableInfo*>&varInfoList, ListOfSpecies* los,
       delete dataspace;
     }
   }
+  file.flush(H5F_SCOPE_LOCAL);
+  file.close();
 }
 
 void output3D_uint8 (std::vector<variableInfo*>&varInfoList, ListOfSpecies* los, int Xindex, int Yindex, int Zindex, int file_num, std::string fname, double range_max, std::string outpath) {
@@ -85,7 +87,7 @@ void output3D_uint8 (std::vector<variableInfo*>&varInfoList, ListOfSpecies* los,
     value[X] = new uint8_t*[Yindex];
     for (Y = 0; Y < Yindex; Y++) {
       value[X][Y] = new uint8_t[Zindex];
-      for (Z = 0; X < Zindex; Z++) {
+      for (Z = 0; Z < Zindex; Z++) {
         value[X][Y][Z] = 0;
       }
     }
