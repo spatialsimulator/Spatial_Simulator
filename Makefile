@@ -26,7 +26,7 @@ LDFLAGS = -L. -L/usr/local/lib -lsbml -lz
 UNAME_S := $(shell uname -s)
 # MacOSX + MacPorts
 ifeq ($(UNAME_S),Darwin)
-	CCFLAGS = -Wall -c -O2 -fno-common -fPIC
+	CCFLAGS = -Wall -g -c -O2 -fno-common -fPIC
 	LDFLAGS := -L/opt/local/lib $(LDFLAGS)
 	HDFFLAGS = -I/opt/local/include
 	#HDFLDFLAGS = -L/opt/local/lib/hdf5-18/lib -lhdf5 -lhdf5_cpp
