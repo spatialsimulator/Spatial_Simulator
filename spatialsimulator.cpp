@@ -186,8 +186,9 @@ void simulate(optionList options)
 	cout << "color bar range max: ";
   if (range_max == -DBL_MAX) {
     range_max = getDefaultRangeMax(model);
+    cout << "using default value: ";
   }
-	cout << "using default value: " << range_max << endl << endl;
+	cout << range_max << endl << endl;
 
 	int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
 	unsigned int numOfVolIndexes = static_cast<unsigned int>(Xindex * Yindex * Zindex);
