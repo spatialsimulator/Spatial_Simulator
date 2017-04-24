@@ -291,10 +291,12 @@ void makeValueMat(cv::Mat mat, double* value, int Xindex, int Yindex, double ran
 void makeValueMatSlice_gray(cv::Mat mat, double* value, int Xindex, int Yindex, int slice, double range_min, double range_max){
   int X, Y, index;
   double value_level = 0;
-  for (Y = 0; Y < Yindex; Y++) {
-    for (X = 0; X < Xindex; X++) {
+  double rounded_value = 0;
+  for (Y = 0; Y < mat.rows; Y++) {
+    for (X = 0; X < mat.cols; X++) {
       index = slice * Xindex * Yindex + (Yindex - 1 - Y * 2) * Xindex + X * 2;
-      value_level = (value[index] - range_min) / (range_max - range_min) * 255;
+      rounded_value = (range_max < value[index])? range_max : value[index]; // to avoid overflow
+      value_level = (rounded_value - range_min) / (range_max - range_min) * 255;
       mat.at<unsigned char>(Y, X) = (int) value_level;
     }
   }

@@ -14,6 +14,8 @@ void simulate(optionList options);
 
 bool isResolvedAll(std::vector<variableInfo*> &dependence);
 
+double getDefaultRangeMax(Model *model);
+
 #ifdef __cplusplus
 }
 #endif

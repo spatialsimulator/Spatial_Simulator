@@ -2,6 +2,7 @@
 #include "spatialsim/mystruct.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
+#include <float.h>
 #include <getopt.h>
 #include <string.h>
 #include <iostream>
@@ -43,7 +44,7 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .end_time = 1.0,
     .dt = 0.01,
     .out_step = 1,
-    .range_max = 1.0,
+    .range_max = -DBL_MAX,
     .range_min = 0.0,
     .sliceFlag = 0,
     .slice = 0,

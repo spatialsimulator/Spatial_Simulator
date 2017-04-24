@@ -24,6 +24,7 @@
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include "H5Cpp.h"
+#include <float.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
@@ -182,7 +183,11 @@ void simulate(optionList options)
 	cout << "dt = " << dt << endl;
 	cout << "output results every " << out_step << " step" << endl;
 	cout << "color bar range min: " << range_min << endl;
-	cout << "color bar range max: " << range_max << endl << endl;
+	cout << "color bar range max: ";
+  if (range_max == -DBL_MAX) {
+    range_max = getDefaultRangeMax(model);
+  }
+	cout << "using default value: " << range_max << endl << endl;
 
 	int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
 	unsigned int numOfVolIndexes = static_cast<unsigned int>(Xindex * Yindex * Zindex);
@@ -1303,6 +1308,25 @@ bool isResolvedAll(vector<variableInfo*> &dependence)
 		it++;
 	}
 	return true;
+}
+
+double getDefaultRangeMax(Model *model) {
+  ListOfSpecies *los = model->getListOfSpecies();
+  unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
+  unsigned int i;
+  double range_max = 0.0;  // default value
+  for (i = 0; i < numOfSpecies; i++) {
+    Species *s = los->get(i);
+    if (s->isSetInitialAmount()) {//Initial Amount
+      range_max = max(range_max, s->getInitialAmount());
+    } else if (s->isSetInitialConcentration()) {//Initial Concentration
+      range_max = max(range_max, s->getInitialConcentration());
+    }
+  }
+  if (range_max == 0.0) {
+    cout << "Automatically calculated range_max is 0. Please specify range_max by using -C option." << endl;
+  }
+  return range_max;
 }
 
 #ifdef __cplusplus
