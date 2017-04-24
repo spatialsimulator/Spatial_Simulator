@@ -14,14 +14,18 @@ void printErrorMessage(char *str)
 {
   cout << "Usage          : " << str << " [option] filename(SBML file only)" << endl;
   cout << " -h            : show this message" << endl;
-  cout << " -x #(int)     : the number of points at x coordinate (for analytic geometry only) (ex. -x 100)" << endl;
-  cout << " -y #(int)     : the number of points at y coordinate (for analytic geometry only) (ex. -y 100)" << endl;
-  cout << " -z #(int)     : the number of points at z coordinate (for analytic geometry only) (ex. -z 100)" << endl;
-  cout << " -t #(double)  : simulation time (ex. -t 10)" << endl;
-  cout << " -d #(double)  : delta t (ex. -d 0.01)" << endl;
-  cout << " -o #(int)     : output results every # steps (ex. -o 10)" << endl;
-  cout << " -c #(double)  : min of color bar range (ex. -c 1)" << endl;
+  cout << " -x #(int)     : the number of points at x coordinate (for analytic geometry only)" << endl;
+  cout << "                 (ex. -x 200 [default:100])" << endl;
+  cout << " -y #(int)     : the number of points at y coordinate (for analytic geometry only)" << endl;
+  cout << "                 (ex. -y 200 [default:100])" << endl;
+  cout << " -z #(int)     : the number of points at z coordinate (for analytic geometry only)" << endl;
+  cout << "                 (ex. -z 200 [default:100])" << endl;
+  cout << " -t #(double)  : simulation time (ex. -t 10 [default:1.0])" << endl;
+  cout << " -d #(double)  : delta t (ex. -d 0.1 [default:0.01])" << endl;
+  cout << " -o #(int)     : output results every # steps (ex. -o 10 [default:1])" << endl;
+  cout << " -c #(double)  : min of color bar range (ex. -c 1 [default:0.0])" << endl;
   cout << " -C #(double)  : max of color bar range (ex. -C 10)" << endl;
+  cout << "                 [default:Max value of InitialConcentration or InitialAmount]" << endl;
   cout << " -s char#(int) : {x,y,z} and the number of slice (only 3D) (ex. -s z10)" << endl;
 //cout << " -p            : create simulation image" << endl;
   cout << " -O outDir     : path to output directory" << endl << endl;
