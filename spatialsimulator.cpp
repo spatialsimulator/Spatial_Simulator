@@ -189,6 +189,13 @@ void simulate(optionList options)
     cout << "using default value: ";
   }
 	cout << range_max << endl << endl;
+  if (range_min >= range_max) {
+    cout << "Your range_min(" << range_min << ") is equal or larger than range_max(" << range_max << ")."<< endl;
+    cout << "This will cause corrupted output image." << endl;
+    cout << "Please specify correct range_min and range_max by using -c and -C option, " << endl;
+    cout << "or just remove these options." << endl;
+    exit(1);
+  }
 
 	int Xindex = 2 * Xdiv - 1, Yindex = 2 * Ydiv - 1, Zindex = 2 * Zdiv - 1;//num of mesh
 	unsigned int numOfVolIndexes = static_cast<unsigned int>(Xindex * Yindex * Zindex);
