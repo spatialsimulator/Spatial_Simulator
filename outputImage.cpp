@@ -295,7 +295,13 @@ void makeValueMatSlice_gray(cv::Mat mat, double* value, int Xindex, int Yindex, 
   for (Y = 0; Y < mat.rows; Y++) {
     for (X = 0; X < mat.cols; X++) {
       index = slice * Xindex * Yindex + (Yindex - 1 - Y * 2) * Xindex + X * 2;
-      rounded_value = (range_max < value[index])? range_max : value[index]; // to avoid overflow
+      if (value[index] < range_min) {
+        rounded_value = range_min; // to avoid underflow
+      } else if (value[index] > range_max) {
+        rounded_value = range_max; // to avoid overflow
+      } else {
+        rounded_value = value[index];
+      }
       value_level = (rounded_value - range_min) / (range_max - range_min) * 255;
       mat.at<unsigned char>(Y, X) = (int) value_level;
     }
@@ -351,11 +357,19 @@ void makeMemValueMat_slice(cv::Mat mat, double* value, int* geo_edge, int Xindex
 void makeMemValueMatSlice_gray(cv::Mat mat, double* value, int* geo_edge, int Xindex, int Yindex, int slice, double range_min, double range_max) {
   int x, y, index;
   double value_level = 0;
+  double rounded_value = 0;
 
   for (y = 0; y < Yindex; ++y) {
     for (x = 0; x < Xindex; ++x) {
       index = slice * Xindex * Yindex + (Yindex - 1 - y) * Xindex + x;
-      value_level = (value[index] - range_min) / (range_max - range_min) * 255;
+      if (value[index] < range_min) {
+        rounded_value = range_min; // to avoid underflow
+      } else if (value[index] > range_max) {
+        rounded_value = range_max; // to avoid overflow
+      } else {
+        rounded_value = value[index];
+      }
+      value_level = (rounded_value - range_min) / (range_max - range_min) * 255;
       mat.at<unsigned char>(y, x) = value_level;
     }
   }
