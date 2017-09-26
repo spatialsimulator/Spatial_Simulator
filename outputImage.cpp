@@ -26,7 +26,7 @@ Vec3b nanVec(255, 192, 255);
 #define cbAreaX 100
 #define cbAreaY 420
 
-void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath) {
+void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath, int num_digits) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, magnification = 1;
   int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2];
   areaSize[0] = Xindex;//空間領域は膜も描画できるようにこう
@@ -88,14 +88,14 @@ void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_e
     Mat Roi_cbArea(image, Rect(indent[0] + areaSize[0], 0, cbAreaSize[0], cbAreaSize[1]));
     colorBarArea.copyTo(Roi_cbArea);
     //================= value area frame & number =====================
-    setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY, Xdiv, Ydiv, fname, s_id, magnification);
+    setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY, Xdiv, Ydiv, fname, s_id, magnification, num_digits);
     ss << outpath << "/result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
     imwrite(ss.str(), image);
     ss.str("");
   }
 }
 
-void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath) {
+void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath, int num_digits) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1, magnification = 1;
   int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2], division[2], index[2];
   if (slicedim != 'x' && slicedim != 'y' && slicedim != 'z') {
@@ -179,7 +179,7 @@ void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int*
     Mat Roi_cbArea(image, Rect(indent[0] + areaSize[0], 0, cbAreaSize[0], cbAreaSize[1]));
     colorBarArea.copyTo(Roi_cbArea);
     //================= value area frame & number =====================
-    setDetail_slice(image, indent, areaSize, t, min0, max0, min1, max1, Xdiv, Ydiv, Zdiv, fname, s_id, magnification, slice ,slicedim);
+    setDetail_slice(image, indent, areaSize, t, min0, max0, min1, max1, Xdiv, Ydiv, Zdiv, fname, s_id, magnification, slice, slicedim, num_digits);
     ss << outpath << "/result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
     imwrite(ss.str(), image);
     ss.str("");
@@ -514,7 +514,7 @@ void makeColorBarArea(cv::Mat area, double range_max, double range_min, int* cbS
   }
 }
 
-void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, string s_id, int magnification) {
+void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, string s_id, int magnification, int num_digits) {
   int i, fix[2];
   int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
   int thickness = baseSize / 250;
@@ -572,7 +572,7 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
     ss.str("");
   }
   //=============== t ====================
-  ss << "t = " << t;
+  ss << "t = " << fixed << setprecision(num_digits) << t;
   putText(image, ss.str(), Point(indent[0], indent[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   ss.str("");
   //=============== Xdiv Ydiv magnification ====================
@@ -596,7 +596,7 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
   putText(image, date, Point(image.cols - 1, image.rows - 1) - Point(textSize.width, textSize.height * 3 / 5), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
 }
 
-void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim) {
+void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim, int num_digits) {
   int i, fix[2];
   int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
   int thickness = baseSize / 250;
@@ -665,7 +665,7 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
     ss.str("");
   }
   //=============== t ====================
-  ss << "t = " << t;
+  ss << "t = " << fixed << setprecision(num_digits) << t;
   putText(image, ss.str(), Point(indent[0], indent[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   ss.str("");
   //=============== Xdiv Ydiv magnification ====================
@@ -712,7 +712,13 @@ string getCurrentTime() {
   struct tm *pnow = localtime(&now);
   char week[7][4] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
   stringstream ss;
-  ss << pnow->tm_year + 1900 << "/" << pnow->tm_mon + 1 << "/" << pnow->tm_mday << "(" << week[pnow->tm_wday] << ") ";
-  ss << pnow->tm_hour << ":" << pnow->tm_min << ":" << pnow->tm_sec;
+  char mdstr[100];
+  char tmstr[100];
+  if (std::strftime(mdstr, 100, "%Y/%m/%d", pnow)) {
+    ss << mdstr << "(" << week[pnow->tm_wday] << ") ";
+  }
+  if (std::strftime(tmstr, 100, "%T", pnow)) {
+    ss << tmstr;
+  }
   return ss.str();
 }

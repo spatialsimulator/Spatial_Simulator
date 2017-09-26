@@ -8,9 +8,9 @@
 
 LIBSBML_CPP_NAMESPACE_USE
 
-void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath);
+void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath, int num_digits);
 
-void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath);
+void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath, int num_digits);
 
 void outputGrayImage(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath);
 
@@ -42,9 +42,9 @@ void makeColorBar(cv::Mat colorBar);
 
 void makeColorBarArea(cv::Mat area, double range_max, double range_min, int* cbSize, int* cbIndent);
 
-void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, std::string s_id, int magnification);
+void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, std::string s_id, int magnification, int num_digits);
 
-void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, std::string s_id, int magnification, int slice, char slicedim);
+void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, std::string s_id, int magnification, int slice, char slicedim, int num_digits);
 
 int calcMagnification(int Xdiv, int Ydiv);
 

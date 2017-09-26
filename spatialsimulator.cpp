@@ -1060,24 +1060,25 @@ void simulate(optionList options)
 	clock_t re_time = 0, diff_time = 0, output_time = 0, ad_time = 0, update_time = 0, mem_time = 0, boundary_time = 0, assign_time = 0;
 	clock_t sim_start = clock();
 	cout << endl;
+  int num_digits = (log10(dt * out_step) < 0)? ceil(-1 * log10(dt * out_step)) : 0;
 	for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
 		*sim_time = t * dt;
 		//output
 		out_start = clock();
 		if (count % out_step == 0) {
 			if (dimension == 2) {
-        outputImg(model, varInfoList, geo_edge, Xdiv, Ydiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize, *sim_time, range_min, range_max, fname, file_num, outpath);
+        outputImg(model, varInfoList, geo_edge, Xdiv, Ydiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize, *sim_time, range_min, range_max, fname, file_num, outpath, num_digits);
        }
       else if (dimension == 3) {
         if (sliceFlag) {
           if (slicedim == 'x') {
-            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, yInfo->value[0], yInfo->value[0] + Ysize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim, outpath);
+            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, yInfo->value[0], yInfo->value[0] + Ysize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim, outpath, num_digits);
           }
           else if (slicedim == 'y') {
-            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim, outpath);
+            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, zInfo->value[0], zInfo->value[0] + Zsize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim, outpath, num_digits);
           }
           else if (slicedim == 'z') {
-            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim, outpath);
+            outputImg_slice(model, varInfoList, geo_edge, Xdiv, Ydiv, Zdiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize , *sim_time, range_min, range_max, fname, file_num, slice, slicedim, outpath, num_digits);
           }
         }
         //else output3D_uint8(varInfoList, los, Xindex, Yindex, Zindex, file_num, fname, range_max);
