@@ -517,56 +517,15 @@ void makeColorBarArea(cv::Mat area, double range_max, double range_min, int* cbS
 
 void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, string s_id, int magnification, int num_digits) {
   cout << "Debug: entered setDetail()" << endl;
-  int i, fix[2];
-  int thickness, ltics, stics;
+  int thickness, lticks, sticks;
   float fontsize;
   Point left_top, right_top, left_bottom, right_bottom;
   //============== Initialize variables and image ==================
-  initializeImage(image, indent, areaSize, fontsize, thickness, ltics, stics, left_top, right_top, left_bottom, right_bottom);
-  //============== calculate best number for ticks ==================
-  double d;        // tick mark spacing
-  double graphmax; // graph range max
-  loose_label(0, Xdiv, d, graphmax);
-  //============== long, short tics and scale for X axis =================
-  Scalar black(0, 0, 0);
-  for (i = 0; i < Xdiv; i += d/2) { // we know that d is always an even number.
-    if (i % (int)d == 0) {
-      // long tics
-      line(image, left_bottom + Point(i * 2, thickness), left_bottom + Point(i * 2, ltics), black, thickness);
-      // scale
-      int baseline;
-      stringstream ss;
-      ss << i;
-      Size textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-      fix[0] = textSize.width / 2;
-      fix[1] = textSize.height / 2 + ltics + textSize.height * 3 / 2;
-      putText(image, ss.str().c_str(), left_bottom + Point(i * 2 - fix[0], fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-    } else {
-      // short tics
-      line(image, left_bottom + Point(i * 2, thickness), left_bottom + Point(i * 2, stics), black, thickness);
-    }
-  }
-  //============== long, short tics and scale for Y axis =================
-  loose_label(0, Ydiv, d, graphmax);
-  for (i = 0; i < Ydiv; i += d/2) { // we know that d is always an even number.
-    if (i % (int)d == 0) {
-      // long tics
-      line(image, left_bottom + Point(-thickness, -(i * 2)), left_bottom + Point(-ltics, -(i * 2)), black, thickness);
-      // scale
-      int baseline;
-      stringstream ss;
-      ss << i;
-      Size textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-      fix[0] = textSize.width + ltics * 1.5;
-      fix[1] = textSize.height / 2;
-      putText(image, ss.str().c_str(), left_bottom + Point(-fix[0], -(i * 2) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-    } else {
-      // short tics
-      line(image, left_bottom + Point(-thickness, -(i * 2)), left_bottom + Point(-stics, -(i * 2)), black, thickness);
-    }
-  }
-  //============== number & text =================
-  addAxisLabel(image, indent, areaSize, fontsize, thickness, ltics, "x", "y");
+  initializeImage(image, indent, areaSize, fontsize, thickness, lticks, sticks, left_top, right_top, left_bottom, right_bottom);
+  //============== Add Ticks ==================
+  addTicks(image, fontsize, thickness, Xdiv, Ydiv, lticks, sticks, left_bottom);
+  //============== Axis Label =================
+  addAxisLabel(image, indent, areaSize, fontsize, thickness, lticks, "x", "y");
   //=============== t ====================
   addSimulationTime(image, indent, fontsize, thickness, t, num_digits);
   //=============== resize font ====================
@@ -597,7 +556,7 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
     line(image, left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), thickness), left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), stics), black, thickness);
     line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5 + areaSize[1] / 10)), left_bottom + Point(-stics, -(areaSize[1] * i / 5 + areaSize[1] / 10)), black, thickness);
   }
-  //============== number & text =================
+  //============== Axis Label =================
   string xlabel, ylabel;
   if (slicedim == 'x') {
     xlabel = "y";
@@ -669,6 +628,52 @@ void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize,
   rectangle(image, left_bottom + Point(0, thickness - 1), right_bottom + Point(thickness - 1, 0), black, -1);
   rectangle(image, left_top - Point(thickness - 1, 0), left_bottom + Point(0, thickness - 1), black, -1);
   rectangle(image, right_top + Point(thickness - 1, 0), right_bottom + Point(0, thickness - 1), black, -1);
+}
+
+void addTicks(cv::Mat image, float fontsize, int thickness, int resultImgX, int resultImgY, int lticks, int sticks, cv::Point left_bottom) {
+  int fix[2];
+  Scalar black(0, 0, 0);
+  //============== calculate best number for ticks ==================
+  double d;        // tick mark spacing
+  double graphmax; // graph range max
+  loose_label(0, resultImgX, d, graphmax);
+  //============== long, short tics and scale for X axis =================
+  for (int i = 0; i < resultImgX; i += d/2) { // we know that d is always an even number.
+    if (i % (int)d == 0) {
+      // long tics
+      line(image, left_bottom + Point(i * 2, thickness), left_bottom + Point(i * 2, lticks), black, thickness);
+      // scale
+      int baseline;
+      stringstream ss;
+      ss << i;
+      Size textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
+      fix[0] = textSize.width / 2;
+      fix[1] = textSize.height / 2 + lticks + textSize.height * 3 / 2;
+      putText(image, ss.str().c_str(), left_bottom + Point(i * 2 - fix[0], fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+    } else {
+      // short tics
+      line(image, left_bottom + Point(i * 2, thickness), left_bottom + Point(i * 2, sticks), black, thickness);
+    }
+  }
+  //============== long, short tics and scale for Y axis =================
+  loose_label(0, resultImgY, d, graphmax);
+  for (int i = 0; i < resultImgY; i += d/2) { // we know that d is always an even number.
+    if (i % (int)d == 0) {
+      // long tics
+      line(image, left_bottom + Point(-thickness, -(i * 2)), left_bottom + Point(-lticks, -(i * 2)), black, thickness);
+      // scale
+      int baseline;
+      stringstream ss;
+      ss << i;
+      Size textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
+      fix[0] = textSize.width + lticks * 1.5;
+      fix[1] = textSize.height / 2;
+      putText(image, ss.str().c_str(), left_bottom + Point(-fix[0], -(i * 2) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+    } else {
+      // short tics
+      line(image, left_bottom + Point(-thickness, -(i * 2)), left_bottom + Point(-sticks, -(i * 2)), black, thickness);
+    }
+  }
 }
 
 void addAxisLabel(cv::Mat image, int* indent, int* areaSize, float fontsize, int thickness, int ltics, std::string xlabel, std::string ylabel) {
