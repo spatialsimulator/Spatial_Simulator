@@ -540,21 +540,21 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
 
 void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim, int num_digits) {
   int i, fix[2];
-  int thickness, ltics, stics;
+  int thickness, lticks, sticks;
   float fontsize;
   Point left_top, right_top, left_bottom, right_bottom;
   //============== Initialize variables and image ==================
-  initializeImage(image, indent, areaSize, fontsize, thickness, ltics, stics, left_top, right_top, left_bottom, right_bottom);
+  initializeImage(image, indent, areaSize, fontsize, thickness, lticks, sticks, left_top, right_top, left_bottom, right_bottom);
   //============== long tics =================
   Scalar black(0, 0, 0);
   for (i = 0; i < 6; ++i) {
-    line(image, left_bottom + Point(areaSize[0] * i / 5, thickness), left_bottom + Point(areaSize[0] * i / 5, ltics), black, thickness);
-    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5)), left_bottom + Point(-ltics, -(areaSize[1] * i / 5)), black, thickness);
+    line(image, left_bottom + Point(areaSize[0] * i / 5, thickness), left_bottom + Point(areaSize[0] * i / 5, lticks), black, thickness);
+    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5)), left_bottom + Point(-lticks, -(areaSize[1] * i / 5)), black, thickness);
   }
   //============== short tics ================
   for (i = 0; i < 5; ++i) {
-    line(image, left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), thickness), left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), stics), black, thickness);
-    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5 + areaSize[1] / 10)), left_bottom + Point(-stics, -(areaSize[1] * i / 5 + areaSize[1] / 10)), black, thickness);
+    line(image, left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), thickness), left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), sticks), black, thickness);
+    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5 + areaSize[1] / 10)), left_bottom + Point(-sticks, -(areaSize[1] * i / 5 + areaSize[1] / 10)), black, thickness);
   }
   //============== Axis Label =================
   string xlabel, ylabel;
@@ -570,7 +570,7 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
     xlabel = "x";
     ylabel = "y";
   }
-  addAxisLabel(image, indent, areaSize, fontsize, thickness, ltics, xlabel, ylabel);
+  addAxisLabel(image, indent, areaSize, fontsize, thickness, lticks, xlabel, ylabel);
   //=============== X scale ======================
   stringstream ss;
   int baseline;
@@ -579,7 +579,7 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
     ss << (int)(minX + (maxX - minX) * i / 5);
     textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
     fix[0] = textSize.width / 2;
-    fix[1] = textSize.height / 2 + ltics + textSize.height * 3 / 2;
+    fix[1] = textSize.height / 2 + lticks + textSize.height * 3 / 2;
     putText(image, ss.str().c_str(), left_bottom + Point(areaSize[0] * i / 5 - fix[0], fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
     ss.str("");
   }
@@ -587,7 +587,7 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
   for (i = 0; i < 6; ++i) {
     ss << (int)(minY + (maxY - minY) * i / 5);
     textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-    fix[0] = textSize.width + ltics + textSize.height * 3 / 2;
+    fix[0] = textSize.width + lticks + textSize.height * 3 / 2;
     putText(image, ss.str().c_str(), left_bottom + Point(-fix[0], -(areaSize[1] * i / 5) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
     ss.str("");
   }
@@ -608,15 +608,15 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
   ss.str("");
 }
 
-void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize, int& thickness, int& ltics, int& stics, cv::Point& left_top, cv::Point& right_top, cv::Point& left_bottom, cv::Point& right_bottom) {
+void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize, int& thickness, int& lticks, int& sticks, cv::Point& left_top, cv::Point& right_top, cv::Point& left_bottom, cv::Point& right_bottom) {
   int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
   thickness = baseSize / 250;
   if (thickness == 0) thickness = 1;
   fontsize = baseSize * 0.6 / 200;
   //============== ticks length =====================
-  ltics = areaSize[0] * 8 / 200;
-  if(ltics == 0) ltics = 2;
-  stics = ltics / 2;
+  lticks = areaSize[0] * 8 / 200;
+  if(lticks == 0) lticks = 2;
+  sticks = lticks / 2;
   //============== Points =====================
   left_top = Point(indent[0] - 1, indent[1] - 1);
   right_top = Point(indent[0] + areaSize[0], indent[1] - 1);
@@ -676,13 +676,13 @@ void addTicks(cv::Mat image, float fontsize, int thickness, int resultImgX, int 
   }
 }
 
-void addAxisLabel(cv::Mat image, int* indent, int* areaSize, float fontsize, int thickness, int ltics, std::string xlabel, std::string ylabel) {
+void addAxisLabel(cv::Mat image, int* indent, int* areaSize, float fontsize, int thickness, int lticks, std::string xlabel, std::string ylabel) {
   int baseline;
   int fix[2];
   Scalar black(0, 0, 0);
   Size textSize = getTextSize(xlabel, FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
   fix[0] = ceil(textSize.width / 2.0);
-  fix[1] = ceil(textSize.height / 2.0) + ltics + textSize.height * 3;
+  fix[1] = ceil(textSize.height / 2.0) + lticks + textSize.height * 3;
   putText(image, xlabel, Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   putText(image, ylabel, Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
 }

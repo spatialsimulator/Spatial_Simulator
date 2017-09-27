@@ -46,11 +46,11 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
 
 void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, int Zdiv, std::string fname, std::string s_id, int magnification, int slice, char slicedim, int num_digits);
 
-void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize, int& thickness, int& ltics, int& stics, cv::Point& left_top, cv::Point& right_top, cv::Point& left_bottom, cv::Point& right_bottom);
+void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize, int& thickness, int& lticks, int& sticks, cv::Point& left_top, cv::Point& right_top, cv::Point& left_bottom, cv::Point& right_bottom);
 
 void addTicks(cv::Mat image, float fontsize, int thickness, int resultImgX, int resultImgY, int lticks, int sticks, cv::Point left_bottom);
 
-void addAxisLabel(cv::Mat image, int* indent, int* areaSize, float fontsize, int thickness, int ltics, std::string xlabel, std::string ylabel);
+void addAxisLabel(cv::Mat image, int* indent, int* areaSize, float fontsize, int thickness, int lticks, std::string xlabel, std::string ylabel);
 
 void addSimulationTime(cv::Mat image, int* indent, float fontsize, int thickness, double t, int num_digits);
 
