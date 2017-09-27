@@ -518,28 +518,17 @@ void makeColorBarArea(cv::Mat area, double range_max, double range_min, int* cbS
 void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, string s_id, int magnification, int num_digits) {
   cout << "Debug: entered setDetail()" << endl;
   int i, fix[2];
-  int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
-  int thickness = baseSize / 250;
-  if (thickness == 0) thickness = 1;
-  float fontsize = baseSize * 0.6 / 200;
-  Scalar black(0, 0, 0);
-  Point left_top(indent[0] - 1, indent[1] - 1);
-  Point right_top(indent[0] + areaSize[0], indent[1] - 1);
-  Point left_bottom(indent[0] - 1, indent[1] + areaSize[1]);
-  Point right_bottom(indent[0] + areaSize[0], indent[1] + areaSize[1]);
-  //============== set frame line of value area =====================
-  rectangle(image, left_top - Point(thickness - 1, thickness - 1), right_top + Point(thickness - 1, 0), black, -1);
-  rectangle(image, left_bottom + Point(0, thickness - 1), right_bottom + Point(thickness - 1, 0), black, -1);
-  rectangle(image, left_top - Point(thickness - 1, 0), left_bottom + Point(0, thickness - 1), black, -1);
-  rectangle(image, right_top + Point(thickness - 1, 0), right_bottom + Point(0, thickness - 1), black, -1);
+  int thickness, ltics, stics;
+  float fontsize;
+  Point left_top, right_top, left_bottom, right_bottom;
+  //============== Initialize variables and image ==================
+  initializeImage(image, indent, areaSize, fontsize, thickness, ltics, stics, left_top, right_top, left_bottom, right_bottom);
   //============== calculate best number for ticks ==================
   double d;        // tick mark spacing
   double graphmax; // graph range max
   loose_label(0, Xdiv, d, graphmax);
   //============== long, short tics and scale for X axis =================
-  int ltics = areaSize[0] * 8 / 200;
-  if(ltics == 0) ltics = 2;
-  int stics = ltics / 2;
+  Scalar black(0, 0, 0);
   for (i = 0; i < Xdiv; i += d/2) { // we know that d is always an even number.
     if (i % (int)d == 0) {
       // long tics
@@ -568,7 +557,6 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
       stringstream ss;
       ss << i;
       Size textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-      //fix[0] = textSize.width + ltics + textSize.height * 3 / 2;
       fix[0] = textSize.width + ltics * 1.5;
       fix[1] = textSize.height / 2;
       putText(image, ss.str().c_str(), left_bottom + Point(-fix[0], -(i * 2) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
@@ -578,13 +566,7 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
     }
   }
   //============== number & text =================
-  int baseline;
-  Size textSize;
-  textSize = getTextSize("x", FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-  fix[0] = ceil(textSize.width / 2.0);
-  fix[1] = ceil(textSize.height / 2.0) + ltics + textSize.height * 3;
-  putText(image, "x", Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  putText(image, "y", Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  addAxisLabel(image, indent, areaSize, fontsize, thickness, ltics, "x", "y");
   //=============== t ====================
   addSimulationTime(image, indent, fontsize, thickness, t, num_digits);
   //=============== resize font ====================
@@ -599,29 +581,18 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
 
 void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim, int num_digits) {
   int i, fix[2];
-  int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
-  int thickness = baseSize / 250;
-  if (thickness == 0) thickness = 1;
-  float fontsize = baseSize * 0.6 / 200;
-  Scalar black(0, 0, 0);
-  Point left_top(indent[0] - 1, indent[1] - 1);
-  Point right_top(indent[0] + areaSize[0], indent[1] - 1);
-  Point left_bottom(indent[0] - 1, indent[1] + areaSize[1]);
-  Point right_bottom(indent[0] + areaSize[0], indent[1] + areaSize[1]);
-  //============== set frame line of value area =====================
-  rectangle(image, left_top - Point(thickness - 1, thickness - 1), right_top + Point(thickness - 1, 0), black, -1);
-  rectangle(image, left_bottom + Point(0, thickness - 1), right_bottom + Point(thickness - 1, 0), black, -1);
-  rectangle(image, left_top - Point(thickness - 1, 0), left_bottom + Point(0, thickness - 1), black, -1);
-  rectangle(image, right_top + Point(thickness - 1, 0), right_bottom + Point(0, thickness - 1), black, -1);
+  int thickness, ltics, stics;
+  float fontsize;
+  Point left_top, right_top, left_bottom, right_bottom;
+  //============== Initialize variables and image ==================
+  initializeImage(image, indent, areaSize, fontsize, thickness, ltics, stics, left_top, right_top, left_bottom, right_bottom);
   //============== long tics =================
-  int ltics = areaSize[0] * 8 / 200;
-  if(ltics == 0) ltics = 2;
+  Scalar black(0, 0, 0);
   for (i = 0; i < 6; ++i) {
     line(image, left_bottom + Point(areaSize[0] * i / 5, thickness), left_bottom + Point(areaSize[0] * i / 5, ltics), black, thickness);
     line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5)), left_bottom + Point(-ltics, -(areaSize[1] * i / 5)), black, thickness);
   }
   //============== short tics ================
-  int stics = ltics / 2;
   for (i = 0; i < 5; ++i) {
     line(image, left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), thickness), left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), stics), black, thickness);
     line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5 + areaSize[1] / 10)), left_bottom + Point(-stics, -(areaSize[1] * i / 5 + areaSize[1] / 10)), black, thickness);
@@ -680,6 +651,39 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
   textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
   putText(image, ss.str(), Point(indent[0], indent[1] - textSize.height), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   ss.str("");
+}
+
+void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize, int& thickness, int& ltics, int& stics, cv::Point& left_top, cv::Point& right_top, cv::Point& left_bottom, cv::Point& right_bottom) {
+  int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
+  thickness = baseSize / 250;
+  if (thickness == 0) thickness = 1;
+  fontsize = baseSize * 0.6 / 200;
+  //============== ticks length =====================
+  ltics = areaSize[0] * 8 / 200;
+  if(ltics == 0) ltics = 2;
+  stics = ltics / 2;
+  //============== Points =====================
+  left_top = Point(indent[0] - 1, indent[1] - 1);
+  right_top = Point(indent[0] + areaSize[0], indent[1] - 1);
+  left_bottom = Point(indent[0] - 1, indent[1] + areaSize[1]);
+  right_bottom = Point(indent[0] + areaSize[0], indent[1] + areaSize[1]);
+  //============== set frame line of value area =====================
+  Scalar black(0, 0, 0);
+  rectangle(image, left_top - Point(thickness - 1, thickness - 1), right_top + Point(thickness - 1, 0), black, -1);
+  rectangle(image, left_bottom + Point(0, thickness - 1), right_bottom + Point(thickness - 1, 0), black, -1);
+  rectangle(image, left_top - Point(thickness - 1, 0), left_bottom + Point(0, thickness - 1), black, -1);
+  rectangle(image, right_top + Point(thickness - 1, 0), right_bottom + Point(0, thickness - 1), black, -1);
+}
+
+void addAxisLabel(cv::Mat image, int* indent, int* areaSize, float fontsize, int thickness, int ltics, std::string xlabel, std::string ylabel) {
+  int baseline;
+  int fix[2];
+  Scalar black(0, 0, 0);
+  Size textSize = getTextSize(xlabel, FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
+  fix[0] = ceil(textSize.width / 2.0);
+  fix[1] = ceil(textSize.height / 2.0) + ltics + textSize.height * 3;
+  putText(image, xlabel, Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  putText(image, ylabel, Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
 }
 
 void addSimulationTime(cv::Mat image, int* indent, float fontsize, int thickness, double t, int num_digits) {
