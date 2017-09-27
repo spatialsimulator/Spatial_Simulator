@@ -46,8 +46,17 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
 
 void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, std::string s_id, int magnification, int slice, char slicedim, int num_digits);
 
+void addSimulationTime(cv::Mat image, int* indent, float fontsize, int thickness, double t, int num_digits);
+
+
+
+void addModelSpeciesId(cv::Mat image, float fontsize, int thickness, std::string fname, std::string s_id);
+
+void addDate(cv::Mat image, float fontsize, int thickness);
+
 int calcMagnification(int Xdiv, int Ydiv);
 
 std::string getCurrentTime();
+
 
 #endif
