@@ -516,7 +516,6 @@ void makeColorBarArea(cv::Mat area, double range_max, double range_min, int* cbS
 }
 
 void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, string s_id, int magnification, int num_digits) {
-  cout << "Debug: entered setDetail()" << endl;
   int thickness, lticks, sticks;
   float fontsize;
   Point left_top, right_top, left_bottom, right_bottom;
