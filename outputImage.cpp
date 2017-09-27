@@ -579,7 +579,7 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
   addDate(image, fontsize, thickness);
 }
 
-void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim, int num_digits) {
+void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim, int num_digits) {
   int i, fix[2];
   int thickness, ltics, stics;
   float fontsize;
@@ -617,7 +617,7 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
   int baseline;
   Size textSize;
   for (i = 0; i < 6; ++i) {
-    ss << (int)(min0 + (max0 - min0) * i / 5);
+    ss << (int)(minX + (maxX - minX) * i / 5);
     textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
     fix[0] = textSize.width / 2;
     fix[1] = textSize.height / 2 + ltics + textSize.height * 3 / 2;
@@ -626,7 +626,7 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
   }
   //=============== Y scale ======================
   for (i = 0; i < 6; ++i) {
-    ss << (int)(min1 + (max1 - min1) * i / 5);
+    ss << (int)(minY + (maxY - minY) * i / 5);
     textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
     fix[0] = textSize.width + ltics + textSize.height * 3 / 2;
     putText(image, ss.str().c_str(), left_bottom + Point(-fix[0], -(areaSize[1] * i / 5) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
