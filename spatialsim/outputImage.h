@@ -48,7 +48,7 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
 
 void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize, int& thickness, int& lticks, int& sticks, cv::Point& left_top, cv::Point& right_top, cv::Point& left_bottom, cv::Point& right_bottom);
 
-void addTicks(cv::Mat image, float fontsize, int thickness, int resultImgX, int resultImgY, int lticks, int sticks, cv::Point left_bottom);
+void addTicks(cv::Mat image, float fontsize, int thickness, int XresultImg, int YresultImg, int lticks, int sticks, cv::Point left_bottom);
 
 void addAxisLabel(cv::Mat image, int* indent, int* areaSize, float fontsize, int thickness, int lticks, std::string xlabel, std::string ylabel);
 

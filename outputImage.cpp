@@ -522,16 +522,16 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
   Point left_top, right_top, left_bottom, right_bottom;
   //============== Initialize variables and image ==================
   initializeImage(image, indent, areaSize, fontsize, thickness, lticks, sticks, left_top, right_top, left_bottom, right_bottom);
-  //============== Add Ticks ==================
-  addTicks(image, fontsize, thickness, Xdiv, Ydiv, lticks, sticks, left_bottom);
   //============== Axis Label =================
   addAxisLabel(image, indent, areaSize, fontsize, thickness, lticks, "x", "y");
+  //============== Add Ticks ==================
+  addTicks(image, fontsize, thickness, Xdiv, Ydiv, lticks, sticks, left_bottom);
   //=============== t ====================
   addSimulationTime(image, indent, fontsize, thickness, t, num_digits);
   //=============== resize font ====================
   resizeFont(fontsize, thickness, 0.5);
   //=============== Xdiv Ydiv magnification ====================
-  addDivMagnification(image, fontsize, thickness, Xdiv, Ydiv, -1, magnification);
+  addDivMagnification(image, fontsize, thickness, Xdiv, Ydiv, -1, magnification); // Zdiv = -1
   //=============== modelName spId ====================
   addModelSpeciesId(image, fontsize, thickness, fname, s_id);
   //=============== date ===============
@@ -539,58 +539,34 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
 }
 
 void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim, int num_digits) {
-  int i, fix[2];
   int thickness, lticks, sticks;
   float fontsize;
   Point left_top, right_top, left_bottom, right_bottom;
   //============== Initialize variables and image ==================
   initializeImage(image, indent, areaSize, fontsize, thickness, lticks, sticks, left_top, right_top, left_bottom, right_bottom);
-  //============== long tics =================
-  Scalar black(0, 0, 0);
-  for (i = 0; i < 6; ++i) {
-    line(image, left_bottom + Point(areaSize[0] * i / 5, thickness), left_bottom + Point(areaSize[0] * i / 5, lticks), black, thickness);
-    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5)), left_bottom + Point(-lticks, -(areaSize[1] * i / 5)), black, thickness);
-  }
-  //============== short tics ================
-  for (i = 0; i < 5; ++i) {
-    line(image, left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), thickness), left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), sticks), black, thickness);
-    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5 + areaSize[1] / 10)), left_bottom + Point(-sticks, -(areaSize[1] * i / 5 + areaSize[1] / 10)), black, thickness);
-  }
-  //============== Axis Label =================
+  //============== Obtain 2D image space from 3D space with given slicedim =================
   string xlabel, ylabel;
+  int XresultImg, YresultImg;
   if (slicedim == 'x') {
     xlabel = "y";
     ylabel = "z";
-  }
-  else if (slicedim == 'y') {
+    XresultImg = Ydiv;
+    YresultImg = Zdiv;
+  } else if (slicedim == 'y') {
     xlabel = "x";
     ylabel = "z";
-  }
-  else if (slicedim == 'z') {
+    XresultImg = Xdiv;
+    YresultImg = Zdiv;
+  } else {
     xlabel = "x";
     ylabel = "y";
+    XresultImg = Xdiv;
+    YresultImg = Ydiv;
   }
+  //============== Axis Label =================
   addAxisLabel(image, indent, areaSize, fontsize, thickness, lticks, xlabel, ylabel);
-  //=============== X scale ======================
-  stringstream ss;
-  int baseline;
-  Size textSize;
-  for (i = 0; i < 6; ++i) {
-    ss << (int)(minX + (maxX - minX) * i / 5);
-    textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-    fix[0] = textSize.width / 2;
-    fix[1] = textSize.height / 2 + lticks + textSize.height * 3 / 2;
-    putText(image, ss.str().c_str(), left_bottom + Point(areaSize[0] * i / 5 - fix[0], fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-    ss.str("");
-  }
-  //=============== Y scale ======================
-  for (i = 0; i < 6; ++i) {
-    ss << (int)(minY + (maxY - minY) * i / 5);
-    textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-    fix[0] = textSize.width + lticks + textSize.height * 3 / 2;
-    putText(image, ss.str().c_str(), left_bottom + Point(-fix[0], -(areaSize[1] * i / 5) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-    ss.str("");
-  }
+  //============== Add Ticks ==================
+  addTicks(image, fontsize, thickness, XresultImg, YresultImg, lticks, sticks, left_bottom);
   //=============== t ====================
   addSimulationTime(image, indent, fontsize, thickness, t, num_digits);
   //=============== resize font ====================
@@ -627,15 +603,15 @@ void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize,
   rectangle(image, right_top + Point(thickness - 1, 0), right_bottom + Point(0, thickness - 1), black, -1);
 }
 
-void addTicks(cv::Mat image, float fontsize, int thickness, int resultImgX, int resultImgY, int lticks, int sticks, cv::Point left_bottom) {
+void addTicks(cv::Mat image, float fontsize, int thickness, int XresultImg, int YresultImg, int lticks, int sticks, cv::Point left_bottom) {
   int fix[2];
   Scalar black(0, 0, 0);
   //============== calculate best number for ticks ==================
   double d;        // tick mark spacing
   double graphmax; // graph range max
-  loose_label(0, resultImgX, d, graphmax);
+  loose_label(0, XresultImg, d, graphmax);
   //============== long, short tics and scale for X axis =================
-  for (int i = 0; i < resultImgX; i += d/2) { // we know that d is always an even number.
+  for (int i = 0; i < XresultImg; i += d/2) { // we know that d is always an even number.
     if (i % (int)d == 0) {
       // long tics
       line(image, left_bottom + Point(i * 2, thickness), left_bottom + Point(i * 2, lticks), black, thickness);
@@ -653,8 +629,8 @@ void addTicks(cv::Mat image, float fontsize, int thickness, int resultImgX, int 
     }
   }
   //============== long, short tics and scale for Y axis =================
-  loose_label(0, resultImgY, d, graphmax);
-  for (int i = 0; i < resultImgY; i += d/2) { // we know that d is always an even number.
+  loose_label(0, YresultImg, d, graphmax);
+  for (int i = 0; i < YresultImg; i += d/2) { // we know that d is always an even number.
     if (i % (int)d == 0) {
       // long tics
       line(image, left_bottom + Point(-thickness, -(i * 2)), left_bottom + Point(-lticks, -(i * 2)), black, thickness);
