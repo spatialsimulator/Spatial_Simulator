@@ -602,10 +602,7 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
   //=============== date ===============
   addDate(image, fontsize, thickness);
   //=============== slice ================
-  ss << slicedim << " = " << slice / 2;
-  textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-  putText(image, ss.str(), Point(indent[0], indent[1] - textSize.height), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
+  addSliceInfo(image, indent, fontsize, thickness, slice, slicedim);
 }
 
 void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize, int& thickness, int& lticks, int& sticks, cv::Point& left_top, cv::Point& right_top, cv::Point& left_bottom, cv::Point& right_bottom) {
@@ -743,6 +740,15 @@ void addDate(cv::Mat image, float fontsize, int thickness) {
   string date = getCurrentTime();
   Size textSize = getTextSize(date, FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
   putText(image, date, Point(image.cols - 1, image.rows - 1) - Point(textSize.width, textSize.height * 3 / 5), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+}
+
+void addSliceInfo(cv::Mat image, int* indent, float fontsize, int thickness, int slice, char slicedim) {
+  int baseline;
+  Scalar black(0, 0, 0);
+  stringstream ss;
+  ss << slicedim << " = " << slice / 2;
+  Size textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
+  putText(image, ss.str(), Point(indent[0], indent[1] - textSize.height), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
 }
 
 int calcMagnification(int Xdiv, int Ydiv) {

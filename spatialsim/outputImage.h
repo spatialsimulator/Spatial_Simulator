@@ -62,6 +62,8 @@ void addModelSpeciesId(cv::Mat image, float fontsize, int thickness, std::string
 
 void addDate(cv::Mat image, float fontsize, int thickness);
 
+void addSliceInfo(cv::Mat image, int* indent, float fontsize, int thickness, int slice, char slicedim);
+
 int calcMagnification(int Xdiv, int Ydiv);
 
 std::string getCurrentTime();
