@@ -598,28 +598,24 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
     line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5 + areaSize[1] / 10)), left_bottom + Point(-stics, -(areaSize[1] * i / 5 + areaSize[1] / 10)), black, thickness);
   }
   //============== number & text =================
-  int baseline;
-  Size textSize;
-  string axis[2];
+  string xlabel, ylabel;
   if (slicedim == 'x') {
-    axis[0] = "y";
-    axis[1] = "z";
+    xlabel = "y";
+    ylabel = "z";
   }
   else if (slicedim == 'y') {
-    axis[0] = "x";
-    axis[1] = "z";
+    xlabel = "x";
+    ylabel = "z";
   }
   else if (slicedim == 'z') {
-    axis[0] = "x";
-    axis[1] = "y";
+    xlabel = "x";
+    ylabel = "y";
   }
-  textSize = getTextSize(axis[0], FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-  fix[0] = textSize.width / 2;
-  fix[1] = textSize.height / 2 + ltics + textSize.height * 3;
-  putText(image, axis[0], Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  putText(image, axis[1], Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  addAxisLabel(image, indent, areaSize, fontsize, thickness, ltics, xlabel, ylabel);
   //=============== X scale ======================
   stringstream ss;
+  int baseline;
+  Size textSize;
   for (i = 0; i < 6; ++i) {
     ss << (int)(min0 + (max0 - min0) * i / 5);
     textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
