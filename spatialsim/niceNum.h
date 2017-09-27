@@ -1,7 +1,6 @@
 #ifndef NICENUM_H_
 #define NICENUM_H_
 
-#include <cfenv>
 #include <cmath>
 #include <iostream>
 
