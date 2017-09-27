@@ -48,7 +48,9 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
 
 void addSimulationTime(cv::Mat image, int* indent, float fontsize, int thickness, double t, int num_digits);
 
+void resizeFont(float& fontsize, int& thickness, double multiplier);
 
+void addDivMagnification(cv::Mat image, float fontsize, int thickness, int Xdiv, int Ydiv, int Zdiv, int magnification);
 
 void addModelSpeciesId(cv::Mat image, float fontsize, int thickness, std::string fname, std::string s_id);
 

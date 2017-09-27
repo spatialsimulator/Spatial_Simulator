@@ -587,19 +587,10 @@ void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX,
   putText(image, "y", Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   //=============== t ====================
   addSimulationTime(image, indent, fontsize, thickness, t, num_digits);
-  stringstream ss;
+  //=============== resize font ====================
+  resizeFont(fontsize, thickness, 0.5);
   //=============== Xdiv Ydiv magnification ====================
-  fontsize /= 2;
-  thickness /= 2;
-  if (thickness == 0) thickness = 1;
-  ss << "Xdiv = " << Xdiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 108)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  ss << "Ydiv = " << Ydiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 72)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  ss << "magnification = " << magnification;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 36)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  addDivMagnification(image, fontsize, thickness, Xdiv, Ydiv, -1, magnification);
   //=============== modelName spId ====================
   addModelSpeciesId(image, fontsize, thickness, fname, s_id);
   //=============== date ===============
@@ -676,22 +667,10 @@ void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double
   }
   //=============== t ====================
   addSimulationTime(image, indent, fontsize, thickness, t, num_digits);
-  //=============== Xdiv Ydiv magnification ====================
-  fontsize /= 2;
-  thickness /= 2;
-  if (thickness == 0) thickness = 1;
-  ss << "Xdiv = " << Xdiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 144)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  ss << "Ydiv = " << Ydiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 108)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  ss << "Zdiv = " << Zdiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize *  72)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  ss << "magnification = " << magnification;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize *  36)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
+  //=============== resize font ====================
+  resizeFont(fontsize, thickness, 0.5);
+  //=============== Xdiv Ydiv Zdiv magnification ====================
+  addDivMagnification(image, fontsize, thickness, Xdiv, Ydiv, Zdiv, magnification);
   //=============== modelName spId ====================
   addModelSpeciesId(image, fontsize, thickness, fname, s_id);
   //=============== date ===============
@@ -708,6 +687,43 @@ void addSimulationTime(cv::Mat image, int* indent, float fontsize, int thickness
   stringstream ss;
   ss << "t = " << fixed << setprecision(num_digits) << t;
   putText(image, ss.str(), Point(indent[0], indent[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+}
+
+void resizeFont(float& fontsize, int& thickness, double multiplier) {
+  fontsize *= multiplier;
+  thickness *= multiplier;
+  if (thickness == 0) thickness = 1;
+}
+
+void addDivMagnification(cv::Mat image, float fontsize, int thickness, int Xdiv, int Ydiv, int Zdiv, int magnification) {
+  int num_lines = 1;
+  int base_fontsize = 36;
+  Scalar black(0, 0, 0);
+  stringstream ss;
+  // magnification
+  ss << "magnification = " << magnification;
+  putText(image, ss.str(), Point(ceil(fontsize * base_fontsize), image.rows
+        - ceil(fontsize *  base_fontsize * num_lines)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  ss.str("");
+  num_lines++;
+  // Zdiv
+  if (Zdiv != -1) {
+    ss << "Zdiv = " << Zdiv;
+    putText(image, ss.str(), Point(ceil(fontsize * base_fontsize), image.rows
+          - ceil(fontsize *  base_fontsize * num_lines)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+    ss.str("");
+    num_lines++;
+  }
+  // Ydiv
+  ss << "Ydiv = " << Ydiv;
+  putText(image, ss.str(), Point(ceil(fontsize * base_fontsize), image.rows
+        - ceil(fontsize * base_fontsize * num_lines)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  ss.str("");
+  num_lines++;
+  // Xdiv
+  ss << "Xdiv = " << Xdiv;
+  putText(image, ss.str(), Point(ceil(fontsize * base_fontsize), image.rows
+        - ceil(fontsize * base_fontsize * num_lines)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
 }
 
 void addModelSpeciesId(cv::Mat image, float fontsize, int thickness, std::string fname, std::string s_id) {
