@@ -1,3 +1,4 @@
+#include "spatialsim/niceNum.h"
 #include "spatialsim/outputImage.h"
 #include "spatialsim/mystruct.h"
 #include "spatialsim/searchFunction.h"
@@ -26,7 +27,7 @@ Vec3b nanVec(255, 192, 255);
 #define cbAreaX 100
 #define cbAreaY 420
 
-void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath) {
+void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath, int num_digits) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, magnification = 1;
   int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2];
   areaSize[0] = Xindex;//空間領域は膜も描画できるようにこう
@@ -88,14 +89,14 @@ void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_e
     Mat Roi_cbArea(image, Rect(indent[0] + areaSize[0], 0, cbAreaSize[0], cbAreaSize[1]));
     colorBarArea.copyTo(Roi_cbArea);
     //================= value area frame & number =====================
-    setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY, Xdiv, Ydiv, fname, s_id, magnification);
+    setDetail(image, indent, areaSize, t, minX, maxX, minY, maxY, Xdiv, Ydiv, fname, s_id, magnification, num_digits);
     ss << outpath << "/result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
     imwrite(ss.str(), image);
     ss.str("");
   }
 }
 
-void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath) {
+void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath, int num_digits) {
   int Xindex = Xdiv * 2 - 1,  Yindex = Ydiv * 2 - 1, Zindex = Zdiv * 2 - 1, magnification = 1;
   int imageSize[2], areaSize[2], indent[2], cbSize[2], cbAreaSize[2], cbIndent[2], division[2], index[2];
   if (slicedim != 'x' && slicedim != 'y' && slicedim != 'z') {
@@ -179,7 +180,7 @@ void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int*
     Mat Roi_cbArea(image, Rect(indent[0] + areaSize[0], 0, cbAreaSize[0], cbAreaSize[1]));
     colorBarArea.copyTo(Roi_cbArea);
     //================= value area frame & number =====================
-    setDetail_slice(image, indent, areaSize, t, min0, max0, min1, max1, Xdiv, Ydiv, Zdiv, fname, s_id, magnification, slice ,slicedim);
+    setDetail_slice(image, indent, areaSize, t, min0, max0, min1, max1, Xdiv, Ydiv, Zdiv, fname, s_id, magnification, slice, slicedim, num_digits);
     ss << outpath << "/result/" << fname << "/img/" << s_id << "/" << setfill('0') << setw(4) << file_num << ".png";
     imwrite(ss.str(), image);
     ss.str("");
@@ -514,188 +515,215 @@ void makeColorBarArea(cv::Mat area, double range_max, double range_min, int* cbS
   }
 }
 
-void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, string s_id, int magnification) {
-  int i, fix[2];
+void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, string s_id, int magnification, int num_digits) {
+  int thickness, lticks, sticks;
+  float fontsize;
+  Point left_top, right_top, left_bottom, right_bottom;
+  //============== Initialize variables and image ==================
+  initializeImage(image, indent, areaSize, fontsize, thickness, lticks, sticks, left_top, right_top, left_bottom, right_bottom);
+  //============== Axis Label =================
+  addAxisLabel(image, indent, areaSize, fontsize, thickness, lticks, "x", "y");
+  //============== Add Ticks ==================
+  addTicks(image, fontsize, thickness, Xdiv, Ydiv, lticks, sticks, left_bottom);
+  //=============== t ====================
+  addSimulationTime(image, indent, fontsize, thickness, t, num_digits);
+  //=============== resize font ====================
+  resizeFont(fontsize, thickness, 0.5);
+  //=============== Xdiv Ydiv magnification ====================
+  addDivMagnification(image, fontsize, thickness, Xdiv, Ydiv, -1, magnification); // Zdiv = -1
+  //=============== modelName spId ====================
+  addModelSpeciesId(image, fontsize, thickness, fname, s_id);
+  //=============== date ===============
+  addDate(image, fontsize, thickness);
+}
+
+void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim, int num_digits) {
+  int thickness, lticks, sticks;
+  float fontsize;
+  Point left_top, right_top, left_bottom, right_bottom;
+  //============== Initialize variables and image ==================
+  initializeImage(image, indent, areaSize, fontsize, thickness, lticks, sticks, left_top, right_top, left_bottom, right_bottom);
+  //============== Obtain 2D image space from 3D space with given slicedim =================
+  string xlabel, ylabel;
+  int XresultImg, YresultImg;
+  if (slicedim == 'x') {
+    xlabel = "y";
+    ylabel = "z";
+    XresultImg = Ydiv;
+    YresultImg = Zdiv;
+  } else if (slicedim == 'y') {
+    xlabel = "x";
+    ylabel = "z";
+    XresultImg = Xdiv;
+    YresultImg = Zdiv;
+  } else {
+    xlabel = "x";
+    ylabel = "y";
+    XresultImg = Xdiv;
+    YresultImg = Ydiv;
+  }
+  //============== Axis Label =================
+  addAxisLabel(image, indent, areaSize, fontsize, thickness, lticks, xlabel, ylabel);
+  //============== Add Ticks ==================
+  addTicks(image, fontsize, thickness, XresultImg, YresultImg, lticks, sticks, left_bottom);
+  //=============== t ====================
+  addSimulationTime(image, indent, fontsize, thickness, t, num_digits);
+  //=============== resize font ====================
+  resizeFont(fontsize, thickness, 0.5);
+  //=============== Xdiv Ydiv Zdiv magnification ====================
+  addDivMagnification(image, fontsize, thickness, Xdiv, Ydiv, Zdiv, magnification);
+  //=============== modelName spId ====================
+  addModelSpeciesId(image, fontsize, thickness, fname, s_id);
+  //=============== date ===============
+  addDate(image, fontsize, thickness);
+  //=============== slice ================
+  addSliceInfo(image, indent, fontsize, thickness, slice, slicedim);
+}
+
+void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize, int& thickness, int& lticks, int& sticks, cv::Point& left_top, cv::Point& right_top, cv::Point& left_bottom, cv::Point& right_bottom) {
   int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
-  int thickness = baseSize / 250;
+  thickness = baseSize / 250;
   if (thickness == 0) thickness = 1;
-  float fontsize = baseSize * 0.6 / 200;
-  Scalar black(0, 0, 0);
-  Point left_top(indent[0] - 1, indent[1] - 1);
-  Point right_top(indent[0] + areaSize[0], indent[1] - 1);
-  Point left_bottom(indent[0] - 1, indent[1] + areaSize[1]);
-  Point right_bottom(indent[0] + areaSize[0], indent[1] + areaSize[1]);
+  fontsize = baseSize * 0.6 / 200;
+  //============== ticks length =====================
+  lticks = areaSize[0] * 8 / 200;
+  if(lticks == 0) lticks = 2;
+  sticks = lticks / 2;
+  //============== Points =====================
+  left_top = Point(indent[0] - 1, indent[1] - 1);
+  right_top = Point(indent[0] + areaSize[0], indent[1] - 1);
+  left_bottom = Point(indent[0] - 1, indent[1] + areaSize[1]);
+  right_bottom = Point(indent[0] + areaSize[0], indent[1] + areaSize[1]);
   //============== set frame line of value area =====================
+  Scalar black(0, 0, 0);
   rectangle(image, left_top - Point(thickness - 1, thickness - 1), right_top + Point(thickness - 1, 0), black, -1);
   rectangle(image, left_bottom + Point(0, thickness - 1), right_bottom + Point(thickness - 1, 0), black, -1);
   rectangle(image, left_top - Point(thickness - 1, 0), left_bottom + Point(0, thickness - 1), black, -1);
   rectangle(image, right_top + Point(thickness - 1, 0), right_bottom + Point(0, thickness - 1), black, -1);
-  //============== long tics =================
-  int ltics = areaSize[0] * 8 / 200;
-  if(ltics == 0) ltics = 2;
-  for (i = 0; i < 6; ++i) {
-    line(image, left_bottom + Point(areaSize[0] * i / 5, thickness), left_bottom + Point(areaSize[0] * i / 5, ltics), black, thickness);
-    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5)), left_bottom + Point(-ltics, -(areaSize[1] * i / 5)), black, thickness);
+}
+
+void addTicks(cv::Mat image, float fontsize, int thickness, int XresultImg, int YresultImg, int lticks, int sticks, cv::Point left_bottom) {
+  int fix[2];
+  Scalar black(0, 0, 0);
+  //============== calculate best number for ticks ==================
+  double d;        // tick mark spacing
+  double graphmax; // graph range max
+  loose_label(0, XresultImg, d, graphmax);
+  //============== long, short tics and scale for X axis =================
+  for (int i = 0; i < XresultImg; i += d/2) { // we know that d is always an even number.
+    if (i % (int)d == 0) {
+      // long tics
+      line(image, left_bottom + Point(i * 2, thickness), left_bottom + Point(i * 2, lticks), black, thickness);
+      // scale
+      int baseline;
+      stringstream ss;
+      ss << i;
+      Size textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
+      fix[0] = textSize.width / 2;
+      fix[1] = textSize.height / 2 + lticks + textSize.height * 3 / 2;
+      putText(image, ss.str().c_str(), left_bottom + Point(i * 2 - fix[0], fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+    } else {
+      // short tics
+      line(image, left_bottom + Point(i * 2, thickness), left_bottom + Point(i * 2, sticks), black, thickness);
+    }
   }
-  //============== short tics ================
-  int stics = ltics / 2;
-  for (i = 0; i < 5; ++i) {
-    line(image, left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), thickness), left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), stics), black, thickness);
-    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5 + areaSize[1] / 10)), left_bottom + Point(-stics, -(areaSize[1] * i / 5 + areaSize[1] / 10)), black, thickness);
+  //============== long, short tics and scale for Y axis =================
+  loose_label(0, YresultImg, d, graphmax);
+  for (int i = 0; i < YresultImg; i += d/2) { // we know that d is always an even number.
+    if (i % (int)d == 0) {
+      // long tics
+      line(image, left_bottom + Point(-thickness, -(i * 2)), left_bottom + Point(-lticks, -(i * 2)), black, thickness);
+      // scale
+      int baseline;
+      stringstream ss;
+      ss << i;
+      Size textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
+      fix[0] = textSize.width + lticks * 1.5;
+      fix[1] = textSize.height / 2;
+      putText(image, ss.str().c_str(), left_bottom + Point(-fix[0], -(i * 2) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+    } else {
+      // short tics
+      line(image, left_bottom + Point(-thickness, -(i * 2)), left_bottom + Point(-sticks, -(i * 2)), black, thickness);
+    }
   }
-  //============== number & text =================
+}
+
+void addAxisLabel(cv::Mat image, int* indent, int* areaSize, float fontsize, int thickness, int lticks, std::string xlabel, std::string ylabel) {
   int baseline;
-  Size textSize;
-  textSize = getTextSize("x", FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
+  int fix[2];
+  Scalar black(0, 0, 0);
+  Size textSize = getTextSize(xlabel, FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
   fix[0] = ceil(textSize.width / 2.0);
-  fix[1] = ceil(textSize.height / 2.0) + ltics + textSize.height * 3;
-  putText(image, "x", Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  //putText(*image, "y", Point(indent[0] / 2 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  putText(image, "y", Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  //=============== X scale ======================
+  fix[1] = ceil(textSize.height / 2.0) + lticks + textSize.height * 3;
+  putText(image, xlabel, Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  putText(image, ylabel, Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+}
+
+void addSimulationTime(cv::Mat image, int* indent, float fontsize, int thickness, double t, int num_digits) {
+  Scalar black(0, 0, 0);
   stringstream ss;
-  for (i = 0; i < 6; ++i) {
-    ss << minX + (maxX - minX) * i / 5;
-    textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-    fix[0] = textSize.width / 2;
-    fix[1] = textSize.height / 2 + ltics + textSize.height * 3 / 2;
-    putText(image, ss.str().c_str(), left_bottom + Point(areaSize[0] * i / 5 - fix[0], fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-    ss.str("");
-  }
-  //=============== Y scale ======================
-  for (i = 0; i < 6; ++i) {
-    ss << minY + (maxY - minY) * i / 5;
-    textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-    fix[0] = textSize.width + ltics + textSize.height * 3 / 2;
-    fix[1] = textSize.height / 2;
-    putText(image, ss.str().c_str(), left_bottom + Point(-fix[0], -(areaSize[1] * i / 5) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-    ss.str("");
-  }
-  //=============== t ====================
-  ss << "t = " << t;
+  ss << "t = " << fixed << setprecision(num_digits) << t;
   putText(image, ss.str(), Point(indent[0], indent[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  //=============== Xdiv Ydiv magnification ====================
-  fontsize /= 2;
-  thickness /= 2;
+}
+
+void resizeFont(float& fontsize, int& thickness, double multiplier) {
+  fontsize *= multiplier;
+  thickness *= multiplier;
   if (thickness == 0) thickness = 1;
-  ss << "Xdiv = " << Xdiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 108)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  ss << "Ydiv = " << Ydiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 72)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
+}
+
+void addDivMagnification(cv::Mat image, float fontsize, int thickness, int Xdiv, int Ydiv, int Zdiv, int magnification) {
+  int num_lines = 1;
+  int base_fontsize = 36;
+  Scalar black(0, 0, 0);
+  stringstream ss;
+  // magnification
   ss << "magnification = " << magnification;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 36)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  //=============== modelName spId ====================
+  putText(image, ss.str(), Point(ceil(fontsize * base_fontsize), image.rows
+        - ceil(fontsize *  base_fontsize * num_lines)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  ss.str("");
+  num_lines++;
+  // Zdiv
+  if (Zdiv != -1) {
+    ss << "Zdiv = " << Zdiv;
+    putText(image, ss.str(), Point(ceil(fontsize * base_fontsize), image.rows
+          - ceil(fontsize *  base_fontsize * num_lines)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+    ss.str("");
+    num_lines++;
+  }
+  // Ydiv
+  ss << "Ydiv = " << Ydiv;
+  putText(image, ss.str(), Point(ceil(fontsize * base_fontsize), image.rows
+        - ceil(fontsize * base_fontsize * num_lines)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+  ss.str("");
+  num_lines++;
+  // Xdiv
+  ss << "Xdiv = " << Xdiv;
+  putText(image, ss.str(), Point(ceil(fontsize * base_fontsize), image.rows
+        - ceil(fontsize * base_fontsize * num_lines)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
+}
+
+void addModelSpeciesId(cv::Mat image, float fontsize, int thickness, std::string fname, std::string s_id) {
+  Scalar black(0, 0, 0);
   putText(image, "model: " + fname, Point(ceil(fontsize * 36), ceil(fontsize * 36)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
   putText(image, "sp: " + s_id, Point(ceil(fontsize * 36), ceil(fontsize * 72)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  //=============== date ===============
+}
+
+void addDate(cv::Mat image, float fontsize, int thickness) {
+  int baseline;
+  Scalar black(0, 0, 0);
   string date = getCurrentTime();
-  textSize = getTextSize(date, FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
+  Size textSize = getTextSize(date, FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
   putText(image, date, Point(image.cols - 1, image.rows - 1) - Point(textSize.width, textSize.height * 3 / 5), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
 }
 
-void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, string s_id, int magnification, int slice, char slicedim) {
-  int i, fix[2];
-  int baseSize = (areaSize[0] < areaSize[1])? areaSize[0] : areaSize[1];
-  int thickness = baseSize / 250;
-  if (thickness == 0) thickness = 1;
-  float fontsize = baseSize * 0.6 / 200;
-  Scalar black(0, 0, 0);
-  Point left_top(indent[0] - 1, indent[1] - 1);
-  Point right_top(indent[0] + areaSize[0], indent[1] - 1);
-  Point left_bottom(indent[0] - 1, indent[1] + areaSize[1]);
-  Point right_bottom(indent[0] + areaSize[0], indent[1] + areaSize[1]);
-  //============== set frame line of value area =====================
-  rectangle(image, left_top - Point(thickness - 1, thickness - 1), right_top + Point(thickness - 1, 0), black, -1);
-  rectangle(image, left_bottom + Point(0, thickness - 1), right_bottom + Point(thickness - 1, 0), black, -1);
-  rectangle(image, left_top - Point(thickness - 1, 0), left_bottom + Point(0, thickness - 1), black, -1);
-  rectangle(image, right_top + Point(thickness - 1, 0), right_bottom + Point(0, thickness - 1), black, -1);
-  //============== long tics =================
-  int ltics = areaSize[0] * 8 / 200;
-  if(ltics == 0) ltics = 2;
-  for (i = 0; i < 6; ++i) {
-    line(image, left_bottom + Point(areaSize[0] * i / 5, thickness), left_bottom + Point(areaSize[0] * i / 5, ltics), black, thickness);
-    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5)), left_bottom + Point(-ltics, -(areaSize[1] * i / 5)), black, thickness);
-  }
-  //============== short tics ================
-  int stics = ltics / 2;
-  for (i = 0; i < 5; ++i) {
-    line(image, left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), thickness), left_bottom + Point(areaSize[0] * i / 5 + (areaSize[0] / 10), stics), black, thickness);
-    line(image, left_bottom + Point(-thickness, -(areaSize[1] * i / 5 + areaSize[1] / 10)), left_bottom + Point(-stics, -(areaSize[1] * i / 5 + areaSize[1] / 10)), black, thickness);
-  }
-  //============== number & text =================
+void addSliceInfo(cv::Mat image, int* indent, float fontsize, int thickness, int slice, char slicedim) {
   int baseline;
-  Size textSize;
-  string axis[2];
-  if (slicedim == 'x') {
-    axis[0] = "y";
-    axis[1] = "z";
-  }
-  else if (slicedim == 'y') {
-    axis[0] = "x";
-    axis[1] = "z";
-  }
-  else if (slicedim == 'z') {
-    axis[0] = "x";
-    axis[1] = "y";
-  }
-  textSize = getTextSize(axis[0], FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-  fix[0] = textSize.width / 2;
-  fix[1] = textSize.height / 2 + ltics + textSize.height * 3;
-  putText(image, axis[0], Point(indent[0] + areaSize[0] / 2 - fix[0], indent[1] + areaSize[1] + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  putText(image, axis[1], Point(indent[0] / 3 - fix[0], indent[1] + areaSize[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  //=============== X scale ======================
+  Scalar black(0, 0, 0);
   stringstream ss;
-  for (i = 0; i < 6; ++i) {
-    ss << (int)(min0 + (max0 - min0) * i / 5);
-    textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-    fix[0] = textSize.width / 2;
-    fix[1] = textSize.height / 2 + ltics + textSize.height * 3 / 2;
-    putText(image, ss.str().c_str(), left_bottom + Point(areaSize[0] * i / 5 - fix[0], fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-    ss.str("");
-  }
-  //=============== Y scale ======================
-  for (i = 0; i < 6; ++i) {
-    ss << (int)(min1 + (max1 - min1) * i / 5);
-    textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-    fix[0] = textSize.width + ltics + textSize.height * 3 / 2;
-    putText(image, ss.str().c_str(), left_bottom + Point(-fix[0], -(areaSize[1] * i / 5) + fix[1]), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-    ss.str("");
-  }
-  //=============== t ====================
-  ss << "t = " << t;
-  putText(image, ss.str(), Point(indent[0], indent[1] / 2), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  //=============== Xdiv Ydiv magnification ====================
-  fontsize /= 2;
-  thickness /= 2;
-  if (thickness == 0) thickness = 1;
-  ss << "Xdiv = " << Xdiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 144)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  ss << "Ydiv = " << Ydiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 108)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  ss << "Zdiv = " << Zdiv;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 72)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  ss << "magnification = " << magnification;
-  putText(image, ss.str(), Point(ceil(fontsize * 36), image.rows - ceil(fontsize * 36)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
-  //=============== modelName spId ====================
-  putText(image, "model: " + fname, Point(ceil(fontsize * 36), ceil(fontsize * 36)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  putText(image, "sp: " + s_id, Point(ceil(fontsize * 36), ceil(fontsize * 72)), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  //=============== date ===============
-  string date = getCurrentTime();
-  textSize = getTextSize(date, FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
-  putText(image, date, Point(image.cols - 1, image.rows - 1) - Point(textSize.width, textSize.height * 3 / 5), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  //=============== slice ================
   ss << slicedim << " = " << slice / 2;
-  textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
+  Size textSize = getTextSize(ss.str(), FONT_HERSHEY_SIMPLEX, fontsize, thickness, &baseline);
   putText(image, ss.str(), Point(indent[0], indent[1] - textSize.height), FONT_HERSHEY_SIMPLEX, fontsize, black, thickness, CV_AA);
-  ss.str("");
 }
 
 int calcMagnification(int Xdiv, int Ydiv) {
@@ -712,7 +740,13 @@ string getCurrentTime() {
   struct tm *pnow = localtime(&now);
   char week[7][4] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
   stringstream ss;
-  ss << pnow->tm_year + 1900 << "/" << pnow->tm_mon + 1 << "/" << pnow->tm_mday << "(" << week[pnow->tm_wday] << ") ";
-  ss << pnow->tm_hour << ":" << pnow->tm_min << ":" << pnow->tm_sec;
+  char mdstr[100];
+  char tmstr[100];
+  if (std::strftime(mdstr, 100, "%Y/%m/%d", pnow)) {
+    ss << mdstr << "(" << week[pnow->tm_wday] << ") ";
+  }
+  if (std::strftime(tmstr, 100, "%T", pnow)) {
+    ss << tmstr;
+  }
   return ss.str();
 }

@@ -8,9 +8,9 @@
 
 LIBSBML_CPP_NAMESPACE_USE
 
-void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath);
+void outputImg(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, double minX, double maxX, double minY, double maxY, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath, int num_digits);
 
-void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath);
+void outputImg_slice(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double min0, double max0, double min1, double max1, double t, double range_min, double range_max, std::string fname, int file_num, int slice, char slicedim, std::string outpath, int num_digits);
 
 void outputGrayImage(Model *model, std::vector<variableInfo*> &varInfoList, int* geo_edge, int Xdiv, int Ydiv, int Zdiv, double t, double range_min, double range_max, std::string fname, int file_num, std::string outpath);
 
@@ -42,12 +42,31 @@ void makeColorBar(cv::Mat colorBar);
 
 void makeColorBarArea(cv::Mat area, double range_max, double range_min, int* cbSize, int* cbIndent);
 
-void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, std::string s_id, int magnification);
+void setDetail(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, std::string fname, std::string s_id, int magnification, int num_digits);
 
-void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double min0, double max0, double min1, double max1, int Xdiv, int Ydiv, int Zdiv, std::string fname, std::string s_id, int magnification, int slice, char slicedim);
+void setDetail_slice(cv::Mat image, int* indent, int* areaSize, double t, double minX, double maxX, double minY, double maxY, int Xdiv, int Ydiv, int Zdiv, std::string fname, std::string s_id, int magnification, int slice, char slicedim, int num_digits);
+
+void initializeImage(cv::Mat image, int* indent, int* areaSize, float& fontsize, int& thickness, int& lticks, int& sticks, cv::Point& left_top, cv::Point& right_top, cv::Point& left_bottom, cv::Point& right_bottom);
+
+void addTicks(cv::Mat image, float fontsize, int thickness, int XresultImg, int YresultImg, int lticks, int sticks, cv::Point left_bottom);
+
+void addAxisLabel(cv::Mat image, int* indent, int* areaSize, float fontsize, int thickness, int lticks, std::string xlabel, std::string ylabel);
+
+void addSimulationTime(cv::Mat image, int* indent, float fontsize, int thickness, double t, int num_digits);
+
+void resizeFont(float& fontsize, int& thickness, double multiplier);
+
+void addDivMagnification(cv::Mat image, float fontsize, int thickness, int Xdiv, int Ydiv, int Zdiv, int magnification);
+
+void addModelSpeciesId(cv::Mat image, float fontsize, int thickness, std::string fname, std::string s_id);
+
+void addDate(cv::Mat image, float fontsize, int thickness);
+
+void addSliceInfo(cv::Mat image, int* indent, float fontsize, int thickness, int slice, char slicedim);
 
 int calcMagnification(int Xdiv, int Ydiv);
 
 std::string getCurrentTime();
+
 
 #endif
