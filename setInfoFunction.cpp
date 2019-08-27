@@ -162,7 +162,7 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
 					sInfo->diffCInfo[dc->getCoordinateReference2() - 1] = info;
 					break;
 
-				case DIFFUSIONKIND_UNKNOWN:
+				case SPATIAL_DIFFUSIONKIND_INVALID:
 					cerr << "warning: Diffusion_Kind == Unknown" << endl;
 					break;
 				}
@@ -182,7 +182,7 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
 						info->value = new double(p->getValue());
 						break;
 
-					case DIFFUSIONKIND_UNKNOWN:
+					case SPATIAL_DIFFUSIONKIND_INVALID:
 						cerr << "warning: Diffusion_Kind == Unknown" << endl;
 						break;
 					}
