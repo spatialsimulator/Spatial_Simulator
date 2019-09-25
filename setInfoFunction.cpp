@@ -34,10 +34,12 @@ void setCompartmentInfo(Model *model, std::vector<variableInfo*> &varInfoList)
 
 void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
 {
+        SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin("spatial"));//added by Morita
 	ListOfSpecies *los = model->getListOfSpecies();
 	unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
 	unsigned int i;
 	int X, Y, Z;
+        unsigned int Xdiv = (Xindex + 1)/2, Ydiv = (Yindex + 1)/2, Zdiv = (Zindex + 1)/2;//added by Morita
 	unsigned int numOfVolIndexes = Xindex * Yindex * Zindex;
 	for (i = 0; i < numOfSpecies; i++) {
 		Species *s = los->get(i);
@@ -55,35 +57,85 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 			} else if (info->com->getSpatialDimensions()== memDimension) {
 				info->inVol = false;
 			}
-			//species value is specified by initial amount, initial value, rule or initial assignment
-			//species is spatially defined
 
-			if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
-				info->value = new double[numOfVolIndexes];
-				fill_n(info->value, numOfVolIndexes, 0);
-				//if (!s->isSetConstant() || !s->getConstant()) {
-				info->delta = new double[4 * numOfVolIndexes];
-				fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
-				//}
-				if (s->isSetInitialAmount()) {//Initial Amount
-					info->isResolved = true;
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
-							}
-						}
-					}
-				} else if (s->isSetInitialConcentration()) {//Initial Concentration
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
-							}
-						}
-					}
-				}
-			}
+                        ListOfParameters* lop = model->getListOfParameters();                        
+                        //Species have Local Concentration at a Compartment added by Morita                        
+                        if( lop->get(s->getId()) ){
+                                 //ready for getting SpatialSymbolReference
+                                 Parameter* p = lop->get( s->getId() );
+                                 SpatialParameterPlugin* pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin("spatial"));
+                                 //get sampledField
+                                 Geometry* geo = spPlugin->getGeometry();
+                                 ListOfSampledFields* losf = geo->getListOfSampledFields();
+                                 SampledField* sf = losf->get( pPlugin->getSpatialSymbolReference()->getSpatialRef() );
+                                 //Local Concentration
+                                 if( sf == NULL ){
+                                        cout << s->getId() << "has local concentration, but no sampledFields" << endl;
+                                        return;
+                                 } else if( sf != NULL ){
+                                        int* samples_int = new int[ Xdiv * Ydiv * Zdiv ];
+                                        double* samples = new double[ Xdiv * Ydiv * Zdiv ];
+                                        //get intensity in model                                        
+                                        sf->getSamples( samples_int );
+                                        //cast int -> double
+                                        std::copy( samples_int, samples_int + Xdiv * Ydiv * Zdiv, samples );
+                                        //converted into sparse matrix
+                                        int end = 0;
+                                        for( Z = 0; Z < Zindex; Z++ ){
+                                                for( Y = 0; Y < Yindex; Y++ ){
+                                                        for( X = 0; X < Xindex; X++ ){
+                                              
+                                                        if( Z % 2 == 0 ){
+                                                                if( Y % 2 == 0 ){
+                                                                        if( X != 0 ){
+                                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = (double)samples[ end ];
+                                                                                X++;
+                                                                                end++;
+                                                                        } else if( X == 0 ){
+                                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = (double)samples[ end ];
+                                                                                end++;
+                                                                        }
+                                                                } else
+                                                                        info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = 0;
+                                                        } else
+                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = 0;
+                                                        }
+                                                }
+                                        }
+                                        delete[] samples;
+                                 }                                 
+                        }
+                        //Species have Uniform Concentration at a Compartment
+                        else if( lop->get(s->getId()) == NULL ){
+                                //species value is specified by initial amount, initial value, rule or initial assignment
+                                //species is spatially defined
+			        if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
+				        info->value = new double[numOfVolIndexes];
+				        fill_n(info->value, numOfVolIndexes, 0);
+				        //if (!s->isSetConstant() || !s->getConstant()) {
+				        info->delta = new double[4 * numOfVolIndexes];
+				        fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
+				        //}
+				        if (s->isSetInitialAmount()) {//Initial Amount
+					        info->isResolved = true;
+					        for (Z = 0; Z < Zindex; Z++) {
+						        for (Y = 0; Y < Yindex; Y++) {
+							        for (X = 0; X < Xindex; X++) {
+								        info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
+							        }
+						        }
+					        }
+				        } else if (s->isSetInitialConcentration()) {//Initial Concentration
+					        for (Z = 0; Z < Zindex; Z++) {
+						        for (Y = 0; Y < Yindex; Y++) {
+							        for (X = 0; X < Xindex; X++) {
+								        info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
+							        }
+						        }
+					        }
+				        }
+			        }
+                        }
       info -> isResolved = true;
 		}
 	}
