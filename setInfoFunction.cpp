@@ -232,53 +232,57 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
 			case SBML_SPATIAL_SPATIALSYMBOLREFERENCE: {//spatial symbol reference
 				                                   //  if (pPlugin->getSpatialSymbolReference()->getType() == "coordinateComponent")
 				cc = geometry->getCoordinateComponent(pPlugin->getSpatialSymbolReference()->getSpatialRef());
-				double min = cc->getBoundaryMin()->getValue();
-				double max = cc->getBoundaryMax()->getValue();
-				if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
-					info->value = new double[numOfVolIndexes];
-					fill_n(info->value, numOfVolIndexes, 0);
-					xaxis = const_cast<char*>(p->getId().c_str());
-					Xsize = max - min;
-					deltaX = (max - min) / (Xdiv - 1);
-					info->isResolved = true;
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(X) * deltaX / 2.0;
-							}
-						}
-					}
-				} else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
-					info->value = new double[numOfVolIndexes];
-					fill_n(info->value, numOfVolIndexes, 0);
-					yaxis = const_cast<char*>(p->getId().c_str());
-					Ysize = max - min;
-					deltaY = (max - min) / (Ydiv - 1);
-					info->isResolved = true;
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Y) * deltaY / 2.0;
-							}
-						}
-					}
-				} else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
-					info->value = new double[numOfVolIndexes];
-					fill_n(info->value, numOfVolIndexes, 0);
-					zaxis = const_cast<char*>(p->getId().c_str());
-					Zsize = max - min;
-					deltaZ = (max - min) / (Zdiv - 1);
-					info->isResolved = true;
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Z) * deltaZ / 2.0;
-							}
-						}
-					}
-				}
+                                
+                                if(cc != NULL){//added by Morita
+                                  
+                                  double min = cc->getBoundaryMin()->getValue();
+                                  double max = cc->getBoundaryMax()->getValue();
+                                  if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
+                                    info->value = new double[numOfVolIndexes];
+                                    fill_n(info->value, numOfVolIndexes, 0);
+                                    xaxis = const_cast<char*>(p->getId().c_str());
+                                    Xsize = max - min;
+                                    deltaX = (max - min) / (Xdiv - 1);
+                                    info->isResolved = true;
+                                    for (Z = 0; Z < Zindex; Z++) {
+                                      for (Y = 0; Y < Yindex; Y++) {
+                                        for (X = 0; X < Xindex; X++) {
+                                          info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(X) * deltaX / 2.0;
+                                        }
+                                      }
+                                    }
+                                  } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
+                                    info->value = new double[numOfVolIndexes];
+                                    fill_n(info->value, numOfVolIndexes, 0);
+                                    yaxis = const_cast<char*>(p->getId().c_str());
+                                    Ysize = max - min;
+                                    deltaY = (max - min) / (Ydiv - 1);
+                                    info->isResolved = true;
+                                    for (Z = 0; Z < Zindex; Z++) {
+                                      for (Y = 0; Y < Yindex; Y++) {
+                                        for (X = 0; X < Xindex; X++) {
+                                          info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Y) * deltaY / 2.0;
+                                        }
+                                      }
+                                    }
+                                  } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
+                                    info->value = new double[numOfVolIndexes];
+                                    fill_n(info->value, numOfVolIndexes, 0);
+                                    zaxis = const_cast<char*>(p->getId().c_str());
+                                    Zsize = max - min;
+                                    deltaZ = (max - min) / (Zdiv - 1);
+                                    info->isResolved = true;
+                                    for (Z = 0; Z < Zindex; Z++) {
+                                      for (Y = 0; Y < Yindex; Y++) {
+                                        for (X = 0; X < Xindex; X++) {
+                                          info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Z) * deltaZ / 2.0;
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
 			}
-			break;
+                          break;
 			default:
 				break;
 			}
