@@ -73,12 +73,14 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
                                         cout << s->getId() << "has local concentration, but no sampledFields" << endl;
                                         return;
                                  } else if( sf != NULL ){
-                                        int* samples_int = new int[ Xdiv * Ydiv * Zdiv ];
-                                        double* samples = new double[ Xdiv * Ydiv * Zdiv ];
+                                        int* samples = new int[ Xdiv * Ydiv * Zdiv ];
                                         //get intensity in model                                        
-                                        sf->getSamples( samples_int );
-                                        //cast int -> double
-                                        std::copy( samples_int, samples_int + Xdiv * Ydiv * Zdiv, samples );
+                                        sf->getSamples( samples );
+                                        //initialize matrix "info->value"
+				        info->value = new double[numOfVolIndexes];
+				        fill_n(info->value, numOfVolIndexes, 0);
+				        info->delta = new double[4 * numOfVolIndexes];
+				        fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
                                         //converted into sparse matrix
                                         int end = 0;
                                         for( Z = 0; Z < Zindex; Z++ ){
@@ -88,11 +90,11 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
                                                         if( Z % 2 == 0 ){
                                                                 if( Y % 2 == 0 ){
                                                                         if( X != 0 ){
-                                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = (double)samples[ end ];
+                                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = samples[ end ];
                                                                                 X++;
                                                                                 end++;
                                                                         } else if( X == 0 ){
-                                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = (double)samples[ end ];
+                                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = samples[ end ];
                                                                                 end++;
                                                                         }
                                                                 } else
