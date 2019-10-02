@@ -58,21 +58,22 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 				info->inVol = false;
 			}
 
-                        ListOfParameters* lop = model->getListOfParameters();                        
+                        //ListOfParameters* lop = model->getListOfParameters();                        
                         //Species have Local Concentration at a Compartment added by Morita                        
-                        if( lop->get(s->getId()) ){
+                        //if( lop->get(s->getId()) ){
                                  //ready for getting SpatialSymbolReference
-                                 Parameter* p = lop->get( s->getId() );
-                                 SpatialParameterPlugin* pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin("spatial"));
+                                 //Parameter* p = lop->get( s->getId() );
+                                 //SpatialParameterPlugin* pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin("spatial"));
                                  //get sampledField
                                  Geometry* geo = spPlugin->getGeometry();
                                  ListOfSampledFields* losf = geo->getListOfSampledFields();
-                                 SampledField* sf = losf->get( pPlugin->getSpatialSymbolReference()->getSpatialRef() );
+                                 SampledField* sf = losf->get( s->getId() + "_initialConcentration" );
                                  //Local Concentration
-                                 if( sf == NULL ){
-                                        cout << s->getId() << "has local concentration, but no sampledFields" << endl;
-                                        return;
-                                 } else if( sf != NULL ){
+                                 //if( sf == NULL ){
+                                 //       cout << s->getId() << "has local concentration, but no sampledFields" << endl;
+                                 //       return;
+                                 //} else
+                                 if( sf != NULL ){
                                         int* samples = new int[ Xdiv * Ydiv * Zdiv ];
                                         //get intensity in model                                        
                                         sf->getSamples( samples );
@@ -89,26 +90,34 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
                                               
                                                         if( Z % 2 == 0 ){
                                                                 if( Y % 2 == 0 ){
-                                                                        if( X != 0 ){
-                                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = samples[ end ];
-                                                                                X++;
-                                                                                end++;
-                                                                        } else if( X == 0 ){
-                                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = samples[ end ];
-                                                                                end++;
-                                                                        }
+                                                                      if( X % 2 == 0){
+                                                                              info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = samples[ end ];
+                                                                              end++;
+                                                                      } else
+                                                                              info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = 0;
+                                                                      end++;
                                                                 } else
                                                                         info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = 0;
+                                                                end++;
                                                         } else
                                                                 info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = 0;
                                                         }
                                                 }
                                         }
                                         delete[] samples;
+                                        //check info->value
+                                        /*for (Z = 0; Z < Zindex; Z++) {
+						for (Y = 0; Y < Yindex; Y++) {
+							for (X = 0; X < Xindex; X++) {
+                                                                if(info->value[Z * Yindex * Xindex + Y * Xindex + X] > 0)
+                                                                        printf( "%lf  " ,info->value[Z * Yindex * Xindex + Y * Xindex + X] );
+							}
+						}
+					}*/
                                  }                                 
-                        }
+                        //}
                         //Species have Uniform Concentration at a Compartment
-                        else if( lop->get(s->getId()) == NULL ){
+                        else if( /*lop->get(s->getId())*/sf == NULL ){
                                 //species value is specified by initial amount, initial value, rule or initial assignment
                                 //species is spatially defined
 			        if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
