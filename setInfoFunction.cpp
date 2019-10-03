@@ -82,35 +82,22 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 				        fill_n(info->value, numOfVolIndexes, 0);
 				        info->delta = new double[4 * numOfVolIndexes];
 				        fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
-                                        //converted into sparse matrix
-                                        int end = 0;
-                                        for( Z = 0; Z < Zindex; Z++ ){
-                                                for( Y = 0; Y < Yindex; Y++ ){
-                                                        for( X = 0; X < Xindex; X++ ){
-                                              
-                                                        if( Z % 2 == 0 ){
-                                                                if( Y % 2 == 0 ){
-                                                                      if( X % 2 == 0){
-                                                                              info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = samples[ end ];
-                                                                              end++;
-                                                                      } else
-                                                                              info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = 0;
-                                                                      end++;
-                                                                } else
-                                                                        info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = 0;
-                                                                end++;
-                                                        } else
-                                                                info->value[ Z * Yindex * Xindex + Y * Xindex + X ] = 0;
-                                                        }
-                                                }
+                                        //converted into sparse matrix 　　        
+                                        for( Z = 0; Z < Zdiv; Z++ ){
+                                          for( Y = 0; Y < Ydiv; Y++ ){
+                                            for( X = 0; X < Xdiv; X++ ){
+
+                                              info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
+                                            }
+                                          }
                                         }
                                         delete[] samples;
                                         //check info->value
-                                        /*for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-                                                                if(info->value[Z * Yindex * Xindex + Y * Xindex + X] > 0)
-                                                                        printf( "%lf  " ,info->value[Z * Yindex * Xindex + Y * Xindex + X] );
+/*                                        for (Z = 0; Z < Zdiv; Z++) {
+						for (Y = 0; Y < Ydiv; Y++) {
+							for (X = 0; X < Xdiv; X++) {
+                                                                if(info->value[(2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X)] > 0)
+                                                                        printf( "[%d*%d] %lf ",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
 							}
 						}
 					}*/
