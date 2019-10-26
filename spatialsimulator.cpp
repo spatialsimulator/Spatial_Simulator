@@ -34,6 +34,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <fstream>
+
 LIBSBML_CPP_NAMESPACE_USE
 using namespace H5;
 using namespace cv;
@@ -877,7 +879,10 @@ void simulate(optionList options)
 	for (i = 0; i < varInfoList.size(); i++) {
 		variableInfo *info = varInfoList[i];
 		ast = 0;
-		if (model->getInitialAssignment(info->id) != 0) {//initial assignment
+                std::string SFId = info->id;
+                SFId += "_initialConcentration";
+                
+		if ( (model->getInitialAssignment(info->id) != 0 ) && (geometry->getListOfSampledFields()->get( SFId ) == 0 ) ) {//initial assignment which does not mean local concentration modified by morita
 			if (info->value == 0) {//value is not set yet
 				info->value = new double[numOfVolIndexes];
 				fill_n(info->value, numOfVolIndexes, 0);
@@ -925,8 +930,11 @@ void simulate(optionList options)
 		for (i = 0;; i++) {
 			variableInfo *info = notOrderedInfo[i];
 			if (isResolvedAll(info->dependence) && info->isResolved == false) {
-				if (model->getInitialAssignment(info->id) != 0) {//initial assignment
-					ast = const_cast<ASTNode*>((model->getInitialAssignment(info->id))->getMath());
+                                std::string SFId = info->id;
+                                SFId += "_initialConcentration";
+                                
+                                if ( (model->getInitialAssignment(info->id) != 0 ) && (geometry->getListOfSampledFields()->get( SFId ) == 0 ) ) {//initial assignment & species has no local concentration modified by Morita
+                                                ast = const_cast<ASTNode*>((model->getInitialAssignment(info->id))->getMath());
 				} else if (model->getRule(info->id) != 0 && model->getRule(info->id)->isAssignment()) {//assignment rule
 					ast = const_cast<ASTNode*>((static_cast<AssignmentRule*>(model->getRule(info->id)))->getMath());
 				}
@@ -1061,6 +1069,16 @@ void simulate(optionList options)
 	clock_t sim_start = clock();
 	cout << endl;
   int num_digits = (log10(dt * out_step) < 0)? ceil(-1 * log10(dt * out_step)) : 0;
+                                                
+                                        /***--- write CSV added by Morita ---***/
+                                        std::ofstream file01;
+                                        file01.open( "point_78_54.csv", std::ios::app );
+                                        std::ofstream file02;
+                                        file02.open( "point_77_54.csv", std::ios::app );
+                                        std::ofstream file03;
+                                        file03.open( "point_78_51.csv", std::ios::app );
+                                        //--------------------------------------------//
+
 	for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
 		*sim_time = t * dt;
 		//output
@@ -1178,12 +1196,33 @@ void simulate(optionList options)
 			if (!s->isSetConstant() || !s->getConstant()) {
 				for (j = 0; j < sInfo->geoi->domainIndex.size(); j++) {
 					index = sInfo->geoi->domainIndex[j];
+                                        //(2Z) * XIndex * YIndex + (2Y) * Xindex + (2X)
 					Z = index / (Xindex * Yindex);
 					Y = (index - Z * Xindex * Yindex) / Xindex;
 					X = index - Z * Xindex * Yindex - Y * Xindex;
 					//int divIndex = (Z / 2) * Ydiv * Xdiv + (Y / 2) * Xdiv + (X / 2);
+                                        
 					//update values for the next time
 					sInfo->value[index] += dt * (sInfo->delta[index] + 2.0 * sInfo->delta[numOfVolIndexes + index] + 2.0 * sInfo->delta[2 * numOfVolIndexes + index] + sInfo->delta[3 * numOfVolIndexes + index]) / 6.0;
+                                        
+                                        //***write file***//
+                                        // A_Nuc sInfo->geoi->domainIndexes.size() = 1113
+                                        // B = 5184
+
+                                        if( X/2==78 && Y/2==54 ){
+                                          //cout << "X: " << X << endl;
+                                          //cout << "Y: " << Y << endl;
+                                          //cout << "Z: " << Z << endl;
+                                          //cout << "index: " << index << endl;
+                                          //return;
+                                          file01 << t+1 << "," << sInfo->value[index] << std::endl;
+                                        } else if( X/2==77 && Y/2==54 ){
+                                          file02 << t+1 << "," << sInfo->value[index] << std::endl;
+                                        } else if( X/2==78 && Y/2==51 ){
+                                          file03 << t+1 << "," << sInfo->value[index] << std::endl;
+                                        }
+                                        //***--- finished ---***//
+
 					for (k = 0; k < 4; k++) sInfo->delta[k * numOfVolIndexes + index] = 0.0;
 				}
 				//boundary condition
@@ -1277,6 +1316,13 @@ void simulate(optionList options)
 			percent++;
 		}
 	}
+
+                                    //*** file closed ***//
+                                        file01.close();
+                                        file02.close();
+                                        file03.close();
+                                        //-----------//
+        
 	clock_t sim_end = clock();
 	cout << endl;
   cout << "simulation_time: "<< ((sim_end - sim_start) / static_cast<double>(CLOCKS_PER_SEC)) << endl;
