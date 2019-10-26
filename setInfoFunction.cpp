@@ -61,69 +61,59 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 
                         //ListOfParameters* lop = model->getListOfParameters();                        
                         //Species have Local Concentration at a Compartment added by Morita                        
-                        //if( lop->get(s->getId()) ){
-                                 //ready for getting SpatialSymbolReference
-                                 //Parameter* p = lop->get( s->getId() );
-                                 //SpatialParameterPlugin* pPlugin = static_cast<SpatialParameterPlugin*>(p->getPlugin("spatial"));
-                                 //get sampledField
+                        if( model->getInitialAssignment(s->getId()) ){
+
                                  Geometry* geo = spPlugin->getGeometry();
                                  ListOfSampledFields* losf = geo->getListOfSampledFields();
-                                 SampledField* sf = losf->get( s->getId() + "_" + s->getCompartment() + "_initialConcentration" );
-                                 //Local Concentration
-                                 //if( sf == NULL ){
-                                 //       cout << s->getId() << "has local concentration, but no sampledFields" << endl;
-                                 //       return;
-                                 //} else
-                                 if( sf != NULL ){
-                                        int* samples = new int[ Xdiv * Ydiv * Zdiv ];
-                                        //get intensity in model                                        
-                                        sf->getSamples( samples );
-                                        //initialize matrix "info->value"
-				        info->value = new double[numOfVolIndexes];
-				        fill_n(info->value, numOfVolIndexes, 0);
-				        info->delta = new double[4 * numOfVolIndexes];
-				        fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
-                                        //converted into sparse matrix 　　        
-                                        for( Z = 0; Z < Zdiv; Z++ ){
-                                          for( Y = 0; Y < Ydiv; Y++ ){
-                                            for( X = 0; X < Xdiv; X++ ){
-
-                                              info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
-                                            }
-                                          }
-                                        }
-                                        delete[] samples;
-                                        //check info->value
-                                        //write file
-                                        std::ofstream file01;
-                                        file01.open( "point_78_54.csv", std::ios::out );
-                                        std::ofstream file02;
-                                        file02.open( "point_77_54.csv", std::ios::out );
-                                        std::ofstream file03;
-                                        file03.open( "point_78_51.csv", std::ios::out );
-                                        for (Z = 0; Z < Zdiv; Z++) {
-						for (Y = 0; Y < Ydiv; Y++) {
-							for (X = 0; X < Xdiv; X++) {
-                                                                if( X==78 && Y==54 ){
-                                                                        printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
-                                                                        file01 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
-                                                                } else if( X==77 && Y==54 ){
-                                                                        printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
-                                                                        file02 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
-                                                                } else if( X==78 && Y==51 ){
-                                                                        printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
-                                                                        file03 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
-                                                                }
-							}
-						}
-					}
-                                        file01.close();
-                                        file02.close();
-                                        file03.close();
-                                 }                                 
-                        //}
+                                 SampledField* sf = losf->get( s->getId() + "_initialConcentration" );
+                                 int* samples = new int[ Xdiv * Ydiv * Zdiv ];
+                                 //get intensity in model       
+                                 sf->getSamples( samples );
+                                 //initialize matrix "info->value"
+                                 info->value = new double[numOfVolIndexes];
+                                 fill_n(info->value, numOfVolIndexes, 0);
+                                 info->delta = new double[4 * numOfVolIndexes];
+                                 fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
+                                 //converted into sparse matrix 　　        
+                                 for( Z = 0; Z < Zdiv; Z++ ){
+                                         for( Y = 0; Y < Ydiv; Y++ ){
+                                                 for( X = 0; X < Xdiv; X++ ){
+                                                         info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
+                                                 }
+                                         }
+                                 }
+                                 delete[] samples;
+                                 //check info->value
+                                 //write file
+                                 std::ofstream file01;
+                                 file01.open( "point_78_54.csv", std::ios::out );
+                                 std::ofstream file02;
+                                 file02.open( "point_77_54.csv", std::ios::out );
+                                 std::ofstream file03;
+                                 file03.open( "point_78_51.csv", std::ios::out );
+                                 for (Z = 0; Z < Zdiv; Z++) {
+                                   for (Y = 0; Y < Ydiv; Y++) {
+                                     for (X = 0; X < Xdiv; X++) {
+                                       if( X==78 && Y==54 ){
+                                         printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
+                                         file01 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
+                                       } else if( X==77 && Y==54 ){
+                                         printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
+                                         file02 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
+                                       } else if( X==78 && Y==51 ){
+                                         printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
+                                         file03 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
+                                       }
+                                     }
+                                   }
+                                 }
+                                 file01.close();
+                                 file02.close();
+                                 file03.close();
+                                 
+                        }
                         //Species have Uniform Concentration at a Compartment
-                        else if( /*lop->get(s->getId())*/sf == NULL ){
+                        else if( model->getInitialAssignment(s->getId()) == 0 ){
                                 //species value is specified by initial amount, initial value, rule or initial assignment
                                 //species is spatially defined
 			        if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
