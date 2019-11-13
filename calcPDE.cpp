@@ -820,6 +820,15 @@ void calcBoundary(variableInfo *sInfo, double deltaX, double deltaY, double delt
 	//3d
 	//x direction: d = (-J * deltaY * deltaZ) / (deltaY * deltaZ * (deltaX / 2.0)) = -2.0 * J / deltaX
 	if (dimension >= 1) {
+          //printf("hoge\n");//check
+          //cout << "Xmax is " << Xmax << endl;//check Xmax          
+          //cout << "Xmin is " << Xmin << endl;//check Xmax          
+          //cout << sInfo->boundaryInfo[Xmax] << endl;//check Xmax
+                if( !sInfo->boundaryInfo[Xmax]->para || !sInfo->boundaryInfo[Xmin]->para ){
+                        cout << "usage:set boundary condition for Xmax/Xmin" << endl;
+                        exit(1);
+                }//added by Morita
+          
 		maxSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Xmax]->para->getPlugin("spatial"))->getBoundaryCondition();
 		minSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Xmin]->para->getPlugin("spatial"))->getBoundaryCondition();
 		//Xp, Xm
