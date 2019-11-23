@@ -79,38 +79,59 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
                                          for( Y = 0; Y < Ydiv; Y++ ){
                                                  for( X = 0; X < Xdiv; X++ ){
                                                          info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
+                                                         if( samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] > 0 ){
+                                                           printf("X:%d Y:%d value:%d\n",X,Y,samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ]);
+                                                           //info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = 0;
+                                                         }
+                                                         
+                                                         //if( X==100 && Y==100 )
+                                                         //info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = 255;
+                                                           
                                                  }
                                          }
                                  }
                                  delete[] samples;
+/*
                                  //check info->value
                                  //write file
                                  std::ofstream file01;
-                                 file01.open( "point_78_54.csv", std::ios::out );
+                                 file01.open( "check_circle_neumann_101_101.csv", std::ios::out );
                                  std::ofstream file02;
-                                 file02.open( "point_77_54.csv", std::ios::out );
+                                 file02.open( "check_circle_neumann_102_101.csv", std::ios::out );
                                  std::ofstream file03;
-                                 file03.open( "point_78_51.csv", std::ios::out );
+                                 file03.open( "check_circle_neumann_101_104.csv", std::ios::out );
+                                 std::ofstream file04;
+                                 file04.open( "check_circle_neumann_97_105.csv", std::ios::out );
+                                 std::ofstream file05;
+                                 file05.open( "neumann_sum.csv", std::ios::out );
+
                                  for (Z = 0; Z < Zdiv; Z++) {
                                    for (Y = 0; Y < Ydiv; Y++) {
                                      for (X = 0; X < Xdiv; X++) {
-                                       if( X==78 && Y==54 ){
+                                       if( X==101 && Y==99 ){
                                          printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
                                          file01 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
-                                       } else if( X==77 && Y==54 ){
+                                       } else if( X==102 && Y==99 ){
                                          printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
                                          file02 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
-                                       } else if( X==78 && Y==51 ){
+                                       } else if( X==101 && Y==102 ){
                                          printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
                                          file03 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
+                                       } else if( X==97 && Y==103 ){
+                                         printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
+                                         file04 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
                                        }
                                      }
                                    }
                                  }
+                                 file05 << 0 << "," << info->value[ (2*1) * Yindex * Xindex + (2*99) * Xindex + (2*101) ] << std::endl;
+                                         
                                  file01.close();
                                  file02.close();
                                  file03.close();
-                                 
+                                 file04.close();
+                                 file05.close();
+*/                                 
                         }
                         //Species have Uniform Concentration at a Compartment
                         else if( model->getInitialAssignment(s->getId()) == 0 ){
@@ -128,7 +149,17 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 					        for (Z = 0; Z < Zindex; Z++) {
 						        for (Y = 0; Y < Yindex; Y++) {
 							        for (X = 0; X < Xindex; X++) {
-								        info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
+                                                                         if( X%2==0 && Y%2==0 ){ // original point
+                                                                                 if( s->getCompartment().find("membrane") == std::string::npos ){
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
+                                                                                 } else 
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = 0.0;
+                                                                         } else { // for membrane
+                                                                                 if( s->getCompartment().find("membrane") == std::string::npos ){
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = 0.0;
+                                                                                 } else
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
+                                                                         }
 							        }
 						        }
 					        }
@@ -136,7 +167,17 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 					        for (Z = 0; Z < Zindex; Z++) {
 						        for (Y = 0; Y < Yindex; Y++) {
 							        for (X = 0; X < Xindex; X++) {
-								        info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
+                                                                         if( X%2==0 && Y%2==0 ){ // original pixels
+                                                                                 if( s->getCompartment().find("membrane") == std::string::npos ){
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
+                                                                                 } else 
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = 0.0;
+                                                                         } else { // for membrane
+                                                                                 if( s->getCompartment().find("membrane") == std::string::npos ){
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = 0.0;
+                                                                                 } else
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
+                                                                         }
 							        }
 						        }
 					        }

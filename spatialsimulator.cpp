@@ -324,104 +324,105 @@ void simulate(optionList options)
 								samVol = sfGeo->getSampledVolume(k);
 							}
 						}
-
-						int *uncompr;
-						int length;
-						if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_UNCOMPRESSED) {
-							length = samField->getUncompressedLength();
-							samField->getUncompressedData(uncompr, length);
-						} else if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_DEFLATED) {
-							length = samField->getUncompressedLength();
-							samField->getUncompressedData(uncompr, length);
-						} else {
-							cerr << "base64 not supported" << endl;
-							exit(1);
-						}
-						GeometryInfo *geoInfo = new GeometryInfo;
-						InitializeAVolInfo(geoInfo);
-						geoInfo->compartmentId = c->getId().c_str();
-						geoInfo->domainTypeId = cPlugin->getCompartmentMapping()->getDomainType().c_str();
-						geoInfo->domainId = 0;
-						geoInfo->bType = new boundaryType[numOfVolIndexes];
-						for (k = 0; k < numOfVolIndexes; k++) {
-							geoInfo->bType[k].isBofXp = false;
-							geoInfo->bType[k].isBofXm = false;
-							geoInfo->bType[k].isBofYp = false;
-							geoInfo->bType[k].isBofYm = false;
-							geoInfo->bType[k].isBofZp = false;
-							geoInfo->bType[k].isBofZm = false;
-						}
-						geoInfo->isVol = true;
-						geoInfo->isDomain = new int[numOfVolIndexes];
-						fill_n(geoInfo->isDomain, numOfVolIndexes, 0);
-						geoInfo->isBoundary = new int[numOfVolIndexes];
-						fill_n(geoInfo->isBoundary, numOfVolIndexes, 0);
-						geoInfoList.push_back(geoInfo);
-						for (Z = 0; Z < Zindex; Z += 2) {
-							for (Y = 0; Y < Yindex; Y += 2) {
-								for (X = 0; X < Xindex; X += 2) {
-									if (static_cast<unsigned int>(uncompr[Z / 2 * samField->getNumSamples2() * samField->getNumSamples1() + (samField->getNumSamples2() - Y / 2 - 1) * samField->getNumSamples1() + X / 2]) == static_cast<unsigned int>(samVol->getSampledValue())) {
-										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
-										geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
-									} else {
-										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 0;
-									}
-								}
-							}
-						}
-						for (k = 0; k < geoInfo->domainIndex.size(); k++) {
-							index = geoInfo->domainIndex[k];
-							Z = index / (Xindex * Yindex);
-							Y = (index - Z * Xindex * Yindex) / Xindex;
-							X = index - Z * Xindex * Yindex - Y * Xindex;
-							if ((dimension == 2 && (X == 0 || X == Xindex - 1 || Y == 0 || Y == Yindex - 1)) ||
-							    (dimension == 3 && (X == 0 || X == Xindex - 1 || Y == 0 || Y == Yindex - 1 || Z == 0 || Z == Zindex - 1))) {
-								geoInfo->isBoundary[index] = 1;
-								geoInfo->boundaryIndex.push_back(index);
-								if (dimension >= 2) {
-									if (X == 0) geoInfo->bType[index].isBofXm = true;
-									if (X == Xindex - 1) geoInfo->bType[index].isBofXp = true;
-									if (Y == 0) geoInfo->bType[index].isBofYm = true;
-									if (Y == Yindex - 1) geoInfo->bType[index].isBofYp = true;
-								}
-								if (dimension == 3) {
-									if (Z == 0) geoInfo->bType[index].isBofZm = true;
-									if (Z == Zindex - 1) geoInfo->bType[index].isBofZp = true;
-								}
-							} else {
-								if (dimension >= 2) {
-									if (geoInfo->isDomain[Z * Xindex * Yindex + Y * Xindex + (X + 2)] == 0) {
-										geoInfo->isBoundary[index] = 1;
-										geoInfo->bType[index].isBofXp = true;
-									}
-									if (geoInfo->isDomain[Z * Xindex * Yindex + Y * Xindex + (X - 2)] == 0) {
-										geoInfo->isBoundary[index] = 1;
-										geoInfo->bType[index].isBofXm = true;
-									}
-									if (geoInfo->isDomain[Z * Xindex * Yindex + (Y + 2) * Xindex + X] == 0) {
-										geoInfo->isBoundary[index] = 1;
-										geoInfo->bType[index].isBofYp = true;
-									}
-									if (geoInfo->isDomain[Z * Xindex * Yindex + (Y - 2) * Xindex + X] == 0) {
-										geoInfo->isBoundary[index] = 1;
-										geoInfo->bType[index].isBofYm = true;
-									}
-								}
-								if (dimension == 3) {
-									if (geoInfo->isDomain[(Z + 2) * Xindex * Yindex + Y * Xindex + X] == 0) {
-										geoInfo->isBoundary[index] = 1;
-										geoInfo->bType[index].isBofZp = true;
-									}
-									if (geoInfo->isDomain[(Z - 2) * Xindex * Yindex + Y * Xindex + X] == 0) {
-										geoInfo->isBoundary[index] = 1;
-										geoInfo->bType[index].isBofZm = true;
-									}
-								}
-							}
-						}
-						//free(compr_int);
-						//free(compr);
-						free(uncompr);
+                                                if(samVol != 0){
+                                                          int *uncompr;
+                                                          int length;
+                                                          if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_UNCOMPRESSED) {
+                                                                  length = samField->getUncompressedLength();
+                                                                  samField->getUncompressedData(uncompr, length);
+                                                          } else if(samField->getCompression() == SPATIAL_COMPRESSIONKIND_DEFLATED) {
+                                                                  length = samField->getUncompressedLength();
+                                                                  samField->getUncompressedData(uncompr, length);
+                                                          } else {
+                                                                  cerr << "base64 not supported" << endl;
+                                                                  exit(1);
+                                                          }
+                                                          GeometryInfo *geoInfo = new GeometryInfo;
+                                                          InitializeAVolInfo(geoInfo);
+                                                          geoInfo->compartmentId = c->getId().c_str();
+                                                          geoInfo->domainTypeId = cPlugin->getCompartmentMapping()->getDomainType().c_str();
+                                                          geoInfo->domainId = 0;
+                                                          geoInfo->bType = new boundaryType[numOfVolIndexes];
+                                                          for (k = 0; k < numOfVolIndexes; k++) {
+                                                                  geoInfo->bType[k].isBofXp = false;
+                                                                  geoInfo->bType[k].isBofXm = false;
+                                                                  geoInfo->bType[k].isBofYp = false;
+                                                                  geoInfo->bType[k].isBofYm = false;
+                                                                  geoInfo->bType[k].isBofZp = false;
+                                                                  geoInfo->bType[k].isBofZm = false;
+                                                          }
+                                                          geoInfo->isVol = true;
+                                                          geoInfo->isDomain = new int[numOfVolIndexes];
+                                                          fill_n(geoInfo->isDomain, numOfVolIndexes, 0);
+                                                          geoInfo->isBoundary = new int[numOfVolIndexes];
+                                                          fill_n(geoInfo->isBoundary, numOfVolIndexes, 0);
+                                                          geoInfoList.push_back(geoInfo);
+                                                          for (Z = 0; Z < Zindex; Z += 2) {
+                                                                  for (Y = 0; Y < Yindex; Y += 2) {
+                                                                          for (X = 0; X < Xindex; X += 2) {
+                                                                                  if (static_cast<unsigned int>(uncompr[Z / 2 * samField->getNumSamples2() * samField->getNumSamples1() + (samField->getNumSamples2() - Y / 2 - 1) * samField->getNumSamples1() + X / 2]) == static_cast<unsigned int>(samVol->getSampledValue())) {
+                                                                                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
+                                                                                    geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                                                                                  } else {
+                                                                                    geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 0;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                          }
+                                                          for (k = 0; k < geoInfo->domainIndex.size(); k++) {
+                                                                  index = geoInfo->domainIndex[k];
+                                                                  Z = index / (Xindex * Yindex);
+                                                                  Y = (index - Z * Xindex * Yindex) / Xindex;
+                                                                  X = index - Z * Xindex * Yindex - Y * Xindex;
+                                                                  if ((dimension == 2 && (X == 0 || X == Xindex - 1 || Y == 0 || Y == Yindex - 1)) ||
+                                                                      (dimension == 3 && (X == 0 || X == Xindex - 1 || Y == 0 || Y == Yindex - 1 || Z == 0 || Z == Zindex - 1))) {
+                                                                          geoInfo->isBoundary[index] = 1;
+                                                                          geoInfo->boundaryIndex.push_back(index);
+                                                                          if (dimension >= 2) {
+                                                                                  if (X == 0) geoInfo->bType[index].isBofXm = true;
+                                                                                  if (X == Xindex - 1) geoInfo->bType[index].isBofXp = true;
+                                                                                  if (Y == 0) geoInfo->bType[index].isBofYm = true;
+                                                                                  if (Y == Yindex - 1) geoInfo->bType[index].isBofYp = true;
+                                                                          }
+                                                                          if (dimension == 3) {
+                                                                                  if (Z == 0) geoInfo->bType[index].isBofZm = true;
+                                                                                  if (Z == Zindex - 1) geoInfo->bType[index].isBofZp = true;
+                                                                          }
+                                                                  } else {
+                                                                          if (dimension >= 2) {
+                                                                                  if (geoInfo->isDomain[Z * Xindex * Yindex + Y * Xindex + (X + 2)] == 0) {
+                                                                                          geoInfo->isBoundary[index] = 1;
+                                                                                          geoInfo->bType[index].isBofXp = true;
+                                                                                  }
+                                                                                  if (geoInfo->isDomain[Z * Xindex * Yindex + Y * Xindex + (X - 2)] == 0) {
+                                                                                          geoInfo->isBoundary[index] = 1;
+                                                                                          geoInfo->bType[index].isBofXm = true;
+                                                                                  }
+                                                                                  if (geoInfo->isDomain[Z * Xindex * Yindex + (Y + 2) * Xindex + X] == 0) {
+                                                                                    geoInfo->isBoundary[index] = 1;
+                                                                                    geoInfo->bType[index].isBofYp = true;
+                                                                                  }
+                                                                                  if (geoInfo->isDomain[Z * Xindex * Yindex + (Y - 2) * Xindex + X] == 0) {
+                                                                                    geoInfo->isBoundary[index] = 1;
+                                                                                    geoInfo->bType[index].isBofYm = true;
+                                                                                  }
+                                                                          }
+                                                                          if (dimension == 3) {
+                                                                                  if (geoInfo->isDomain[(Z + 2) * Xindex * Yindex + Y * Xindex + X] == 0) {
+                                                                                          geoInfo->isBoundary[index] = 1;
+                                                                                          geoInfo->bType[index].isBofZp = true;
+                                                                                  } 
+                                                                                  if (geoInfo->isDomain[(Z - 2) * Xindex * Yindex + Y * Xindex + X] == 0) {
+                                                                                          geoInfo->isBoundary[index] = 1;
+                                                                                          geoInfo->bType[index].isBofZm = true;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                          }
+                                                          //free(compr_int);
+                                                          //free(compr);
+                                                          free(uncompr);
+                                                }
 					}
 				}
 			}
@@ -1072,11 +1073,17 @@ void simulate(optionList options)
                                                 
                                         /***--- write CSV added by Morita ---***/
                                         std::ofstream file01;
-                                        file01.open( "point_78_54.csv", std::ios::app );
+                                        file01.open( "check_example2D_60_74.csv", std::ios::app );
                                         std::ofstream file02;
-                                        file02.open( "point_77_54.csv", std::ios::app );
+                                        file02.open( "check_example2D_81_73.csv", std::ios::app );
                                         std::ofstream file03;
-                                        file03.open( "point_78_51.csv", std::ios::app );
+                                        file03.open( "check_example2D_mem_60_74.csv", std::ios::app );
+                                        //std::ofstream file04;
+                                        //file04.open( "check_circle_neumann_97_105.csv", std::ios::app );
+                                        std::ofstream file05;
+                                        file05.open( "neumann_sum.csv", std::ios::app );                                        
+                                        std::ofstream line;
+                                        line.open( "check_diffusion_line01.csv", std::ios::app );
                                         //--------------------------------------------//
 
 	for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
@@ -1118,9 +1125,15 @@ void simulate(optionList options)
 			if (sInfo->adCInfo != 0) {
 				cipCSLR(sInfo, deltaX, deltaY, deltaZ, dt, Xindex, Yindex, Zindex, dimension);
 			}//end of advection
+
+                        //check_diffusion_line
+                        //cout << "hoge" << endl;
+                        //line << t*dt << "," << sInfo->value[ 2*990 ] << "," << sInfo->value[ 2*991 ] << "," << sInfo->value[ 2*992 ] << "," << sInfo->value[ 2*993 ] << "," << sInfo->value[ 2*994 ] << "," << sInfo->value[ 2*995 ] << "," << sInfo->value[ 2*996 ] << "," << sInfo->value[  (2*997) ] << "," << sInfo->value[ (2*998) ] << "," << sInfo->value[ (2*999) ] << "," << sInfo->value[ (2*1000) ] << "," << sInfo->value[ (2*1001) ] << "," << sInfo->value[ (2*1002) ] << "," << sInfo->value[ (2*1003) ] << "," << sInfo->value[ (2*1004) ] << "," << sInfo->value[ (2*1005) ] << "," << sInfo->value[ (2*1006) ] << "," << sInfo->value[ (2*1007) ] << "," << sInfo->value[ (2*1008) ] << "," << sInfo->value[ (2*1009) ] << "," << sInfo->value[ (2*1010) ] << "," << sInfo->value[ (2*1011) ] << "," << sInfo->value[ (2*1012) ] << endl;
+                        //line << t*dt << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*90) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*91) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*92) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*93) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*94) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*95) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*96) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*97) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*98) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*99) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*100) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*101) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*102) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*103) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*104) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*105) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*106) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*107) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*108) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*109) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*110) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*111) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*112) ] << endl;
+
 		}
 		ad_end = clock();
-		ad_time += ad_end - ad_start;
+		ad_time += ad_end - ad_start;                
 
 		//runge-kutta
 		for (unsigned int m = 0; m < 4; m++) {
@@ -1129,7 +1142,7 @@ void simulate(optionList options)
 				variableInfo *sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
 				diff_start = clock();
 				//volume diffusion
-				if (sInfo->diffCInfo != 0 && sInfo->geoi->isVol) {
+				if (sInfo->diffCInfo != 0 && sInfo->geoi->isVol) {                                        
 					calcDiffusion(sInfo, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, m, dt);
 				}
 				//membane diffusion
@@ -1193,6 +1206,7 @@ void simulate(optionList options)
 		for (i = 0; i < numOfSpecies; i++) {
 			s = los->get(i);
 			variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
+                        double sum = 0;//delete later
 			if (!s->isSetConstant() || !s->getConstant()) {
 				for (j = 0; j < sInfo->geoi->domainIndex.size(); j++) {
 					index = sInfo->geoi->domainIndex[j];
@@ -1201,31 +1215,45 @@ void simulate(optionList options)
 					Y = (index - Z * Xindex * Yindex) / Xindex;
 					X = index - Z * Xindex * Yindex - Y * Xindex;
 					//int divIndex = (Z / 2) * Ydiv * Xdiv + (Y / 2) * Xdiv + (X / 2);
-                                        
-					//update values for the next time
-					sInfo->value[index] += dt * (sInfo->delta[index] + 2.0 * sInfo->delta[numOfVolIndexes + index] + 2.0 * sInfo->delta[2 * numOfVolIndexes + index] + sInfo->delta[3 * numOfVolIndexes + index]) / 6.0;
-                                        
+
                                         //***write file***//
                                         // A_Nuc sInfo->geoi->domainIndexes.size() = 1113
                                         // B = 5184
 
-                                        if( X/2==78 && Y/2==54 ){
+                                        if( X/2==60 && Y/2==57 ){
                                           //cout << "X: " << X << endl;
                                           //cout << "Y: " << Y << endl;
                                           //cout << "Z: " << Z << endl;
                                           //cout << "index: " << index << endl;
                                           //return;
-                                          file01 << t+1 << "," << sInfo->value[index] << std::endl;
-                                        } else if( X/2==77 && Y/2==54 ){
+                                          file01 << t << "," << sInfo->value[index] << std::endl;
+                                          //cout << s->getId() << endl;
+                                          //cout << "Xdiv:60 Ydiv:74 DomainType is " << geoInfoList[0]->compartmentId << " isDomain is " << geoInfoList[0]->isDomain[ Y*Xindex + X ] << endl;
+                                          //cout << "membrane Xdiv:60 Ydiv:74 DomainType is " << geoInfoList[4]->compartmentId << " isDomain is " << geoInfoList[4]->isDomain[ Y*Xindex + (X-1) ] << endl;
+                                          file03 << t << "," << sInfo->value[ Y*Xindex + (X-1) ] << std::endl;
+                                        } else if( X/2==81 && Y/2==60 ){
                                           file02 << t+1 << "," << sInfo->value[index] << std::endl;
-                                        } else if( X/2==78 && Y/2==51 ){
-                                          file03 << t+1 << "," << sInfo->value[index] << std::endl;
+                                        } else if( X/2==61 && Y/2==51 ){
+                                          //file03 << t << "," << sInfo->value[index] << std::endl;
+                                        } else if( X/2==97 && Y/2==103 ){
+                                          //file04 << t << "," << sInfo->value[index] << std::endl;
                                         }
+                                        
+                                        //sum within compartment
+                                        sum+=sInfo->value[index];
                                         //***--- finished ---***//
+
+                                        
+					//update values for the next time
+					sInfo->value[index] += dt * (sInfo->delta[index] + 2.0 * sInfo->delta[numOfVolIndexes + index] + 2.0 * sInfo->delta[2 * numOfVolIndexes + index] + sInfo->delta[3 * numOfVolIndexes + index]) / 6.0;                                        
 
 					for (k = 0; k < 4; k++) sInfo->delta[k * numOfVolIndexes + index] = 0.0;
 				}
-				//boundary condition
+
+                                //record sum in compartment
+                                file05 << t+1 << "," << sum << std::endl;
+
+                                //boundary condition
 				if (sInfo->boundaryInfo != 0) {
 					calcBoundary(sInfo, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, 0, dimension);
 				}
@@ -1321,6 +1349,9 @@ void simulate(optionList options)
                                         file01.close();
                                         file02.close();
                                         file03.close();
+                                        line.close();
+                                        //file04.close();
+                                        //file05.close();
                                         //-----------//
         
 	clock_t sim_end = clock();
@@ -1387,3 +1418,4 @@ double getDefaultRangeMax(Model *model) {
 #ifdef __cplusplus
 }
 #endif
+
