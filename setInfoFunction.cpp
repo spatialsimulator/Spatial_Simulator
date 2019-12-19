@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>//added by Morita
+#include <string>//added by Morita
 
 using namespace std;
 LIBSBML_CPP_NAMESPACE_USE
@@ -47,6 +48,7 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 		SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin("spatial"));
 		//species have spatial extension
 		if (splugin->getIsSpatial()) {
+                  
 			variableInfo *info = new variableInfo;
 			InitializeVarInfo(info);
 			varInfoList.push_back(info);
@@ -59,7 +61,6 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 				info->inVol = false;
 			}
 
-                        //ListOfParameters* lop = model->getListOfParameters();                        
                         //Species have Local Concentration at a Compartment added by Morita                        
                         if( model->getInitialAssignment(s->getId()) ){
 
@@ -311,21 +312,37 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
 					fill_n(sInfo->boundaryInfo, 6, reinterpret_cast<variableInfo*>(0));
 				}
 				if (sInfo != 0 &&bcon != 0) {
-					int boundaryIndex = -1;
-					if (bcon->getCoordinateBoundary() == XmaxId) boundaryIndex = Xmax;
-					if (bcon->getCoordinateBoundary() == XminId) boundaryIndex = Xmin;
-					if (bcon->getCoordinateBoundary() == YmaxId) boundaryIndex = Ymax;
-					if (bcon->getCoordinateBoundary() == YminId) boundaryIndex = Ymin;
-					if (bcon->getCoordinateBoundary() == ZmaxId) boundaryIndex = Zmax;
-					if (bcon->getCoordinateBoundary() == ZminId) boundaryIndex = Zmin;
-					if (boundaryIndex != -1) {
-						sInfo->boundaryInfo[boundaryIndex] = info;
-						if (model->getRule(info->id) == 0 && p->isSetValue()) {
-							info->isResolved = true;
-							info->isUniform = true;
-							info->value = new double(p->getValue());
-						}
-					}
+                                        //image edge
+                                        if( bcon->getCoordinateBoundary().find("membrane") == std::string::npos ){
+                                                int boundaryIndex = -1;
+                                                if (bcon->getCoordinateBoundary() == XmaxId) boundaryIndex = Xmax;
+                                                if (bcon->getCoordinateBoundary() == XminId) boundaryIndex = Xmin;
+                                                if (bcon->getCoordinateBoundary() == YmaxId) boundaryIndex = Ymax;
+                                                if (bcon->getCoordinateBoundary() == YminId) boundaryIndex = Ymin;
+                                                if (bcon->getCoordinateBoundary() == ZmaxId) boundaryIndex = Zmax;
+                                                if (bcon->getCoordinateBoundary() == ZminId) boundaryIndex = Zmin;
+                                                if (boundaryIndex != -1) {
+                                                        sInfo->boundaryInfo[boundaryIndex] = info;
+                                                        if (model->getRule(info->id) == 0 && p->isSetValue()) {
+                                                                info->isResolved = true;
+                                                                info->isUniform = true;
+                                                                info->value = new double(p->getValue());
+                                                        }
+                                                }
+
+                                        } else { //membrane
+                                                         if (model->getRule(info->id) == 0 && p->isSetValue()) {
+
+                                                                info->isResolved = true;
+                                                                info->isUniform = true;
+
+                                                                boundaryMembrane *bMem = new boundaryMembrane;
+                                                                bMem->name = bcon->getCoordinateBoundary().c_str();
+                                                                bMem->value = p->getValue();
+                                                                bMem->position = new double[numOfVolIndexes];
+                                                                fill_n(bMem->position, numOfVolIndexes, 0);
+                                                        }
+                                        }                                        
 				}
 			}
 			break;

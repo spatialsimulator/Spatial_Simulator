@@ -27,6 +27,12 @@ typedef struct _reversePolishInfo {
 	unsigned int listNum;
 }reversePolishInfo;
 
+typedef struct _boundaryMembrane { //added by Morita
+        const char *name;
+        double value;
+        double *position;
+}boundaryMembrane;
+
 typedef struct _boundaryType {
 	bool isBofXp;
 	bool isBofXm;

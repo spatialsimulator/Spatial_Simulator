@@ -1070,23 +1070,50 @@ void simulate(optionList options)
 	clock_t sim_start = clock();
 	cout << endl;
   int num_digits = (log10(dt * out_step) < 0)? ceil(-1 * log10(dt * out_step)) : 0;
-                                                
+
                                         /***--- write CSV added by Morita ---***/
-                                        std::ofstream file01;
-                                        file01.open( "check_example2D_60_74.csv", std::ios::app );
-                                        std::ofstream file02;
-                                        file02.open( "check_example2D_81_73.csv", std::ios::app );
-                                        std::ofstream file03;
-                                        file03.open( "check_example2D_mem_60_74.csv", std::ios::app );
+                                        //std::ofstream file01;
+                                        //file01.open( "infiniteDiffusion_3_3_D1000_e-2.csv", std::ios::app );
+                                        //std::ofstream file02;
+                                        //file02.open( "infiniteDiffusion_x_equal_y_t_0_1_D100.csv", std::ios::app );
+                                        //std::ofstream file03;
+                                        //file03.open( "check_neumann_image_edge_1_102.csv", std::ios::app );
                                         //std::ofstream file04;
-                                        //file04.open( "check_circle_neumann_97_105.csv", std::ios::app );
-                                        std::ofstream file05;
-                                        file05.open( "neumann_sum.csv", std::ios::app );                                        
-                                        std::ofstream line;
-                                        line.open( "check_diffusion_line01.csv", std::ios::app );
+                                        //file04.open( "check_Xito_Cytosol_48_66.csv", std::ios::app );
+                                        //std::ofstream file05;
+                                        //file05.open( "extracellular_sum.csv", std::ios::app );
+                                        std::ofstream result;
+                                        result.open( "infiniteDiffusion_D100_dt_E-5_allarea.csv", std::ios::app );
+                                        //std::ofstream line;
+                                        //line.open( "check_diffusion_line_D1000_dt_E-4.csv", std::ios::app );
                                         //--------------------------------------------//
 
 	for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
+
+          
+          //### record csv all pixels ###//
+          variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(0)->getId().c_str());
+          
+          int aaa,bbb,ccc;
+          if( t == 0.1 / dt ){
+          result << t*dt; 
+            for( aaa=0; aaa<Zdiv; aaa++ ){
+              for( bbb=0; bbb<Ydiv; bbb++ ){
+                for( ccc=0; ccc<Xdiv; ccc++ ){
+                  //if( bbb == ccc ){
+                    //cout << bbb << endl;
+                    //cout << ccc << endl;
+                    //result << bbb+1 << "," << sInfoResult->value[ (2*aaa)*Yindex*Xindex + (2*bbb)*Xindex + (2*ccc) ] ;
+                    result <<  "," << sInfoResult->value[ (2*aaa)*Yindex*Xindex + (2*bbb)*Xindex + (2*ccc) ] ;
+                    //}                    
+                }
+              }
+            }
+            result << endl;
+          }
+          //### finish ###//
+
+
 		*sim_time = t * dt;
 		//output
 		out_start = clock();
@@ -1121,15 +1148,15 @@ void simulate(optionList options)
 		ad_start = clock();
 		for (i = 0; i < numOfSpecies; i++) {
 			variableInfo *sInfo = searchInfoById(varInfoList, los->get(i)->getId().c_str());
-			//advection
+
+                        //advection
 			if (sInfo->adCInfo != 0) {
 				cipCSLR(sInfo, deltaX, deltaY, deltaZ, dt, Xindex, Yindex, Zindex, dimension);
 			}//end of advection
 
                         //check_diffusion_line
-                        //cout << "hoge" << endl;
-                        //line << t*dt << "," << sInfo->value[ 2*990 ] << "," << sInfo->value[ 2*991 ] << "," << sInfo->value[ 2*992 ] << "," << sInfo->value[ 2*993 ] << "," << sInfo->value[ 2*994 ] << "," << sInfo->value[ 2*995 ] << "," << sInfo->value[ 2*996 ] << "," << sInfo->value[  (2*997) ] << "," << sInfo->value[ (2*998) ] << "," << sInfo->value[ (2*999) ] << "," << sInfo->value[ (2*1000) ] << "," << sInfo->value[ (2*1001) ] << "," << sInfo->value[ (2*1002) ] << "," << sInfo->value[ (2*1003) ] << "," << sInfo->value[ (2*1004) ] << "," << sInfo->value[ (2*1005) ] << "," << sInfo->value[ (2*1006) ] << "," << sInfo->value[ (2*1007) ] << "," << sInfo->value[ (2*1008) ] << "," << sInfo->value[ (2*1009) ] << "," << sInfo->value[ (2*1010) ] << "," << sInfo->value[ (2*1011) ] << "," << sInfo->value[ (2*1012) ] << endl;
-                        //line << t*dt << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*90) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*91) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*92) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*93) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*94) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*95) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*96) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*97) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*98) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*99) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*100) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*101) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*102) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*103) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*104) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*105) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*106) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*107) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*108) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*109) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*110) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*111) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*99)*Xindex + (2*112) ] << endl;
+                        //line << t*dt << "," << sInfo->value[ 2*18889 ] << "," << sInfo->value[ 2*19990 ] << "," << sInfo->value[ 2*19991 ] << "," << sInfo->value[ 2*19992 ] << "," << sInfo->value[ 2*19993 ] << "," << sInfo->value[ 2*19994 ] << "," << sInfo->value[ 2*19995 ] << "," << sInfo->value[ 2*19996 ] << "," << sInfo->value[  (2*19997) ] << "," << sInfo->value[ (2*19998) ] << "," << sInfo->value[ (2*19999) ] << "," << sInfo->value[ (2*20000) ] << "," << sInfo->value[ (2*20001) ] << "," << sInfo->value[ (2*20002) ] << "," << sInfo->value[ (2*20003) ] << "," << sInfo->value[ (2*20004) ] << "," << sInfo->value[ (2*20005) ] << "," << sInfo->value[ (2*20006) ] << "," << sInfo->value[ (2*20007) ] << "," << sInfo->value[ (2*20008) ] << "," << sInfo->value[ (2*20009) ] << "," << sInfo->value[ (2*20010) ] << "," << sInfo->value[ (2*20011) ] << endl;
+                        //line << t*dt << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*90) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*91) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*92) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*93) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*94) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*95) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*96) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*97) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*98) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*99) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*100) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*101) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*102) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*103) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*104) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*105) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*106) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*107) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*108) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*109) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*110) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*111) ] << "," << sInfo->value[ (2*0)*Xindex*Yindex + (2*101)*Xindex + (2*112) ] << endl;
 
 		}
 		ad_end = clock();
@@ -1220,22 +1247,22 @@ void simulate(optionList options)
                                         // A_Nuc sInfo->geoi->domainIndexes.size() = 1113
                                         // B = 5184
 
-                                        if( X/2==60 && Y/2==57 ){
+                                        if( X/2 == 104 && Y/2 == 104 ){
                                           //cout << "X: " << X << endl;
                                           //cout << "Y: " << Y << endl;
                                           //cout << "Z: " << Z << endl;
                                           //cout << "index: " << index << endl;
                                           //return;
-                                          file01 << t << "," << sInfo->value[index] << std::endl;
+                                          //file01 << t*dt << "," << sInfo->value[index] << std::endl;
                                           //cout << s->getId() << endl;
                                           //cout << "Xdiv:60 Ydiv:74 DomainType is " << geoInfoList[0]->compartmentId << " isDomain is " << geoInfoList[0]->isDomain[ Y*Xindex + X ] << endl;
                                           //cout << "membrane Xdiv:60 Ydiv:74 DomainType is " << geoInfoList[4]->compartmentId << " isDomain is " << geoInfoList[4]->isDomain[ Y*Xindex + (X-1) ] << endl;
-                                          file03 << t << "," << sInfo->value[ Y*Xindex + (X-1) ] << std::endl;
-                                        } else if( X/2==81 && Y/2==60 ){
-                                          file02 << t+1 << "," << sInfo->value[index] << std::endl;
-                                        } else if( X/2==61 && Y/2==51 ){
+                                          //file03 << t << "," << sInfo->value[ Y*Xindex + (X-1) ] << std::endl;
+                                        } else if( X/2==0 && Y/2==100 ){
+                                          //file02 << t << "," << sInfo->value[index] << std::endl;
+                                        } else if( X/2==0 && Y/2==101 ){
                                           //file03 << t << "," << sInfo->value[index] << std::endl;
-                                        } else if( X/2==97 && Y/2==103 ){
+                                        } else if( X/2==47 && Y/2==65 ){
                                           //file04 << t << "," << sInfo->value[index] << std::endl;
                                         }
                                         
@@ -1250,8 +1277,9 @@ void simulate(optionList options)
 					for (k = 0; k < 4; k++) sInfo->delta[k * numOfVolIndexes + index] = 0.0;
 				}
 
-                                //record sum in compartment
-                                file05 << t+1 << "," << sum << std::endl;
+                                //###record sum in compartment
+                                //file05 << t+1 << "," << sum << std::endl;
+                                //###record sum in compartment
 
                                 //boundary condition
 				if (sInfo->boundaryInfo != 0) {
@@ -1346,12 +1374,13 @@ void simulate(optionList options)
 	}
 
                                     //*** file closed ***//
-                                        file01.close();
-                                        file02.close();
-                                        file03.close();
-                                        line.close();
+                                        //file01.close();
+                                        //file02.close();
+                                        //file03.close();
                                         //file04.close();
                                         //file05.close();
+                                        result.close();
+                                        //line.close();
                                         //-----------//
         
 	clock_t sim_end = clock();

@@ -431,7 +431,7 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
 					if (sInfo->geoi->bType[index].isBofXm == false) {
 						sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[0]->value[dcIndex] * (val[Xminus2] - val[index]) / pow(deltaX, 2);
 					}
-				}
+				}                                
 				if (sInfo->diffCInfo[1] != 0) {//y-diffusion
 					if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;
 					if (sInfo->geoi->bType[index].isBofYp == false) {
@@ -440,7 +440,7 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
 					if (sInfo->geoi->bType[index].isBofYm == false) {
 						sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[1]->value[dcIndex] * (val[Yminus2] - val[index]) / pow(deltaY, 2);
 					}
-				}
+				}                                
 				if (sInfo->diffCInfo[2] != 0) {//z-diffusion
 					if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;
 					if (sInfo->geoi->bType[index].isBofZp == false) {
