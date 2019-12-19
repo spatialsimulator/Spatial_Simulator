@@ -329,20 +329,30 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
                                                                 info->value = new double(p->getValue());
                                                         }
                                                 }
-
                                         } else { //membrane
-                                                         if (model->getRule(info->id) == 0 && p->isSetValue()) {
+                                                if (model->getRule(info->id) == 0 && p->isSetValue()) {
 
-                                                                info->isResolved = true;
-                                                                info->isUniform = true;
-
-                                                                boundaryMembrane *bMem = new boundaryMembrane;
-                                                                bMem->name = bcon->getCoordinateBoundary().c_str();
-                                                                bMem->value = p->getValue();
-                                                                bMem->position = new double[numOfVolIndexes];
-                                                                fill_n(bMem->position, numOfVolIndexes, 0);
-                                                        }
-                                        }                                        
+                                                          info->isResolved = true;
+                                                          info->isUniform = true;
+                                                          
+                                                          boundaryMembrane *bMem = new boundaryMembrane;
+                                                          bMem->name = bcon->getCoordinateBoundary().c_str();
+                                                          switch(pPlugin->getBoundaryCondition()->getType()){
+                                                                  case SPATIAL_BOUNDARYKIND_NEUMANN:
+                                                                          bMem->bcType = 1;//neumann
+                                                                          break;
+                                                                  case SPATIAL_BOUNDARYKIND_DIRICHLET:
+                                                                          bMem->bcType = 2;//neumann
+                                                                          break;
+                                                                  default:
+                                                                          bMem->bcType = 3;//others
+                                                                          break;
+                                                          }
+                                                          bMem->value = p->getValue();
+                                                          bMem->position = new double[numOfVolIndexes];
+                                                          fill_n(bMem->position, numOfVolIndexes, 0);
+                                                }
+                                        }                     
 				}
 			}
 			break;

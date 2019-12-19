@@ -29,6 +29,7 @@ typedef struct _reversePolishInfo {
 
 typedef struct _boundaryMembrane { //added by Morita
         const char *name;
+        double bcType; // neumann=1 dirichlet=2 others=3
         double value;
         double *position;
 }boundaryMembrane;
