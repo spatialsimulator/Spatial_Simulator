@@ -11,7 +11,7 @@ void setCompartmentInfo(Model *model, std::vector<variableInfo*> &varInfoList);
 
 void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex);
 
-void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis);
+void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<boundaryMembrane*> &bMemInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis);
 
 void setReactionInfo(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<reactionInfo*> &rInfoList, std::vector<reactionInfo*> &fast_rInfoList, unsigned int numOfVolIndexes);
 

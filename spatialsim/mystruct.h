@@ -28,10 +28,13 @@ typedef struct _reversePolishInfo {
 }reversePolishInfo;
 
 typedef struct _boundaryMembrane { //added by Morita
-        const char *name;
+        const char *name; //compartmentId
+        const char *sName; //species name
+        const char *sCompartment; //compartmentId
         double bcType; // neumann=1 dirichlet=2 others=3
-        double value;
+        double value; // assumed constant
         double *position;
+        std::vector <const char *> adjacentDomainIdList;
 }boundaryMembrane;
 
 typedef struct _boundaryType {

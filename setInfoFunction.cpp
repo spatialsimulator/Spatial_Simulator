@@ -190,7 +190,7 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 	}
 }
 
-void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
+void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<boundaryMembrane*> &bMemInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
 {
 	SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin("spatial"));
 	Geometry *geometry = spPlugin->getGeometry();
@@ -336,6 +336,7 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
                                                           info->isUniform = true;
                                                           
                                                           boundaryMembrane *bMem = new boundaryMembrane;
+                                                          bMemInfoList.push_back(bMem);
                                                           bMem->name = bcon->getCoordinateBoundary().c_str();
                                                           switch(pPlugin->getBoundaryCondition()->getType()){
                                                                   case SPATIAL_BOUNDARYKIND_NEUMANN:
@@ -349,8 +350,42 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
                                                                           break;
                                                           }
                                                           bMem->value = p->getValue();
+                                                          bMem->sName = sInfo->sp->getName().c_str();
+                                                          bMem->sCompartment = sInfo->com->getId().c_str();
                                                           bMem->position = new double[numOfVolIndexes];
                                                           fill_n(bMem->position, numOfVolIndexes, 0);
+                                                          //adjacent compartment
+                                                          unsigned int geoAdDnum = 0;
+                                                          for (geoAdDnum = 0; geoAdDnum < geometry->getNumAdjacentDomains(); geoAdDnum++) {
+                                                                  AdjacentDomains *adDomain = geometry->getAdjacentDomains(geoAdDnum);
+                                                                  Domain *ad1 = geometry->getDomain(adDomain->getDomain1());
+                                                                  Domain *ad2 = geometry->getDomain(adDomain->getDomain2());
+                                                                  if( strcmp(ad1->getDomainType().c_str(),bMem->name)==0 || strcmp(ad2->getDomainType().c_str(),bMem->name)==0 ){
+                                                                    cout << "ad1" << ad1->getDomainType() << endl;
+                                                                    cout << "ad2" << ad2->getDomainType() << endl;
+
+                                                                          if(bMem->adjacentDomainIdList.size() > 0){
+                                                                                  int bMemList_size = 0;
+                                                                                  for(bMemList_size=0; bMemList_size < bMem->adjacentDomainIdList.size() ;bMemList_size++){
+                                                                                         if( strcmp( bMem->adjacentDomainIdList[bMemList_size], ad1->getDomainType().c_str() ) != 0 && strcmp(ad1->getDomainType().c_str(),bMem->name)!=0 && strcmp(bMem->sCompartment, ad1->getDomainType().c_str()) != 0 ){
+                                                                                                  bMem->adjacentDomainIdList.push_back(ad1->getDomainType().c_str());
+                                                                                         }
+                                                                                         if( strcmp( bMem->adjacentDomainIdList[bMemList_size], ad2->getDomainType().c_str() ) != 0 && strcmp(ad2->getDomainType().c_str(),bMem->name)!=0 && strcmp(bMem->sCompartment, ad2->getDomainType().c_str()) != 0 ){
+                                                                                                  bMem->adjacentDomainIdList.push_back(ad2->getDomainType().c_str());
+                                                                                         }
+                                                                                  }
+                                                                          } else {
+                                                                                  if( strcmp(bMem->name, ad1->getDomainType().c_str()) != 0 && strcmp(bMem->sCompartment, ad1->getDomainType().c_str()) != 0 ){
+                                                                                          bMem->adjacentDomainIdList.push_back(ad1->getDomainType().c_str());
+                                                                                  }
+                                                                                  if( strcmp(bMem->name, ad2->getDomainType().c_str()) != 0 && strcmp(bMem->sCompartment, ad2->getDomainType().c_str()) != 0 ){
+                                                                                          bMem->adjacentDomainIdList.push_back(ad2->getDomainType().c_str());
+                                                                                          cout << ad2->getDomainType().c_str() << endl;
+                                                                                  }
+                                                                          }
+                                                                  }
+
+                                                          }
                                                 }
                                         }                     
 				}

@@ -52,3 +52,14 @@ GeometryInfo* searchAvolInfoByCompartment(vector<GeometryInfo*> &geoInfoList, co
 	}
 	return 0;
 }
+boundaryMembrane* searchBMemInfoByCompartment(vector<boundaryMembrane*> &bMemInfoList, const char *cId)
+{
+	vector<boundaryMembrane*>::iterator it = bMemInfoList.begin();
+	while (it != bMemInfoList.end()) {
+		if (strcmp((*it)->name, cId) == 0) {
+			return *it;
+		}
+		it++;
+	}
+	return 0;
+}

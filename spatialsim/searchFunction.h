@@ -12,4 +12,6 @@ GeometryInfo* searchAvolInfoByDomain(std::vector<GeometryInfo*> &geoInfoList, co
 
 GeometryInfo* searchAvolInfoByCompartment(std::vector<GeometryInfo*> &geoInfoList, const char *cId);
 
+boundaryMembrane* searchBMemInfoByCompartment(std::vector<boundaryMembrane*> &bMemInfoList, const char *cId);
+
 #endif

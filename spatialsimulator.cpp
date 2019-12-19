@@ -121,7 +121,9 @@ void simulate(optionList options)
 	fast_rInfoList.reserve(numOfReactions + numOfRules);
 	vector<const char*> memList = vector<const char*>();
 	memList.reserve(numOfCompartments);
-	unsigned int dimension = geometry->getNumCoordinateComponents();
+        vector<boundaryMembrane*> bMemInfoList = vector<boundaryMembrane*>();
+        bMemInfoList.reserve(numOfCompartments);
+	unsigned int dimension = geometry->getNumCoordinateComponents();        
 
 	vector<string> spIdList = vector<string>();
 	spIdList.reserve(numOfSpecies);
@@ -211,7 +213,7 @@ void simulate(optionList options)
 	//species
 	setSpeciesInfo(model, varInfoList, volDimension, memDimension, Xindex, Yindex, Zindex);
 	//parameter
-	setParameterInfo(model, varInfoList, Xdiv, Ydiv, Zdiv, Xsize, Ysize, Zsize, deltaX, deltaY, deltaZ, xaxis, yaxis, zaxis);
+	setParameterInfo(model, varInfoList, bMemInfoList, Xdiv, Ydiv, Zdiv, Xsize, Ysize, Zsize, deltaX, deltaY, deltaZ, xaxis, yaxis, zaxis);
 	//time
 	variableInfo *t_info = new variableInfo;
 	InitializeVarInfo(t_info);
@@ -578,11 +580,40 @@ void simulate(optionList options)
 		} else if (geoi2->adjacentGeo2 == 0 && geoi2->adjacentGeo1 != geoi1) {
 			geoi2->adjacentGeo2 = geoi1;
 		}
+                //boundary condition
+/*                boundaryMembrane *bMem1 = searchBMemInfoByCompartment(bMemInfoList, ad1->getDomainType().c_str());
+                boundaryMembrane *bMem2 = searchBMemInfoByCompartment(bMemInfoList, ad2->getDomainType().c_str());
+                if( bMem1 != 0 ){
+                        if(bMem1->adjacentDomainIdList.size() > 0){
+                                int bMemList_size = 0;
+                                for(bMemList_size=0; bMemList_size < bMem1->adjacentDomainIdList.size() ;bMemList_size++){
+                                        if( strcmp( bMem1->adjacentDomainIdList[bMemList_size], geoi2->compartmentId ) != 0 ){
+                                                bMem1->adjacentDomainIdList.push_back(geoi2->compartmentId);
+                                        }
+                                }
+                        } else {
+                                  bMem1->adjacentDomainIdList.push_back(geoi2->compartmentId);
+                        }
+                }
+                if( bMem2 != 0 ){
+                        if(bMem2->adjacentDomainIdList.size() > 0){
+                                int bMemList_size = 0;
+                                for(bMemList_size=0; bMemList_size < bMem2->adjacentDomainIdList.size() ;bMemList_size++){
+                                        if( strcmp( bMem2->adjacentDomainIdList[bMemList_size], geoi1->compartmentId ) != 0 ){
+                                                bMem2->adjacentDomainIdList.push_back(geoi1->compartmentId);
+                                        }
+                                }
+                        } else {
+                                cout<< geoi1->domainId << endl;
+                                bMem2->adjacentDomainIdList.push_back(geoi1->compartmentId);
+                        }
+                }*/
 	}
 
 	//membrane position
 	for (i = 0; i < geoInfoList.size(); i++) {
     GeometryInfo *geoInfo = geoInfoList[i];
+    boundaryMembrane *bMem = searchBMemInfoByCompartment(bMemInfoList, geoInfo->compartmentId);// membrane's boundary condition
 		if (geoInfo->isVol == false) {//avol is membrane
 			geoInfo->isDomain = new int[numOfVolIndexes];
 			fill_n(geoInfo->isDomain, numOfVolIndexes, 0);
@@ -606,8 +637,12 @@ void simulate(optionList options)
 						if (X != 0 && X != (Xindex - 1)) {
 							if ((geoInfo->adjacentGeo1->isDomain[Xplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xminus1] == 1) ||
 							    (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {
+                                                                //position
 								geoInfo->isDomain[X] = 1;
 								geoInfo->domainIndex.push_back(X);
+                                                                //boundary condition
+                                                                if( bMem != 0 )
+                                                                        bMem->position[X] = bMem->bcType;
 							}
 						}
 					}
@@ -626,13 +661,17 @@ void simulate(optionList options)
 								    (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {
 									geoInfo->isDomain[Y * Xindex + X] = 1;
 									geoInfo->domainIndex.push_back(Y * Xindex + X);
+                                                                        if( bMem != 0 ) // boundary condition
+                                                                                bMem->position[Y * Xindex + X] = bMem->bcType;
 									geoInfo->bType[Y * Xindex + X].isBofXp = true;
 									geoInfo->bType[Y * Xindex + X].isBofXm = true;
 								} else if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
 								           (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {
 									geoInfo->isDomain[Y * Xindex + X] = 1;
 									geoInfo->domainIndex.push_back(Y * Xindex + X);
-									geoInfo->bType[Y * Xindex + X].isBofYp = true;
+                                                                        if( bMem != 0 ) // boundary condition
+                                                                                bMem->position[Y * Xindex + X] = bMem->bcType;
+                                                                        geoInfo->bType[Y * Xindex + X].isBofYp = true;
 									geoInfo->bType[Y * Xindex + X].isBofYm = true;
 								}
 							} else if (X == 0 || X == Xindex - 1) {
@@ -640,7 +679,9 @@ void simulate(optionList options)
 								    (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {
 									geoInfo->isDomain[Y * Xindex + X] = 1;
 									geoInfo->domainIndex.push_back(Y * Xindex + X);
-									geoInfo->bType[Y * Xindex + X].isBofYp = true;
+									if( bMem != 0 ) // boundary condition
+                                                                                bMem->position[Y * Xindex + X] = bMem->bcType;
+                                                                        geoInfo->bType[Y * Xindex + X].isBofYp = true;
 									geoInfo->bType[Y * Xindex + X].isBofYm = true;
 								}
 							} else if (Y == 0 || Y == Yindex - 1) {
@@ -648,7 +689,9 @@ void simulate(optionList options)
 								    (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {
 									geoInfo->isDomain[Y * Xindex + X] = 1;
 									geoInfo->domainIndex.push_back(X);
-									geoInfo->bType[Y * Xindex + X].isBofXp = true;
+									if( bMem != 0 ) // boundary condition
+                                                                                bMem->position[Y * Xindex + X] = bMem->bcType;
+                                                                        geoInfo->bType[Y * Xindex + X].isBofXp = true;
 									geoInfo->bType[Y * Xindex + X].isBofXm = true;
 								}
 							}
@@ -707,18 +750,24 @@ void simulate(optionList options)
 									    (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {//X
 										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
 										geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
-										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
+                                                                                if( bMem != 0 ) // boundary condition
+                                                                                        bMem->position[Z * Yindex * Xindex + Y * Xindex + X] = bMem->bcType;
+                                                                                geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXm = true;
 									} else if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
 									           (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {//Y
 										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
 										geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
-										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
+                                                                                if( bMem != 0 ) // boundary condition
+                                                                                        bMem->position[Z * Yindex * Xindex + Y * Xindex + X] = bMem->bcType;
+                                                                                geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
 									} else if ((geoInfo->adjacentGeo1->isDomain[Zplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zminus1] == 1) ||
 									           (geoInfo->adjacentGeo1->isDomain[Zminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zplus1] == 1)) {//Z
 										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
 										geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                                                                                if( bMem != 0 ) // boundary condition
+                                                                                        bMem->position[Z * Yindex * Xindex + Y * Xindex + X] = bMem->bcType;                                                                                
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZp = true;
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZm = true;
 									}
@@ -727,12 +776,16 @@ void simulate(optionList options)
 									    (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {//Y
 										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
 										geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                                                                                if( bMem != 0 ) // boundary condition
+                                                                                        bMem->position[Z * Yindex * Xindex + Y * Xindex + X] = bMem->bcType;                                                                                
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
 									} else if ((geoInfo->adjacentGeo1->isDomain[Zplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zminus1] == 1) ||
 									           (geoInfo->adjacentGeo1->isDomain[Zminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zplus1] == 1)) {//Z
 										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
 										geoInfo->domainIndex.push_back(Z * Yindex * Xindex +Y * Xindex + X);
+                                                                                if( bMem != 0 ) // boundary condition
+                                                                                        bMem->position[Z * Yindex * Xindex + Y * Xindex + X] = bMem->bcType;                                                                                
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZp = true;
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofZm = true;
 									}
@@ -741,12 +794,16 @@ void simulate(optionList options)
 									    (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {//X
 										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
 										geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                                                                                if( bMem != 0 ) // boundary condition
+                                                                                        bMem->position[Z * Yindex * Xindex + Y * Xindex + X] = bMem->bcType;                                                                                
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXm = true;
 									} else if ((geoInfo->adjacentGeo1->isDomain[Zplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zminus1] == 1) ||
 									           (geoInfo->adjacentGeo1->isDomain[Zminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Zplus1] == 1)) {//Y
 										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
 										geoInfo->domainIndex.push_back(Z * Yindex * Xindex +Y * Xindex + X);
+                                                                                if( bMem != 0 ) // boundary condition
+                                                                                        bMem->position[Z * Yindex * Xindex + Y * Xindex + X] = bMem->bcType;                                                                                
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
 									}
@@ -755,12 +812,16 @@ void simulate(optionList options)
 									    (geoInfo->adjacentGeo1->isDomain[Xminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Xplus1] == 1)) {//X
 										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
 										geoInfo->domainIndex.push_back(Z * Yindex * Xindex + Y * Xindex + X);
+                                                                                if( bMem != 0 ) // boundary condition
+                                                                                        bMem->position[Z * Yindex * Xindex + Y * Xindex + X] = bMem->bcType;                                                                                
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXp = true;
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofXm = true;
 									} else if ((geoInfo->adjacentGeo1->isDomain[Yplus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yminus1] == 1) ||
 									           (geoInfo->adjacentGeo1->isDomain[Yminus1] == 1 && geoInfo->adjacentGeo2->isDomain[Yplus1] == 1)) {//Y
 										geoInfo->isDomain[Z * Yindex * Xindex + Y * Xindex + X] = 1;
 										geoInfo->domainIndex.push_back(Z * Yindex * Xindex +Y * Xindex + X);
+                                                                                if( bMem != 0 ) // boundary condition
+                                                                                        bMem->position[Z * Yindex * Xindex + Y * Xindex + X] = bMem->bcType;                                                                                
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYp = true;
 										geoInfo->bType[Z * Yindex * Xindex + Y * Xindex + X].isBofYm = true;
 									}
@@ -860,6 +921,11 @@ void simulate(optionList options)
     }
   }
 
+        //check bMem
+        boundaryMembrane *bMem = bMemInfoList[0];
+        cout << bMem->adjacentDomainIdList[0] << endl;
+        exit(1);
+        
   //draw geometries
 	variableInfo *xInfo = 0, *yInfo = 0, *zInfo = 0;
 	if (dimension >= 1) {
