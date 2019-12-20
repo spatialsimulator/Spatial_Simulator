@@ -361,9 +361,6 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                                                   Domain *ad1 = geometry->getDomain(adDomain->getDomain1());
                                                                   Domain *ad2 = geometry->getDomain(adDomain->getDomain2());
                                                                   if( strcmp(ad1->getDomainType().c_str(),bMem->name)==0 || strcmp(ad2->getDomainType().c_str(),bMem->name)==0 ){
-                                                                    cout << "ad1" << ad1->getDomainType() << endl;
-                                                                    cout << "ad2" << ad2->getDomainType() << endl;
-
                                                                           if(bMem->adjacentDomainIdList.size() > 0){
                                                                                   int bMemList_size = 0;
                                                                                   for(bMemList_size=0; bMemList_size < bMem->adjacentDomainIdList.size() ;bMemList_size++){
@@ -380,11 +377,33 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                                                                   }
                                                                                   if( strcmp(bMem->name, ad2->getDomainType().c_str()) != 0 && strcmp(bMem->sCompartment, ad2->getDomainType().c_str()) != 0 ){
                                                                                           bMem->adjacentDomainIdList.push_back(ad2->getDomainType().c_str());
-                                                                                          cout << ad2->getDomainType().c_str() << endl;
                                                                                   }
                                                                           }
                                                                   }
 
+                                                          }
+                                                          //making new species
+                                                          if( bMem->sName != 0 ){
+                                                                  int bMemList_size = 0;
+                                                                  for( bMemList_size=0; bMemList_size < bMem->adjacentDomainIdList.size(); bMemList_size++ ){
+                                                                          std::string newSId = std::string(bMem->sName) + "_";
+                                                                          newSId += std::string(bMem->adjacentDomainIdList[bMemList_size]);
+                                                                          //making new species in model
+                                                                          Species* newSpecies = model->createSpecies();
+                                                                          newSpecies->setId(newSId);
+                                                                          model->addSpecies(newSpecies);
+                                                                          //making new species variable
+                                                                          variableInfo *newSInfo = new variableInfo;
+                                                                          InitializeVarInfo(newSInfo);
+                                                                          varInfoList.push_back(newSInfo);
+                                                                          newSInfo->sp = newSpecies;
+                                                                          newSInfo->com = model->getCompartment(std::string(bMem->adjacentDomainIdList[bMemList_size]));
+                                                                          newSInfo->id = newSpecies->getId().c_str();
+                                                                          newSInfo->value = new double[numOfVolIndexes];
+                                                                          fill_n(newSInfo->value, numOfVolIndexes, 0);
+                                                                          newSInfo->delta = new double[4 * numOfVolIndexes];
+                                                                          fill_n(newSInfo->delta, 4 * numOfVolIndexes, 0.0);
+                                                                  }
                                                           }
                                                 }
                                         }                     

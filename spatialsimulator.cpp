@@ -580,34 +580,6 @@ void simulate(optionList options)
 		} else if (geoi2->adjacentGeo2 == 0 && geoi2->adjacentGeo1 != geoi1) {
 			geoi2->adjacentGeo2 = geoi1;
 		}
-                //boundary condition
-/*                boundaryMembrane *bMem1 = searchBMemInfoByCompartment(bMemInfoList, ad1->getDomainType().c_str());
-                boundaryMembrane *bMem2 = searchBMemInfoByCompartment(bMemInfoList, ad2->getDomainType().c_str());
-                if( bMem1 != 0 ){
-                        if(bMem1->adjacentDomainIdList.size() > 0){
-                                int bMemList_size = 0;
-                                for(bMemList_size=0; bMemList_size < bMem1->adjacentDomainIdList.size() ;bMemList_size++){
-                                        if( strcmp( bMem1->adjacentDomainIdList[bMemList_size], geoi2->compartmentId ) != 0 ){
-                                                bMem1->adjacentDomainIdList.push_back(geoi2->compartmentId);
-                                        }
-                                }
-                        } else {
-                                  bMem1->adjacentDomainIdList.push_back(geoi2->compartmentId);
-                        }
-                }
-                if( bMem2 != 0 ){
-                        if(bMem2->adjacentDomainIdList.size() > 0){
-                                int bMemList_size = 0;
-                                for(bMemList_size=0; bMemList_size < bMem2->adjacentDomainIdList.size() ;bMemList_size++){
-                                        if( strcmp( bMem2->adjacentDomainIdList[bMemList_size], geoi1->compartmentId ) != 0 ){
-                                                bMem2->adjacentDomainIdList.push_back(geoi1->compartmentId);
-                                        }
-                                }
-                        } else {
-                                cout<< geoi1->domainId << endl;
-                                bMem2->adjacentDomainIdList.push_back(geoi1->compartmentId);
-                        }
-                }*/
 	}
 
 	//membrane position
@@ -1148,8 +1120,8 @@ void simulate(optionList options)
                                         //file04.open( "check_Xito_Cytosol_48_66.csv", std::ios::app );
                                         //std::ofstream file05;
                                         //file05.open( "extracellular_sum.csv", std::ios::app );
-                                        std::ofstream result;
-                                        result.open( "infiniteDiffusion_D100_dt_E-5_allarea.csv", std::ios::app );
+                                        //std::ofstream result;
+                                        //result.open( "infiniteDiffusion_D100_dt_E-5_allarea.csv", std::ios::app );
                                         //std::ofstream line;
                                         //line.open( "check_diffusion_line_D1000_dt_E-4.csv", std::ios::app );
                                         //--------------------------------------------//
@@ -1158,11 +1130,11 @@ void simulate(optionList options)
 
           
           //### record csv all pixels ###//
-          variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(0)->getId().c_str());
+          //variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(0)->getId().c_str());
           
           int aaa,bbb,ccc;
           if( t == 0.1 / dt ){
-          result << t*dt; 
+            //result << t*dt; 
             for( aaa=0; aaa<Zdiv; aaa++ ){
               for( bbb=0; bbb<Ydiv; bbb++ ){
                 for( ccc=0; ccc<Xdiv; ccc++ ){
@@ -1170,12 +1142,12 @@ void simulate(optionList options)
                     //cout << bbb << endl;
                     //cout << ccc << endl;
                     //result << bbb+1 << "," << sInfoResult->value[ (2*aaa)*Yindex*Xindex + (2*bbb)*Xindex + (2*ccc) ] ;
-                    result <<  "," << sInfoResult->value[ (2*aaa)*Yindex*Xindex + (2*bbb)*Xindex + (2*ccc) ] ;
+                    //result <<  "," << sInfoResult->value[ (2*aaa)*Yindex*Xindex + (2*bbb)*Xindex + (2*ccc) ] ;
                     //}                    
                 }
               }
             }
-            result << endl;
+            //result << endl;
           }
           //### finish ###//
 
@@ -1445,7 +1417,7 @@ void simulate(optionList options)
                                         //file03.close();
                                         //file04.close();
                                         //file05.close();
-                                        result.close();
+                                      //result.close();
                                         //line.close();
                                         //-----------//
         
