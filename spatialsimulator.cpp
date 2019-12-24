@@ -1115,24 +1115,31 @@ void simulate(optionList options)
                                         //file04.open( "check_Xito_Cytosol_48_66.csv", std::ios::app );
                                         //std::ofstream file05;
                                         //file05.open( "extracellular_sum.csv", std::ios::app );
-                                        //std::ofstream result;
+                                        std::ofstream result;
                                         //result.open( "infiniteDiffusion_D100_dt_E-5_allarea.csv", std::ios::app );
                                         //std::ofstream line;
                                         //line.open( "check_diffusion_line_D1000_dt_E-4.csv", std::ios::app );
+                                        result.open( "check_Leaked_species.csv", std::ios::app );
                                         //--------------------------------------------//
 
 	for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
 
           
           //### record csv all pixels ###//
-          //variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(0)->getId().c_str());
+          variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(1)->getId().c_str());
+          //cout << los->get(1)->getId() << endl;
+          //cout << t*dt << endl;
+          //cout << endl;
           
           int aaa,bbb,ccc;
-          if( t == 0.1 / dt ){
+          if( t%500 == 0 ){
+            result << t*dt;
             //result << t*dt; 
             for( aaa=0; aaa<Zdiv; aaa++ ){
               for( bbb=0; bbb<Ydiv; bbb++ ){
                 for( ccc=0; ccc<Xdiv; ccc++ ){
+                  if(sInfoResult->value[(2*bbb)*Xindex + (2*ccc)] > 0)
+                    result << "," << sInfoResult->value[(2*bbb)*Xindex + (2*ccc)];
                   //if( bbb == ccc ){
                     //cout << bbb << endl;
                     //cout << ccc << endl;
@@ -1142,6 +1149,7 @@ void simulate(optionList options)
                 }
               }
             }
+            result << endl;
             //result << endl;
           }
           //### finish ###//
@@ -1412,7 +1420,7 @@ void simulate(optionList options)
                                         //file03.close();
                                         //file04.close();
                                         //file05.close();
-                                      //result.close();
+                                        result.close();
                                         //line.close();
                                         //-----------//
         
@@ -1435,6 +1443,9 @@ void simulate(optionList options)
     freeVarInfo(varInfoList);
 	freeAvolInfo(geoInfoList);
 	freeRInfo(rInfoList);
+        if( !bMemInfoList.empty() ){
+                freeBMemInfo(bMemInfoList);//added by Morita
+        }
 	if(options.fname != 0)
 		delete options.fname;
   delete options.outpath;

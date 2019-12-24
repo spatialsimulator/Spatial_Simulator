@@ -37,7 +37,7 @@ typedef struct _boundaryMembrane { //added by Morita
         double bcType; // neumann=1 dirichlet=2 others=3
         double value; // assumed constant
         double *position;
-        std::vector <const char *> adjacentDomainIdList;
+  //std::vector <const char *> adjacentDomainIdList;
 }boundaryMembrane;
 
 typedef struct _boundaryType {
@@ -80,6 +80,7 @@ typedef struct _variableInfo {
 	Compartment *com;
 	Parameter *para;
 	const char* id;
+        const char* name;
 	double *value;
 	double *delta;
 	bool inVol;

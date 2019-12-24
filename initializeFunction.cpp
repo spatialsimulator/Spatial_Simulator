@@ -61,3 +61,15 @@ void InitializeVoronoiInfo(voronoiInfo *vorI, int numOfVolIndexes)
 	}
 }
 
+void InitializeBMemInfo(boundaryMembrane* bMem){
+
+        bMem->name = 0;
+        bMem->sName = 0;
+        bMem->sId = 0;
+        bMem->sCompartment = 0;
+        bMem->tId = 0;
+        bMem->tCompartment = 0;
+        bMem->bcType = 0;
+        bMem->value = 0;
+        bMem->position = 0;
+}

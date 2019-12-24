@@ -5,6 +5,8 @@
 
 void InitializeVarInfo(variableInfo *varInfo);
 
+void InitializeBMemInfo(boundaryMembrane* bMem); //added by Morita
+  
 void InitializeAVolInfo(GeometryInfo *geoInfo);
 
 void InitializeVoronoiInfo(voronoiInfo *vorI, int numOfVolIndexes);

@@ -7,6 +7,7 @@ LIBSBML_CPP_NAMESPACE_USE
 
 variableInfo* searchInfoById(vector<variableInfo*> &varInfoList, const char *varName)
 {
+        //cout << "varName " << varName<< endl;
 	vector<variableInfo*>::iterator it = varInfoList.begin();
 	while (it != varInfoList.end()) {
 		if (strcmp((*it)->id, varName) == 0) {
@@ -63,11 +64,11 @@ boundaryMembrane* searchBMemInfoByCompartment(vector<boundaryMembrane*> &bMemInf
 	}
 	return 0;
 }
-boundaryMembrane* searchBMemInfoByAdjacentCompartment(vector<boundaryMembrane*> &bMemInfoList, const char *cId)
+boundaryMembrane* searchBMemInfoByAdjacentCompartment(vector<boundaryMembrane*> &bMemInfoList, const char *com)
 {//membrane has boundary dondition
 	vector<boundaryMembrane*>::iterator it = bMemInfoList.begin();
 	while (it != bMemInfoList.end()) {
-		if (strcmp((*it)->sCompartment, cId) == 0 || strcmp((*it)->tCompartment, cId) == 0 ) {
+		if (strcmp((*it)->sCompartment, com) == 0 || strcmp((*it)->tCompartment, com) == 0 ) {
 			return *it;
 		}
 		it++;
@@ -78,8 +79,8 @@ variableInfo* searchSInfoByCompartment_Name(vector<variableInfo*> &varInfoList, 
 {//search species by name & compartment
 	vector<variableInfo*>::iterator it = varInfoList.begin();
 	while (it != varInfoList.end()) {
-                if ( std::string((*it)->id).find(std::string(compartment)) ) {
-                        if( std::string((*it)->id).find(std::string(name)) ){
+                if ( std::string((*it)->id).find(std::string(compartment)) != std::string::npos ) {
+                        if( std::string((*it)->id).find(std::string(name)) != std::string::npos ){
                               return *it;
                         }
 		}

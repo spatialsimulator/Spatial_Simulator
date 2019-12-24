@@ -16,4 +16,6 @@ boundaryMembrane* searchBMemInfoByCompartment(std::vector<boundaryMembrane*> &bM
 
 boundaryMembrane* searchBMemInfoByAdjacentCompartment(std::vector<boundaryMembrane*> &bMemInfoList, const char *cId);
 
+variableInfo* searchSInfoByCompartment_Name(std::vector<variableInfo*> &varInfoList, const char *name, const char *compartment);
+
 #endif

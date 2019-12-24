@@ -877,15 +877,18 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                 if( sInfo->isLeaked == true ){
                         GeometryInfo *geoInfo = sInfo->geoi;
                         boundaryMembrane *bMem = searchBMemInfoByAdjacentCompartment( bMemInfoList, sInfo->com->getId().c_str() );
-                        cout << bMem->name << endl;
-                        cout << bMem->sId << endl;
-                        cout << bMem->tId << endl;
-                        variableInfo *tInfo;
+                        variableInfo *tInfo = new variableInfo;
                         if( strcmp(sInfo->id,bMem->sId) == 0 ){
                                 tInfo = searchInfoById(varInfoList, bMem->tId);
                         } else if( strcmp(sInfo->id,bMem->tId) == 0 ){
                                 tInfo = searchInfoById(varInfoList, bMem->sId);
                         }
+
+                        if(tInfo==NULL){
+                          cout << "not exsiting tInfo" << endl;
+                          exit(1);
+                        }
+
                         for (i = 0; i < geoInfo->domainIndex.size(); i++) {
                                   int index = geoInfo->domainIndex[i];
                                   Z = index / (Xindex * Yindex);

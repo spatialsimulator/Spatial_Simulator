@@ -142,3 +142,34 @@ void freeRInfo(vector<reactionInfo*> &rInfoList)
 		rInfo = 0;
 	}
 }
+
+void freeBMemInfo(vector<boundaryMembrane*> &bMemInfoList)
+{
+	for (size_t i = 0; i < bMemInfoList.size(); i++) {
+		boundaryMembrane *info = bMemInfoList[i];
+                //compartmentId
+                delete[] info->name;
+                info->name = 0;
+                //original species name
+                delete[] info->sName;
+                info->sName = 0;
+                //original species id
+                delete[] info->sId;
+                info->sId = 0;
+                // original compartmentId
+                delete[] info->sCompartment;
+                info->sCompartment = 0;
+                //transported species id
+                delete[] info->tId;
+                info->tId = 0;
+                // transported compartmentId
+                delete[] info->tCompartment;
+                info->tCompartment = 0;
+                // membrane position
+                delete[] info->position;
+                info->position = 0;
+                //info
+                delete[] info;
+                info = 0;
+        }
+}
