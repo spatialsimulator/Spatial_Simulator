@@ -14,4 +14,6 @@ GeometryInfo* searchAvolInfoByCompartment(std::vector<GeometryInfo*> &geoInfoLis
 
 boundaryMembrane* searchBMemInfoByCompartment(std::vector<boundaryMembrane*> &bMemInfoList, const char *cId);
 
+boundaryMembrane* searchBMemInfoByAdjacentCompartment(std::vector<boundaryMembrane*> &bMemInfoList, const char *cId);
+
 #endif

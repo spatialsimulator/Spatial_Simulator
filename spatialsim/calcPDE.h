@@ -12,7 +12,7 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
 
 void cipCSLR(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, double dt, int Xindex, int Yindex, int Zindex, unsigned int dimension);
 
-void calcBoundary(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, unsigned int dimension);
+void calcBoundary(variableInfo *sInfo, std::vector<variableInfo*> &varInfoList, std::vector<boundaryMembrane*> &bMemInfoList, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, unsigned int dimension);
 
 void calcMemTransport(reactionInfo *rInfo, GeometryInfo *geoInfo, normalUnitVector *nuVec, int Xindex, int Yindex, int Zindex, double dt, unsigned int m, double deltaX, double deltaY, double deltaZ, unsigned int dimension, unsigned int numOfReactants);
 

@@ -53,11 +53,35 @@ GeometryInfo* searchAvolInfoByCompartment(vector<GeometryInfo*> &geoInfoList, co
 	return 0;
 }
 boundaryMembrane* searchBMemInfoByCompartment(vector<boundaryMembrane*> &bMemInfoList, const char *cId)
-{
+{//membrane has boundary dondition
 	vector<boundaryMembrane*>::iterator it = bMemInfoList.begin();
 	while (it != bMemInfoList.end()) {
 		if (strcmp((*it)->name, cId) == 0) {
 			return *it;
+		}
+		it++;
+	}
+	return 0;
+}
+boundaryMembrane* searchBMemInfoByAdjacentCompartment(vector<boundaryMembrane*> &bMemInfoList, const char *cId)
+{//membrane has boundary dondition
+	vector<boundaryMembrane*>::iterator it = bMemInfoList.begin();
+	while (it != bMemInfoList.end()) {
+		if (strcmp((*it)->sCompartment, cId) == 0 || strcmp((*it)->tCompartment, cId) == 0 ) {
+			return *it;
+		}
+		it++;
+	}
+	return 0;
+}
+variableInfo* searchSInfoByCompartment_Name(vector<variableInfo*> &varInfoList, const char *name, const char *compartment)
+{//search species by name & compartment
+	vector<variableInfo*>::iterator it = varInfoList.begin();
+	while (it != varInfoList.end()) {
+                if ( std::string((*it)->id).find(std::string(compartment)) ) {
+                        if( std::string((*it)->id).find(std::string(name)) ){
+                              return *it;
+                        }
 		}
 		it++;
 	}

@@ -807,13 +807,14 @@ void cipCSLR(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, d
 	delete[] val_delta;
 }
 
-void calcBoundary(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, unsigned int dimension)
+void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vector<boundaryMembrane*> &bMemInfoList, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, unsigned int dimension)
 {
 	int Xp = 0, Xm = 0, Yp = 0, Ym = 0, Zp = 0, Zm = 0, X = 0, Y = 0, Z = 0;
 	int divIndexXp = 0, divIndexXm = 0, divIndexYp = 0,divIndexYm = 0, divIndexZp = 0, divIndexZm = 0;
 	int numOfVolIndexes = Xindex * Yindex * Zindex;
 	//      int Xdiv = (Xindex + 1) / 2, Ydiv = (Yindex + 1) / 2, Zdiv = (Zindex + 1) / 2;
 	BoundaryCondition *maxSideBC = 0, *minSideBC = 0;
+        unsigned int i = 0;
 	//boundary flux
 	//2d
 	//x direction: d = (-J * deltaY) / (deltaY * (deltaX / 2.0)) = -2.0 * J / deltaX
@@ -824,72 +825,301 @@ void calcBoundary(variableInfo *sInfo, double deltaX, double deltaY, double delt
           //cout << "Xmax is " << Xmax << endl;//check Xmax          
           //cout << "Xmin is " << Xmin << endl;//check Xmax          
           //cout << sInfo->boundaryInfo[Xmax] << endl;//check Xmax
-                if( !sInfo->boundaryInfo[Xmax]->para || !sInfo->boundaryInfo[Xmin]->para ){
-                        cout << "usage:set boundary condition for Xmax/Xmin" << endl;
-                        exit(1);
-                }//added by Morita
-          
-		maxSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Xmax]->para->getPlugin("spatial"))->getBoundaryCondition();
-		minSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Xmin]->para->getPlugin("spatial"))->getBoundaryCondition();
-		//Xp, Xm
-		for (Z = 0; Z < Zindex; Z += 2) {
-			for (Y = 0; Y < Yindex; Y += 2) {
-				Xp = Z * Yindex * Xindex + Y * Xindex + (Xindex - 1);
-				Xm = Z * Yindex * Xindex + Y * Xindex;
-				if (!sInfo->boundaryInfo[Xmax]->isUniform) divIndexXp = Xp;
-				if (!sInfo->boundaryInfo[Xmin]->isUniform) divIndexXm = Xm;
-				if (sInfo->geoi->isDomain[Xp] == 1) {//Xp
-					if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Xp] += 2.0 * (-sInfo->boundaryInfo[Xmax]->value[divIndexXp]) / deltaX;
-					else if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Xp] = sInfo->boundaryInfo[Xmax]->value[divIndexXp];
-				}
-				if (sInfo->geoi->isDomain[Xm] == 1) {//Xm
-					if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Xm] += -2.0 * (-sInfo->boundaryInfo[Xmin]->value[divIndexXm]) / deltaX;
-					else if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Xm] = sInfo->boundaryInfo[Xmin]->value[divIndexXm];
-				}
-			}
-		}
+          //if( !sInfo->boundaryInfo[Xmax]->para || !sInfo->boundaryInfo[Xmin]->para ){
+          //cout << "usage:set boundary condition for Xmax/Xmin" << endl;
+          //exit(1);
+          //}//added by Morita
+                if( sInfo->boundaryInfo[Xmax] || sInfo->boundaryInfo[Xmin] ){
+                          maxSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Xmax]->para->getPlugin("spatial"))->getBoundaryCondition();
+                          minSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Xmin]->para->getPlugin("spatial"))->getBoundaryCondition();
+                          //Xp, Xm
+                          for (Z = 0; Z < Zindex; Z += 2) {
+                                  for (Y = 0; Y < Yindex; Y += 2) {
+                                          Xp = Z * Yindex * Xindex + Y * Xindex + (Xindex - 1);
+                                          Xm = Z * Yindex * Xindex + Y * Xindex;
+                                          if (!sInfo->boundaryInfo[Xmax]->isUniform) divIndexXp = Xp;
+                                          if (!sInfo->boundaryInfo[Xmin]->isUniform) divIndexXm = Xm;
+                                          if (sInfo->geoi->isDomain[Xp] == 1) {//Xp
+                                                  if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Xp] += 2.0 * (-sInfo->boundaryInfo[Xmax]->value[divIndexXp]) / deltaX;
+                                                  else if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Xp] = sInfo->boundaryInfo[Xmax]->value[divIndexXp];
+                                          }
+                                          if (sInfo->geoi->isDomain[Xm] == 1) {//Xm
+                                                  if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Xm] += -2.0 * (-sInfo->boundaryInfo[Xmin]->value[divIndexXm]) / deltaX;
+                                                  else if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Xm] = sInfo->boundaryInfo[Xmin]->value[divIndexXm];
+                                          }
+                                  }
+                          }
+                }
 	}
 	//Yp, Ym
 	if (dimension >= 2) {
-		maxSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Ymax]->para->getPlugin("spatial"))->getBoundaryCondition();
-		minSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Ymin]->para->getPlugin("spatial"))->getBoundaryCondition();
-		for (Z = 0; Z < Zindex; Z += 2) {
-			for (X = 0; X < Xindex; X += 2) {
-				Yp = Z * Yindex * Xindex + (Yindex - 1) * Xindex + X;
-				Ym = Z * Yindex * Xindex + X;
-				if (!sInfo->boundaryInfo[Ymax]->isUniform) divIndexYp = Yp;
-				if (!sInfo->boundaryInfo[Ymin]->isUniform) divIndexYm = Ym;
-				if (sInfo->geoi->isDomain[Yp] == 1) {//Yp
-					if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN)     sInfo->delta[m * numOfVolIndexes + Yp] += 2.0 * (-sInfo->boundaryInfo[Ymax]->value[divIndexYp]) / deltaY;
-					else if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Yp] = sInfo->boundaryInfo[Ymax]->value[divIndexYp];
-				}
-				if (sInfo->geoi->isDomain[Ym] == 1) {//Ym
-					if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Ym] += -2.0 * (-sInfo->boundaryInfo[Ymin]->value[divIndexYm]) / deltaY;
-					else if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Ym] = sInfo->boundaryInfo[Ymin]->value[divIndexYm];
-				}
-			}
-		}
-	}
+                if( sInfo->boundaryInfo[Ymax] || sInfo->boundaryInfo[Ymin] ){
+                        maxSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Ymax]->para->getPlugin("spatial"))->getBoundaryCondition();
+                        minSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Ymin]->para->getPlugin("spatial"))->getBoundaryCondition();
+                        for (Z = 0; Z < Zindex; Z += 2) {
+                                for (X = 0; X < Xindex; X += 2) {
+                                        Yp = Z * Yindex * Xindex + (Yindex - 1) * Xindex + X;
+                                        Ym = Z * Yindex * Xindex + X;
+                                        if (!sInfo->boundaryInfo[Ymax]->isUniform) divIndexYp = Yp;
+                                        if (!sInfo->boundaryInfo[Ymin]->isUniform) divIndexYm = Ym;
+                                        if (sInfo->geoi->isDomain[Yp] == 1) {//Yp
+                                                if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN)     sInfo->delta[m * numOfVolIndexes + Yp] += 2.0 * (-sInfo->boundaryInfo[Ymax]->value[divIndexYp]) / deltaY;
+                                                else if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Yp] = sInfo->boundaryInfo[Ymax]->value[divIndexYp];
+                                        }
+                                        if (sInfo->geoi->isDomain[Ym] == 1) {//Ym
+                                                if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Ym] += -2.0 * (-sInfo->boundaryInfo[Ymin]->value[divIndexYm]) / deltaY;
+                                                else if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Ym] = sInfo->boundaryInfo[Ymin]->value[divIndexYm];
+                                        }
+                                }
+                        }
+                }
+                // set boundary condition at membrane
+                if( sInfo->isLeaked == true ){
+                        GeometryInfo *geoInfo = sInfo->geoi;
+                        boundaryMembrane *bMem = searchBMemInfoByAdjacentCompartment( bMemInfoList, sInfo->com->getId().c_str() );
+                        cout << bMem->name << endl;
+                        cout << bMem->sId << endl;
+                        cout << bMem->tId << endl;
+                        variableInfo *tInfo;
+                        if( strcmp(sInfo->id,bMem->sId) == 0 ){
+                                tInfo = searchInfoById(varInfoList, bMem->tId);
+                        } else if( strcmp(sInfo->id,bMem->tId) == 0 ){
+                                tInfo = searchInfoById(varInfoList, bMem->sId);
+                        }
+                        for (i = 0; i < geoInfo->domainIndex.size(); i++) {
+                                  int index = geoInfo->domainIndex[i];
+                                  Z = index / (Xindex * Yindex);
+                                  Y = (index - Z * Xindex * Yindex) / Xindex;
+                                  X = index - Z * Xindex * Yindex - Y * Xindex;
+                                  int Xplus1 = Z * Yindex * Xindex + Y * Xindex + (X + 1);
+                                  int Xminus1 = Z * Yindex * Xindex + Y * Xindex + (X - 1);
+                                  int Yplus1 = Z * Yindex * Xindex + (Y + 1) * Xindex + X;
+                                  int Yminus1 = Z * Yindex * Xindex + (Y - 1) * Xindex + X;
+                                  int Zplus1 = (Z + 1) * Yindex * Xindex + Y * Xindex + X;
+                                  int Zminus1 = (Z - 1) * Yindex * Xindex + Y * Xindex + X;
+                                  int Xplus2 = Z * Yindex * Xindex + Y * Xindex + (X + 2);
+                                  int Xminus2 = Z * Yindex * Xindex + Y * Xindex + (X - 2);
+                                  int Yplus2 = Z * Yindex * Xindex + (Y + 2) * Xindex + X;
+                                  int Yminus2 = Z * Yindex * Xindex + (Y - 2) * Xindex + X;
+                                  int Zplus2 = (Z + 2) * Yindex * Xindex + Y * Xindex + X;
+                                  int Zminus2 = (Z - 2) * Yindex * Xindex + Y * Xindex + X;
+                                  if (sInfo->geoi->isDomain[index] == 1) {
+                                          double numOfBoundary = 0;
+                                          if (sInfo->geoi->bType[index].isBofXm == true) {
+                                                  if( index==0 || index==Xindex-1 ){
+                                                          numOfBoundary+=1.0;
+                                                  } else {
+                                                          if(tInfo->geoi->isDomain[Xplus2] == 1){
+                                                                  numOfBoundary+=1.0;
+                                                          }
+                                                  }
+                                          }
+                                          if (sInfo->geoi->bType[index].isBofXm == true) {
+                                                  if( index==0 || index==Xindex-1 ){
+                                                          numOfBoundary+=1.0;
+                                                  } else {
+                                                          if(tInfo->geoi->isDomain[Xminus2] == 1){
+                                                                  numOfBoundary+=1.0;
+                                                          }
+                                                  }
+                                          }
+                                          if (sInfo->geoi->bType[index].isBofYp == true) {
+                                                  if( index==0 || index==Yindex-1 ){
+                                                          numOfBoundary+=1.0;
+                                                  } else {
+                                                          if(tInfo->geoi->isDomain[Yplus2] == 1){
+                                                                  numOfBoundary+=1.0;
+                                                          }
+                                                  }
+                                          }
+                                          if (sInfo->geoi->bType[index].isBofYm == true) {
+                                                  if( index==0 || index==Yindex-1 ){
+                                                          numOfBoundary+=1.0;
+                                                  } else {
+                                                          if(tInfo->geoi->isDomain[Yminus2] == 1){
+                                                                  numOfBoundary+=1.0;
+                                                          }
+                                                  }           
+                                          }
+                                          if (sInfo->geoi->bType[index].isBofZp == true) {
+                                                  if( index==0 || index==Zindex-1 ){
+                                                          numOfBoundary+=1.0;
+                                                  } else {
+                                                          if(tInfo->geoi->isDomain[Zplus2] == 1){
+                                                                  numOfBoundary+=1.0;
+                                                          }
+                                                  }                                            
+                                          }
+                                          if (sInfo->geoi->bType[index].isBofZm == true) {
+                                                  if( index==0 || index==Zindex-1 ){
+                                                          numOfBoundary+=1.0;
+                                                  } else {
+                                                          if(tInfo->geoi->isDomain[Zminus2] == 1){
+                                                                  numOfBoundary+=1.0;
+                                                          }
+                                                  }                                            
+                                          }
+                                          if( numOfBoundary > 0){
+                                                  //boundary membrane
+                                                  if (sInfo->geoi->bType[index].isBofXp == true) {
+                                                          if( X==0 || X==Xindex-1 ){ //image edge
+                                                            // argument required
+                                                          } else if( X!=0 && X!=Xindex-1 ){ //membrane
+                                                                  if(bMem->position[Xplus1]==1){//Neumann
+                                                                            sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                            if( tInfo != 0 ){
+                                                                                    if(tInfo->geoi->isDomain[Xplus2] == 1){
+                                                                                            tInfo->value[Xplus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                                    }
+                                                                            }
+                                                                  }
+                                                                  if(bMem->position[Xplus1]==2){//Dirichlet
+                                                                            sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                            if( tInfo != 0 ){
+                                                                                    if(tInfo->geoi->isDomain[Xplus2] == 1){
+                                                                                            tInfo->value[Xplus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                                    }
+                                                                            }
+                                                                  }
+                                                          }
+                                                  }
+                                                  if (sInfo->geoi->bType[index].isBofXm == true) {
+                                                          if( X==0 || X==Xindex-1 ){ //image edge
+                                                            // argument required
+                                                          } else if( X!=0 && X!=Xindex-1 ){ //membrane
+                                                                  if(bMem->position[Xminus1]==1){//Neumann
+                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                    if(tInfo->geoi->isDomain[Xminus2] == 1){
+                                                                                            tInfo->value[Xminus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaX )/numOfBoundary;
+                                                                                    }
+                                                                          }
+                                                                  }
+                                                                  if(bMem->position[Xminus1]==2){//Dirichlet
+                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                  if(tInfo->geoi->isDomain[Xminus2] == 1){
+                                                                                          tInfo->value[Xminus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                          }
+                                                  }
+                                                  if (sInfo->geoi->bType[index].isBofYp == true) {
+                                                          if( Y==0 || Y==Yindex-1 ){ //image edge
+                                                            // argument required
+                                                          } else if( Y!=0 && Y!=Yindex-1 ){ //membrane
+                                                                  if(bMem->position[Yplus1]==1){//Neumann
+                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                  if(tInfo->geoi->isDomain[Yplus2] == 1){
+                                                                                          tInfo->value[Yplus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                                  if(bMem->position[Yplus1]==2){//Dirichlet
+                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                  if(tInfo->geoi->isDomain[Yplus2] == 1){
+                                                                                          tInfo->value[Yplus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                          }                                                      
+                                                  }
+                                                  if (sInfo->geoi->bType[index].isBofYm == true) {
+                                                          if( Y==0 || Y==Yindex-1 ){ //image edge
+                                                            // argument required
+                                                          } else if( Y!=0 && Y!=Yindex-1 ){ //membrane
+                                                                  if(bMem->position[Yminus1]==1){//Neumann
+                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                  if(tInfo->geoi->isDomain[Yminus2] == 1){
+                                                                                          tInfo->value[Yminus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                                  if(bMem->position[Yminus1]==2){//Dirichlet
+                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                  if(tInfo->geoi->isDomain[Yminus2] == 1){
+                                                                                          tInfo->value[Yminus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                          }                                                      
+                                                  }
+                                                  if (sInfo->geoi->bType[index].isBofZp == true) {
+                                                          if( Z==0 || Z==Zindex-1 ){ //image edge
+                                                            // argument required
+                                                          } else if( Z!=0 && Z!=Zindex-1 ){ //membrane
+                                                                  if(bMem->position[Zplus1]==1){//Neumann
+                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                  if(tInfo->geoi->isDomain[Zplus2] == 1){
+                                                                                          tInfo->value[Zplus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                                  if(bMem->position[Zplus1]==2){//Dirichlet
+                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                  if(tInfo->geoi->isDomain[Zplus2] == 1){
+                                                                                          tInfo->value[Zplus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                          }                                                      
+                                                  }                                  
+                                                  if (sInfo->geoi->bType[index].isBofZm == true) {
+                                                          if( Z==0 || Z==Zindex-1 ){ //image edge
+                                                            // argument required
+                                                          } else if( Z!=0 && Z!=Zindex-1 ){ //membrane
+                                                                  if(bMem->position[Zminus1]==1){//Neumann
+                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                  if(tInfo->geoi->isDomain[Zminus2] == 1){
+                                                                                          tInfo->value[Zminus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                                  if(bMem->position[Zminus1]==2){//Dirichlet
+                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                          if( tInfo != 0 ){
+                                                                                  if(tInfo->geoi->isDomain[Zminus2] == 1){
+                                                                                          tInfo->value[Zminus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                                  }
+                                                                          }
+                                                                  }
+                                                          }
+                                                  }       
+                                          }                                          
+                                  }
+                        }       
+                }
+        }
 	//Zp, Zm
 	if (dimension >= 3) {
-		maxSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Zmax]->para->getPlugin("spatial"))->getBoundaryCondition();
-		minSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Zmin]->para->getPlugin("spatial"))->getBoundaryCondition();
-		for (Y = 0; Y < Yindex; Y += 2) {
-			for (X = 0; X < Xindex; X += 2) {
-				Zp = (Zindex - 1) * Yindex * Xindex + Y * Xindex + X;
-				Zm = Y * Xindex + X;
-				if (!sInfo->boundaryInfo[Zmax]->isUniform) divIndexZp = Zp;
-				if (!sInfo->boundaryInfo[Zmin]->isUniform) divIndexZm = Zm;
-				if (sInfo->geoi->isDomain[Zp] == 1) {//Zp
-					if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Zp] += 2.0 * (-sInfo->boundaryInfo[Zmax]->value[divIndexZp]) / deltaZ;
-					else if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Zp] = sInfo->boundaryInfo[Zmax]->value[divIndexZp];
-				}
-				if (sInfo->geoi->isDomain[Zm] == 1) {//Zm
-					if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Zm] += -2.0 * (-sInfo->boundaryInfo[Zmin]->value[divIndexZm]) / deltaZ;
-					else if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Zm] = sInfo->boundaryInfo[Zmin]->value[divIndexZm];
-				}
-			}
-		}
+                if( sInfo->boundaryInfo[Zmax] || sInfo->boundaryInfo[Zmin] ){
+                        maxSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Zmax]->para->getPlugin("spatial"))->getBoundaryCondition();
+                        minSideBC = static_cast<SpatialParameterPlugin*>(sInfo->boundaryInfo[Zmin]->para->getPlugin("spatial"))->getBoundaryCondition();
+                        for (Y = 0; Y < Yindex; Y += 2) {
+                                for (X = 0; X < Xindex; X += 2) {
+				        Zp = (Zindex - 1) * Yindex * Xindex + Y * Xindex + X;
+                                        Zm = Y * Xindex + X;
+                                        if (!sInfo->boundaryInfo[Zmax]->isUniform) divIndexZp = Zp;
+                                        if (!sInfo->boundaryInfo[Zmin]->isUniform) divIndexZm = Zm;
+                                        if (sInfo->geoi->isDomain[Zp] == 1) {//Zp
+                                                if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Zp] += 2.0 * (-sInfo->boundaryInfo[Zmax]->value[divIndexZp]) / deltaZ;
+                                                else if (maxSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Zp] = sInfo->boundaryInfo[Zmax]->value[divIndexZp];
+                                        }
+                                        if (sInfo->geoi->isDomain[Zm] == 1) {//Zm
+                                                if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_NEUMANN) sInfo->delta[m * numOfVolIndexes + Zm] += -2.0 * (-sInfo->boundaryInfo[Zmin]->value[divIndexZm]) / deltaZ;
+                                                else if (minSideBC->getType() == SPATIAL_BOUNDARYKIND_DIRICHLET) sInfo->value[Zm] = sInfo->boundaryInfo[Zmin]->value[divIndexZm];
+                                        }
+                                }
+                        }
+                }
 	}
 }
 

@@ -60,6 +60,7 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 			} else if (info->com->getSpatialDimensions()== memDimension) {
 				info->inVol = false;
 			}
+                        info->isLeaked = false;
 
                         //Species have Local Concentration at a Compartment added by Morita                        
                         if( model->getInitialAssignment(s->getId()) ){
@@ -350,6 +351,9 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                                                           break;
                                                           }
                                                           bMem->value = p->getValue();
+                                                          bMem->sId = sInfo->sp->getId().c_str();
+                                                          variableInfo *originalSpecies = searchInfoById(varInfoList,bMem->sId);
+                                                          originalSpecies->isLeaked = true;
                                                           bMem->sName = sInfo->sp->getName().c_str();
                                                           bMem->sCompartment = sInfo->com->getId().c_str();
                                                           bMem->position = new double[numOfVolIndexes];
@@ -361,7 +365,7 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                                                   Domain *ad1 = geometry->getDomain(adDomain->getDomain1());
                                                                   Domain *ad2 = geometry->getDomain(adDomain->getDomain2());
                                                                   if( strcmp(ad1->getDomainType().c_str(),bMem->name)==0 || strcmp(ad2->getDomainType().c_str(),bMem->name)==0 ){
-                                                                          if(bMem->adjacentDomainIdList.size() > 0){
+/*                                                                          if(bMem->adjacentDomainIdList.size() > 0){
                                                                                   int bMemList_size = 0;
                                                                                   for(bMemList_size=0; bMemList_size < bMem->adjacentDomainIdList.size() ;bMemList_size++){
                                                                                          if( strcmp( bMem->adjacentDomainIdList[bMemList_size], ad1->getDomainType().c_str() ) != 0 && strcmp(ad1->getDomainType().c_str(),bMem->name)!=0 && strcmp(bMem->sCompartment, ad1->getDomainType().c_str()) != 0 ){
@@ -371,40 +375,54 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                                                                                   bMem->adjacentDomainIdList.push_back(ad2->getDomainType().c_str());
                                                                                          }
                                                                                   }
-                                                                          } else {
-                                                                                  if( strcmp(bMem->name, ad1->getDomainType().c_str()) != 0 && strcmp(bMem->sCompartment, ad1->getDomainType().c_str()) != 0 ){
-                                                                                          bMem->adjacentDomainIdList.push_back(ad1->getDomainType().c_str());
-                                                                                  }
-                                                                                  if( strcmp(bMem->name, ad2->getDomainType().c_str()) != 0 && strcmp(bMem->sCompartment, ad2->getDomainType().c_str()) != 0 ){
-                                                                                          bMem->adjacentDomainIdList.push_back(ad2->getDomainType().c_str());
-                                                                                  }
+                                                                                  } else {*/
+                                                                          if( strcmp(bMem->name, ad1->getDomainType().c_str()) != 0 && strcmp(bMem->sCompartment, ad1->getDomainType().c_str()) != 0 ){
+                                                                            //bMem->adjacentDomainIdList.push_back(ad1->getDomainType().c_str());
+                                                                                  bMem->tCompartment = ad1->getDomainType().c_str();
+                                                                                  std::string tId = sInfo->sp->getName() + "_" + ad1->getDomainType(); 
+                                                                                  bMem->tId = tId.c_str();
+                                                                          }
+                                                                          if( strcmp(bMem->name, ad2->getDomainType().c_str()) != 0 && strcmp(bMem->sCompartment, ad2->getDomainType().c_str()) != 0 ){
+                                                                            //bMem->adjacentDomainIdList.push_back(ad2->getDomainType().c_str());
+                                                                                  bMem->tCompartment = ad2->getDomainType().c_str();
+                                                                                  std::string tId = sInfo->sp->getName() + "_" + ad2->getDomainType(); 
+                                                                                  bMem->tId = tId.c_str();
+
+                                                                                  //cout << bMem->tCompartment << endl;
+                                                                                  //cout << bMem->tId << endl;
+//                                                                                  }
                                                                           }
                                                                   }
 
                                                           }
-                                                          //making new species
-                                                          if( bMem->sName != 0 ){
-                                                                  int bMemList_size = 0;
-                                                                  for( bMemList_size=0; bMemList_size < bMem->adjacentDomainIdList.size(); bMemList_size++ ){
-                                                                          std::string newSId = std::string(bMem->sName) + "_";
-                                                                          newSId += std::string(bMem->adjacentDomainIdList[bMemList_size]);
-                                                                          //making new species in model
-                                                                          Species* newSpecies = model->createSpecies();
-                                                                          newSpecies->setId(newSId);
-                                                                          model->addSpecies(newSpecies);
-                                                                          //making new species variable
-                                                                          variableInfo *newSInfo = new variableInfo;
-                                                                          InitializeVarInfo(newSInfo);
-                                                                          varInfoList.push_back(newSInfo);
-                                                                          newSInfo->sp = newSpecies;
-                                                                          newSInfo->com = model->getCompartment(std::string(bMem->adjacentDomainIdList[bMemList_size]));
-                                                                          newSInfo->id = newSpecies->getId().c_str();
-                                                                          newSInfo->value = new double[numOfVolIndexes];
-                                                                          fill_n(newSInfo->value, numOfVolIndexes, 0);
-                                                                          newSInfo->delta = new double[4 * numOfVolIndexes];
-                                                                          fill_n(newSInfo->delta, 4 * numOfVolIndexes, 0.0);
-                                                                  }
+                                                          //making new species variableInfo
+                                                          //model has leaked species
+                                                          variableInfo *sInfo = searchInfoById(varInfoList, bMem->tId);
+                                                          if( sInfo!=0 ){//model has leaked species
+
+                                                                  sInfo->isLeaked = true;
+                                                                                  
+                                                          } else {//model has no leaked species
+
+                                                                  //making new species in model
+                                                                  Species* newSpecies = model->createSpecies();
+                                                                  newSpecies->setId(std::string(bMem->tId));
+                                                                  model->addSpecies(newSpecies);
+                                                                  //making new species variable
+                                                                  variableInfo *newSInfo = new variableInfo;
+                                                                  InitializeVarInfo(newSInfo);
+                                                                  varInfoList.push_back(newSInfo);
+                                                                  newSInfo->sp = newSpecies;
+                                                                  newSInfo->com = model->getCompartment(std::string(bMem->tCompartment));
+                                                                  newSInfo->id = newSpecies->getId().c_str();
+                                                                  newSInfo->isLeaked = true;
+                                                                  newSInfo->value = new double[numOfVolIndexes];
+                                                                  fill_n(newSInfo->value, numOfVolIndexes, 0);
+                                                                  newSInfo->delta = new double[4 * numOfVolIndexes];
+                                                                  fill_n(newSInfo->delta, 4 * numOfVolIndexes, 0.0);
+                                                                  //cout << "numOfSpecies is " << model->getNumSpecies() << endl;
                                                           }
+                                                          // }                                                          
                                                 }
                                         }                     
 				}

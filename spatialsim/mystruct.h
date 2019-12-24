@@ -29,8 +29,11 @@ typedef struct _reversePolishInfo {
 
 typedef struct _boundaryMembrane { //added by Morita
         const char *name; //compartmentId
-        const char *sName; //species name
-        const char *sCompartment; //compartmentId
+        const char *sName; //original species name
+        const char *sId; //original species id
+        const char *sCompartment; // original compartmentId
+        const char *tId; //transported species id
+        const char *tCompartment; // transported compartmentId
         double bcType; // neumann=1 dirichlet=2 others=3
         double value; // assumed constant
         double *position;
@@ -82,6 +85,7 @@ typedef struct _variableInfo {
 	bool inVol;
 	bool isUniform;
 	bool hasAssignmentRule;
+        bool isLeaked;
 	//boundaryType bType;
 	reversePolishInfo *rpInfo;
 	GeometryInfo *geoi;

@@ -887,17 +887,12 @@ void simulate(optionList options)
 
 	for (i = 0; i < numOfSpecies; i++) {
 		s = los->get(i);
-		variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
+		variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());                
     if (sInfo != 0 && stat(string(outpath + "/result/" + fname + "/img/" + s->getId()).c_str(), &st) != 0) {
       system(string("mkdir " + outpath + "/result/" + fname + "/img/" + s->getId()).c_str());
     }
   }
 
-        //check bMem
-        boundaryMembrane *bMem = bMemInfoList[0];
-        cout << bMem->adjacentDomainIdList[0] << endl;
-        exit(1);
-        
   //draw geometries
 	variableInfo *xInfo = 0, *yInfo = 0, *zInfo = 0;
 	if (dimension >= 1) {
@@ -1219,7 +1214,7 @@ void simulate(optionList options)
 				boundary_start = clock();
 				//boundary condition
 				if (sInfo->boundaryInfo != 0 && sInfo->geoi->isVol) {
-					calcBoundary(sInfo, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, m, dimension);
+                                        calcBoundary(sInfo, varInfoList, bMemInfoList, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, m, dimension);
 				}
 				boundary_end = clock();
 				boundary_time += (boundary_end - boundary_start);
@@ -1321,7 +1316,7 @@ void simulate(optionList options)
 
                                 //boundary condition
 				if (sInfo->boundaryInfo != 0) {
-					calcBoundary(sInfo, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, 0, dimension);
+                                        calcBoundary(sInfo, varInfoList, bMemInfoList, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, 0, dimension);
 				}
 			}
 		}
