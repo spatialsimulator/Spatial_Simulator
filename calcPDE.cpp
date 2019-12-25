@@ -815,6 +815,7 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
 	//      int Xdiv = (Xindex + 1) / 2, Ydiv = (Yindex + 1) / 2, Zdiv = (Zindex + 1) / 2;
 	BoundaryCondition *maxSideBC = 0, *minSideBC = 0;
         unsigned int i = 0;
+        
 	//boundary flux
 	//2d
 	//x direction: d = (-J * deltaY) / (deltaY * (deltaX / 2.0)) = -2.0 * J / deltaX
@@ -850,6 +851,8 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                                   }
                           }
                 }
+                // X boundary
+                //if( sInfo->isLeaked == true ){}                
 	}
 	//Yp, Ym
 	if (dimension >= 2) {
@@ -875,20 +878,14 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                 }
                 // set boundary condition at membrane
                 if( sInfo->isLeaked == true ){
-                        GeometryInfo *geoInfo = sInfo->geoi;
-                        boundaryMembrane *bMem = searchBMemInfoByAdjacentCompartment( bMemInfoList, sInfo->com->getId().c_str() );
-                        variableInfo *tInfo = new variableInfo;
-                        if( strcmp(sInfo->id,bMem->sId) == 0 ){
-                                tInfo = searchInfoById(varInfoList, bMem->tId);
+                        GeometryInfo *geoInfo = sInfo->geoi; //added by Morita
+                        boundaryMembrane *bMem = searchBMemInfoByAdjacentCompartment( bMemInfoList, sInfo->com->getId().c_str() ); //added by Morita
+                        variableInfo *tInfo = new variableInfo; //added by Morita
+                        if( strcmp(sInfo->id,bMem->sId) == 0 ){ //added by Morita
+                                 tInfo = searchInfoById(varInfoList, bMem->tId);
                         } else if( strcmp(sInfo->id,bMem->tId) == 0 ){
-                                tInfo = searchInfoById(varInfoList, bMem->sId);
+                                 tInfo = searchInfoById(varInfoList, bMem->sId);
                         }
-
-                        if(tInfo==NULL){
-                          cout << "not exsiting tInfo" << endl;
-                          exit(1);
-                        }
-
                         for (i = 0; i < geoInfo->domainIndex.size(); i++) {
                                   int index = geoInfo->domainIndex[i];
                                   Z = index / (Xindex * Yindex);
@@ -969,18 +966,18 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                                                             // argument required
                                                           } else if( X!=0 && X!=Xindex-1 ){ //membrane
                                                                   if(bMem->position[Xplus1]==1){//Neumann
-                                                                            sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                            sInfo->delta[m * numOfVolIndexes + index] += 2.0 * -bMem->value / deltaX / numOfBoundary;
                                                                             if( tInfo != 0 ){
                                                                                     if(tInfo->geoi->isDomain[Xplus2] == 1){
-                                                                                            tInfo->value[Xplus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                                            tInfo->delta[m * numOfVolIndexes + Xplus2] += 2.0 * bMem->value / deltaX / numOfBoundary;
                                                                                     }
                                                                             }
                                                                   }
                                                                   if(bMem->position[Xplus1]==2){//Dirichlet
-                                                                            sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                            sInfo->delta[m * numOfVolIndexes + index] += 2.0 * bMem->value / deltaX / numOfBoundary;
                                                                             if( tInfo != 0 ){
                                                                                     if(tInfo->geoi->isDomain[Xplus2] == 1){
-                                                                                            tInfo->value[Xplus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                                            tInfo->delta[m * numOfVolIndexes + Xplus2] += 2.0 * bMem->value / deltaX / numOfBoundary;
                                                                                     }
                                                                             }
                                                                   }
@@ -991,18 +988,18 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                                                             // argument required
                                                           } else if( X!=0 && X!=Xindex-1 ){ //membrane
                                                                   if(bMem->position[Xminus1]==1){//Neumann
-                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * -bMem->value / deltaX / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                     if(tInfo->geoi->isDomain[Xminus2] == 1){
-                                                                                            tInfo->value[Xminus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaX )/numOfBoundary;
+                                                                                            tInfo->delta[m * numOfVolIndexes + Xminus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaX )/numOfBoundary;
                                                                                     }
                                                                           }
                                                                   }
                                                                   if(bMem->position[Xminus1]==2){//Dirichlet
-                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * bMem->value / deltaX / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                   if(tInfo->geoi->isDomain[Xminus2] == 1){
-                                                                                          tInfo->value[Xminus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
+                                                                                          tInfo->delta[m * numOfVolIndexes + Xminus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaX)/numOfBoundary;
                                                                                   }
                                                                           }
                                                                   }
@@ -1013,18 +1010,18 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                                                             // argument required
                                                           } else if( Y!=0 && Y!=Yindex-1 ){ //membrane
                                                                   if(bMem->position[Yplus1]==1){//Neumann
-                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * -bMem->value / deltaY / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                   if(tInfo->geoi->isDomain[Yplus2] == 1){
-                                                                                          tInfo->value[Yplus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                                          tInfo->delta[m * numOfVolIndexes + Yplus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
                                                                                   }
                                                                           }
                                                                   }
                                                                   if(bMem->position[Yplus1]==2){//Dirichlet
-                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * bMem->value / deltaY / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                   if(tInfo->geoi->isDomain[Yplus2] == 1){
-                                                                                          tInfo->value[Yplus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                                          tInfo->delta[m * numOfVolIndexes + Yplus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
                                                                                   }
                                                                           }
                                                                   }
@@ -1035,18 +1032,18 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                                                             // argument required
                                                           } else if( Y!=0 && Y!=Yindex-1 ){ //membrane
                                                                   if(bMem->position[Yminus1]==1){//Neumann
-                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * -bMem->value / deltaY / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                   if(tInfo->geoi->isDomain[Yminus2] == 1){
-                                                                                          tInfo->value[Yminus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                                          tInfo->delta[m * numOfVolIndexes + Yminus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
                                                                                   }
                                                                           }
                                                                   }
                                                                   if(bMem->position[Yminus1]==2){//Dirichlet
-                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * bMem->value / deltaY / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                   if(tInfo->geoi->isDomain[Yminus2] == 1){
-                                                                                          tInfo->value[Yminus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
+                                                                                          tInfo->delta[m * numOfVolIndexes + Yminus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaY)/numOfBoundary;
                                                                                   }
                                                                           }
                                                                   }
@@ -1057,18 +1054,18 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                                                             // argument required
                                                           } else if( Z!=0 && Z!=Zindex-1 ){ //membrane
                                                                   if(bMem->position[Zplus1]==1){//Neumann
-                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * -bMem->value / deltaZ / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                   if(tInfo->geoi->isDomain[Zplus2] == 1){
-                                                                                          tInfo->value[Zplus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                                          tInfo->delta[m * numOfVolIndexes + Zplus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
                                                                                   }
                                                                           }
                                                                   }
                                                                   if(bMem->position[Zplus1]==2){//Dirichlet
-                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * bMem->value / deltaZ / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                   if(tInfo->geoi->isDomain[Zplus2] == 1){
-                                                                                          tInfo->value[Zplus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                                          tInfo->delta[m * numOfVolIndexes + Zplus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
                                                                                   }
                                                                           }
                                                                   }
@@ -1079,18 +1076,18 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                                                             // argument required
                                                           } else if( Z!=0 && Z!=Zindex-1 ){ //membrane
                                                                   if(bMem->position[Zminus1]==1){//Neumann
-                                                                          sInfo->value[index] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * -bMem->value / deltaZ / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                   if(tInfo->geoi->isDomain[Zminus2] == 1){
-                                                                                          tInfo->value[Zminus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                                          tInfo->delta[m * numOfVolIndexes + Zminus2] += (sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
                                                                                   }
                                                                           }
                                                                   }
                                                                   if(bMem->position[Zminus1]==2){//Dirichlet
-                                                                          sInfo->value[index] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                          sInfo->delta[m * numOfVolIndexes + index] += 2.0 * bMem->value / deltaZ / numOfBoundary;
                                                                           if( tInfo != 0 ){
                                                                                   if(tInfo->geoi->isDomain[Zminus2] == 1){
-                                                                                          tInfo->value[Zminus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
+                                                                                          tInfo->delta[m * numOfVolIndexes + Zminus2] += (-sInfo->value[index] + 2.0 * bMem->value * deltaZ)/numOfBoundary;
                                                                                   }
                                                                           }
                                                                   }
