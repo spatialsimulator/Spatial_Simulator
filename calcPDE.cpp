@@ -391,7 +391,7 @@ void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int
 	}
 }
 
-void calcDiffusion(variableInfo *sInfo, vector<variableInfo*> varInfoList, vector<boundaryMembrane*> bMemInfoList, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, double dt)
+void calcDiffusion(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vector<boundaryMembrane*> &bMemInfoList, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, double dt)
 {
 	int X = 0, Y = 0, Z = 0, index = 0;
 	unsigned int j;
@@ -1164,7 +1164,7 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
 	int numOfVolIndexes = Xindex * Yindex * Zindex;
 	//      int Xdiv = (Xindex + 1) / 2, Ydiv = (Yindex + 1) / 2, Zdiv = (Zindex + 1) / 2;
 	BoundaryCondition *maxSideBC = 0, *minSideBC = 0;
-        unsigned int i = 0;
+        //unsigned int i = 0;
         
 	//boundary flux
 	//2d
@@ -1446,8 +1446,8 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                                           }                                          
                                   }
                         }       
-                }
-        }*/
+                }*/
+        }
 	//Zp, Zm
 	if (dimension >= 3) {
                 if( sInfo->boundaryInfo[Zmax] || sInfo->boundaryInfo[Zmin] ){
