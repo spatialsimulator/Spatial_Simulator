@@ -8,7 +8,7 @@ void reversePolishInitial(std::vector<unsigned int> &indexList, reversePolishInf
 
 void reversePolishRK(reactionInfo *rInfo, GeometryInfo *geoInfo, int Xindex, int Yindex, int Zindex, double dt, unsigned int m, unsigned int numOfReactants, bool isReaction);
 
-void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, double dt);
+void calcDiffusion(variableInfo *sInfo, std::vector<variableInfo*> &varInfoList, std::vector<boundaryMembrane*> &bMemInfoList, double deltaX, double deltaY, double deltaZ, int Xindex, int Yindex, int Zindex, unsigned int m, double dt);
 
 void cipCSLR(variableInfo *sInfo, double deltaX, double deltaY, double deltaZ, double dt, int Xindex, int Yindex, int Zindex, unsigned int dimension);
 

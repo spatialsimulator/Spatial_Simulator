@@ -1211,7 +1211,7 @@ void simulate(optionList options)
 				diff_start = clock();
 				//volume diffusion
 				if (sInfo->diffCInfo != 0 && sInfo->geoi->isVol) {                                        
-					calcDiffusion(sInfo, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, m, dt);
+                                  calcDiffusion(sInfo, varInfoList, bMemInfoList, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, m, dt);
 				}
 				//membane diffusion
 				if (sInfo->diffCInfo != 0 && !sInfo->geoi->isVol) {
