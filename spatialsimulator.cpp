@@ -1115,11 +1115,11 @@ void simulate(optionList options)
                                         //file04.open( "check_Xito_Cytosol_48_66.csv", std::ios::app );
                                         //std::ofstream file05;
                                         //file05.open( "extracellular_sum.csv", std::ios::app );
-                                        std::ofstream result;
+                                        std::ofstream result_leaked;
                                         //result.open( "infiniteDiffusion_D100_dt_E-5_allarea.csv", std::ios::app );
                                         //std::ofstream line;
                                         //line.open( "check_diffusion_line_D1000_dt_E-4.csv", std::ios::app );
-                                        result.open( "check_Leaked_species.csv", std::ios::app );
+                                        result_leaked.open( "check_Leaked_species.csv", std::ios::app );
                                         //--------------------------------------------//
 
 	for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
@@ -1133,13 +1133,13 @@ void simulate(optionList options)
           
           int aaa,bbb,ccc;
           if( t%500 == 0 ){
-            result << t*dt;
+            result_leaked << t*dt;
             //result << t*dt; 
             for( aaa=0; aaa<Zdiv; aaa++ ){
               for( bbb=0; bbb<Ydiv; bbb++ ){
                 for( ccc=0; ccc<Xdiv; ccc++ ){
                   if(sInfoResult->value[(2*bbb)*Xindex + (2*ccc)] > 0)
-                    result << "," << sInfoResult->value[(2*bbb)*Xindex + (2*ccc)];
+                    result_leaked << "," << sInfoResult->value[(2*bbb)*Xindex + (2*ccc)];
                   //if( bbb == ccc ){
                     //cout << bbb << endl;
                     //cout << ccc << endl;
@@ -1149,7 +1149,7 @@ void simulate(optionList options)
                 }
               }
             }
-            result << endl;
+            result_leaked << endl;
             //result << endl;
           }
           //### finish ###//
@@ -1420,7 +1420,7 @@ void simulate(optionList options)
                                         //file03.close();
                                         //file04.close();
                                         //file05.close();
-                                        result.close();
+                                        result_leaked.close();
                                         //line.close();
                                         //-----------//
         
