@@ -437,49 +437,67 @@ void calcDiffusion(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vect
                         if( X==0 || X==Xindex-1 ){
                                 numOfBoundary+=1.0;
                         } else {
-                                if(tInfo != 0)
-                                        if(tInfo->geoi->isDomain[Xplus2] == 1)
-                                                numOfBoundary+=1.0;                                
+                          if( bMem != 0 ){
+                            tInfo = searchInfoById(varInfoList,bMem->tId);
+                            if(tInfo != 0)
+                              if(tInfo->geoi->isDomain[Xplus2] == 1)
+                                numOfBoundary+=1.0;
+                          }
                         }
                 } if (sInfo->geoi->bType[index].isBofXm == true) {
                         if( X==0 || X==Xindex-1 ){
                                 numOfBoundary+=1.0;
                         } else {
-                                if(tInfo != 0)
-                                        if(tInfo->geoi->isDomain[Xminus2] == 1)
-                                                numOfBoundary+=1.0;
+                          if( bMem != 0 ){
+                            tInfo = searchInfoById(varInfoList,bMem->tId);
+                            if(tInfo != 0)
+                              if(tInfo->geoi->isDomain[Xminus2] == 1)
+                                numOfBoundary+=1.0;
+                          }
                         }
                 } if (sInfo->geoi->bType[index].isBofYp == true) {
                         if( Y==0 || Y==Yindex-1 ){
                                 numOfBoundary+=1.0;
                         } else {
-                                if(tInfo != 0)
-                                        if(tInfo->geoi->isDomain[Yplus2] == 1)
-                                                numOfBoundary+=1.0;                          
+                          if( bMem != 0 ){
+                            tInfo = searchInfoById(varInfoList,bMem->tId);
+                            if(tInfo != 0)
+                              if(tInfo->geoi->isDomain[Yplus2] == 1)
+                                numOfBoundary+=1.0;
+                          }
                         }
                 } if (sInfo->geoi->bType[index].isBofYm == true) {
                         if( Y==0 || Y==Yindex-1 ){
                                 numOfBoundary+=1.0;
                         } else {
-                                if(tInfo != 0)
-                                        if(tInfo->geoi->isDomain[Yminus2] == 1)
-                                                numOfBoundary+=1.0;                          
+                          if( bMem != 0 ){
+                            tInfo = searchInfoById(varInfoList,bMem->tId);
+                            if(tInfo != 0)
+                              if(tInfo->geoi->isDomain[Yminus2] == 1)
+                                numOfBoundary+=1.0;
+                          }                                
                         }           
                 } if (sInfo->geoi->bType[index].isBofZp == true) {
                         if( Z==0 || Z==Zindex-1 ){
                                 numOfBoundary+=1.0;
                         } else {
-                                if(tInfo != 0)
-                                        if(tInfo->geoi->isDomain[Zplus2] == 1)
-                                                numOfBoundary+=1.0;
+                          if( bMem != 0 ){
+                            tInfo = searchInfoById(varInfoList,bMem->tId);
+                            if(tInfo != 0)
+                              if(tInfo->geoi->isDomain[Zplus2] == 1)
+                                numOfBoundary+=1.0;
+                          }
                         }                                            
                 } if (sInfo->geoi->bType[index].isBofZm == true) {
                         if( Z==0 || Z==Zindex-1 ){
                                 numOfBoundary+=1.0;
                         } else {
-                                if(tInfo != 0)
-                                        if(tInfo->geoi->isDomain[Zminus2] == 1)
-                                                numOfBoundary+=1.0;
+                          if( bMem != 0 ){
+                            tInfo = searchInfoById(varInfoList,bMem->tId);
+                            if(tInfo != 0)
+                              if(tInfo->geoi->isDomain[Zminus2] == 1)
+                                numOfBoundary+=1.0;
+                          }
                         }                                            
                 }
                 //calculation
