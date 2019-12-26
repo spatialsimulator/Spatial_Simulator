@@ -379,7 +379,7 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                                           variableInfo *psInfo = searchInfoById(varInfoList, bMem->tId);
                                                           if( psInfo!=0 ){//model has leaked species
 
-                                                                  psInfo->isLeaked = true;
+                                                                  psInfo->isLeaked = false; // required to consider
 
                                                           } else {//model has no leaked species
                                                             cout<< bMem->tId <<endl;
