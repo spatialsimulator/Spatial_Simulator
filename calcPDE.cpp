@@ -428,13 +428,64 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
 		Yminus2 = Z * Yindex * Xindex + (Y - 2) * Xindex + X;
 		Zplus2 = (Z + 2) * Yindex * Xindex + Y * Xindex + X;
 		Zminus2 = (Z - 2) * Yindex * Xindex + Y * Xindex + X;
+                double numOfBoundary = 0;
+                if (sInfo->geoi->bType[index].isBofXm == true) {
+                        if( index==0 || index==Xindex-1 ){
+                                numOfBoundary+=1.0;
+                        } else {
+                                if(tInfo->geoi->isDomain[Xplus2] == 1){
+                                        numOfBoundary+=1.0;
+                                }
+                        }
+                } if (sInfo->geoi->bType[index].isBofXm == true) {
+                        if( index==0 || index==Xindex-1 ){
+                                numOfBoundary+=1.0;
+                        } else {
+                                if(tInfo->geoi->isDomain[Xminus2] == 1){
+                                        numOfBoundary+=1.0;
+                                }
+                        }
+                } if (sInfo->geoi->bType[index].isBofYp == true) {
+                        if( index==0 || index==Yindex-1 ){
+                                numOfBoundary+=1.0;
+                        } else {
+                                if(tInfo->geoi->isDomain[Yplus2] == 1){
+                                        numOfBoundary+=1.0;
+                                }
+                        }
+                } if (sInfo->geoi->bType[index].isBofYm == true) {
+                        if( index==0 || index==Yindex-1 ){
+                                numOfBoundary+=1.0;
+                        } else {
+                                if(tInfo->geoi->isDomain[Yminus2] == 1){
+                                        numOfBoundary+=1.0;
+                                }
+                        }           
+                } if (sInfo->geoi->bType[index].isBofZp == true) {
+                        if( index==0 || index==Zindex-1 ){
+                                numOfBoundary+=1.0;
+                        } else {
+                                if(tInfo->geoi->isDomain[Zplus2] == 1){
+                                        numOfBoundary+=1.0;
+                                }
+                        }                                            
+                } if (sInfo->geoi->bType[index].isBofZm == true) {
+                        if( index==0 || index==Zindex-1 ){
+                                numOfBoundary+=1.0;
+                        } else {
+                                if(tInfo->geoi->isDomain[Zminus2] == 1){
+                                        numOfBoundary+=1.0;
+                                }
+                        }                                            
+                }
+                //calculation
 		if (sInfo->geoi->isDomain[index] == 1) {
 			if (m == 0) {
 				if (sInfo->diffCInfo[0] != 0) {//x-diffusion
 					if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;
-					if (sInfo->geoi->bType[index].isBofXp == false) {
+					if (sInfo->geoi->bType[index].isBofXp == false) { // not by membrane
 						sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[0]->value[dcIndex] * (val[Xplus2] - val[index]) / pow(deltaX, 2);
-					} else if( sInfo->geoi->bType[index].isBofXp == true ){
+					} else if( sInfo->geoi->bType[index].isBofXp == true ){ // membrane has boundary condition
                                                 if( sInfo->isLeaked ){
                                                        if( X != 0 && X != Xindex-1  ){
                                                                if( bMem->position[Xplus1] = 1){ //Neumann
@@ -447,9 +498,9 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
                                                        }
                                                 }
                                         }
-					if (sInfo->geoi->bType[index].isBofXm == false) {
+					if (sInfo->geoi->bType[index].isBofXm == false) { // not by membrane
 						sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[0]->value[dcIndex] * (val[Xminus2] - val[index]) / pow(deltaX, 2);
-					} else if( sInfo->geoi->bType[index].isBofXm == true ){
+					} else if( sInfo->geoi->bType[index].isBofXm == true ){//mem has boundary condition
                                                 if( sInfo->isLeaked ){
                                                        if( X != 0 && X != Xindex-1  ){
                                                                if( bMem->position[Xminus1] = 1){ //Neumann
@@ -465,9 +516,9 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
 				}                                
 				if (sInfo->diffCInfo[1] != 0) {//y-diffusion
 					if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;
-					if (sInfo->geoi->bType[index].isBofYp == false) {
+					if (sInfo->geoi->bType[index].isBofYp == false) { // not by membrane
 						sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[1]->value[dcIndex] * (val[Yplus2] - val[index]) / pow(deltaY, 2);
-					} else if( sInfo->geoi->bType[index].isBofYp == true ){
+					} else if( sInfo->geoi->bType[index].isBofYp == true ){//mem has boundary condition
                                                 if( sInfo->isLeaked ){
                                                        if( Y != 0 && Y != Yindex-1  ){
                                                                if( bMem->position[Yplus1] = 1){ //Neumann
@@ -480,9 +531,9 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
                                                        }
                                                 }
                                         }
-					if (sInfo->geoi->bType[index].isBofYm == false) {
+					if (sInfo->geoi->bType[index].isBofYm == false) { // not by membrane
 						sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[1]->value[dcIndex] * (val[Yminus2] - val[index]) / pow(deltaY, 2);
-					} else if( sInfo->geoi->bType[index].isBofYm == true ){
+					} else if( sInfo->geoi->bType[index].isBofYm == true ){//mem has boundary condition
                                                 if( sInfo->isLeaked ){
                                                        if( Y != 0 && Y != Yindex-1  ){
                                                                if( bMem->position[Yminus1] = 1){ //Neumann
@@ -498,9 +549,9 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
 				}                                
 				if (sInfo->diffCInfo[2] != 0) {//z-diffusion
 					if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;
-					if (sInfo->geoi->bType[index].isBofZp == false) {
+					if (sInfo->geoi->bType[index].isBofZp == false) { // not by membrane
 						sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[2]->value[dcIndex] * (val[Zplus2] - val[index]) / pow (deltaZ, 2);
-					} else if( sInfo->geoi->bType[index].isBofZp == true ){
+					} else if( sInfo->geoi->bType[index].isBofZp == true ){//mem has boundary condition
                                                 if( sInfo->isLeaked ){
                                                        if( Z != 0 && Z != Zindex-1  ){
                                                                if( bMem->position[Zplus1] = 1){ //Neumann
@@ -513,12 +564,12 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
                                                        }
                                                 }
                                         }
-					if (sInfo->geoi->bType[index].isBofZm == false) {
+					if (sInfo->geoi->bType[index].isBofZm == false) { // not by membrane
 						sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[2]->value[dcIndex] * (val[Zminus2] - val[index]) / pow (deltaZ, 2);
-					} else if( sInfo->geoi->bType[index].isBofZm == true ){
+					} else if( sInfo->geoi->bType[index].isBofZm == true ){//mem has boundary condition
                                                 if( sInfo->isLeaked ){
                                                        if( Z != 0 && Z != Zindex-1  ){
-                                                               if( bMem->position[Zminuss1] = 1){ //Neumann
+                                                               if( bMem->position[Zminus1] = 1){ //Neumann
                                                                        sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[0]->value[dcIndex] * ((val[index] + 2.0 * bMem->value) - val[index]) / pow(deltaZ, 2);
                                                                } else if( bMem->position[Zminus1] = 2 ){ //Dirichlet
                                                                        sInfo->delta[m * numOfVolIndexes + index] += sInfo->diffCInfo[0]->value[dcIndex] * ((-val[index] + 2.0 * bMem->value) - val[index]) / pow(deltaZ, 2);
@@ -532,18 +583,52 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
 			} else {
 				if (sInfo->diffCInfo[0] != 0) {//x-diffusion
 					if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;
-					if (sInfo->geoi->bType[index].isBofXp == false) {
+					if (sInfo->geoi->bType[index].isBofXp == false) { // not by membrane
 						sInfo->delta[m * numOfVolIndexes + index]
 						        += sInfo->diffCInfo[0]->value[dcIndex] *
 						           ((val[Xplus2] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + Xplus2])
 						            - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaX, 2);
-					}
+					} else if( sInfo->geoi->bType[index].isBofXp == true ){//mem has boundary condition
+                                                if( sInfo->isLeaked ){
+                                                       if( X != 0 && X != Xindex-1  ){
+                                                               if( bMem->position[Xplus1] = 1){ //Neumann
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                   - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaX, 2);
+                                                               } else if( bMem->position[Xplus1] = 2 ){ //Dirichlet
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((-val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                  - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaX, 2);                   } else { //Roman
+                                                                 //argument required
+                                                               }
+                                                       }
+                                                }
+                                        }
 					if (sInfo->geoi->bType[index].isBofXm == false) {
 						sInfo->delta[m * numOfVolIndexes + index]
 						        += sInfo->diffCInfo[0]->value[dcIndex] *
 						           ((val[Xminus2] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + Xminus2])
 						            - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaX, 2);
-					}
+					} else if( sInfo->geoi->bType[index].isBofXm == true ){//mem has boundary condition
+                                                if( sInfo->isLeaked ){
+                                                       if( X != 0 && X != Xindex-1  ){
+                                                               if( bMem->position[Xminus1] = 1){ //Neumann
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                   - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaX, 2);
+                                                               } else if( bMem->position[Xminus1] = 2 ){ //Dirichlet
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((-val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                  - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaX, 2);                   } else { //Roman
+                                                                 //argument required
+                                                               }
+                                                       }
+                                                }
+                                        }
 				}
 				if (sInfo->diffCInfo[1] != 0) {//y-diffusion
 					if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;
@@ -552,13 +637,47 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
 						        += sInfo->diffCInfo[1]->value[dcIndex] *
 						           ((val[Yplus2] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + Yplus2])
 						            - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaY, 2);
-					}
+					} else if( sInfo->geoi->bType[index].isBofYp == true ){//mem has boundary condition
+                                                if( sInfo->isLeaked ){
+                                                       if( Y != 0 && Y != Yindex-1  ){
+                                                               if( bMem->position[Yplus1] = 1){ //Neumann
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                   - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaY, 2);
+                                                               } else if( bMem->position[Yplus1] = 2 ){ //Dirichlet
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((-val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                  - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaY, 2);                   } else { //Roman
+                                                                 //argument required
+                                                               }
+                                                       }
+                                                }
+                                        }
 					if (sInfo->geoi->bType[index].isBofYm == false) {
 						sInfo->delta[m * numOfVolIndexes + index]
 						        += sInfo->diffCInfo[1]->value[dcIndex] *
 						           ((val[Yminus2] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + Yminus2])
 						            - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaY, 2);
-					}
+					} else if( sInfo->geoi->bType[index].isBofYm == true ){//mem has boundary condition
+                                                if( sInfo->isLeaked ){
+                                                       if( Y != 0 && Y != Yindex-1  ){
+                                                               if( bMem->position[Yminus1] = 1){ //Neumann
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                   - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaY, 2);
+                                                               } else if( bMem->position[Yminus1] = 2 ){ //Dirichlet
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((-val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                  - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaY, 2);                   } else { //Roman
+                                                                 //argument required
+                                                               }
+                                                       }
+                                                }
+                                        }
 				}
 				if (sInfo->diffCInfo[2] != 0) {//z-diffusion
 					if (sInfo->diffCInfo[0]->isUniform == false) dcIndex = index;
@@ -567,13 +686,47 @@ void calcDiffusion(variableInfo *sInfo, double deltaX, double deltaY, double del
 						        += sInfo->diffCInfo[2]->value[dcIndex] *
 						           ((val[Zplus2] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + Zplus2])
 						            - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaZ, 2);
-					}
+					} else if( sInfo->geoi->bType[index].isBofZp == true ){//mem has boundary condition
+                                                if( sInfo->isLeaked ){
+                                                       if( Z != 0 && Z != Zindex-1  ){
+                                                               if( bMem->position[Zplus1] = 1){ //Neumann
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                   - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaZ, 2);
+                                                               } else if( bMem->position[Zplus1] = 2 ){ //Dirichlet
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((-val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                  - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaZ, 2);                   } else { //Roman
+                                                                 //argument required
+                                                               }
+                                                       }
+                                                }
+                                        }
 					if (sInfo->geoi->bType[index].isBofZm == false) {
 						sInfo->delta[m * numOfVolIndexes + index]
 						        += sInfo->diffCInfo[2]->value[dcIndex] *
 						           ((val[Zminus2] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + Zminus2])
 						            - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaZ, 2);
-					}
+					} else if( sInfo->geoi->bType[index].isBofZm == true ){//mem has boundary condition
+                                                if( sInfo->isLeaked ){
+                                                       if( Z != 0 && Z != Zindex-1  ){
+                                                               if( bMem->position[Zminus1] = 1){ //Neumann
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                   - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaZ, 2);
+                                                               } else if( bMem->position[Zminus1] = 2 ){ //Dirichlet
+                                                                       sInfo->delta[m * numOfVolIndexes + index]
+                                                                               += sInfo->diffCInfo[0]->value[dcIndex] *
+                                                                                 (((-val[index] + 2.0 * bMem->value) + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])
+                                                                                  - (val[index] + rk[m] * dt * d[(m - 1) * numOfVolIndexes + index])) / pow(deltaZ, 2);                   } else { //Roman
+                                                                 //argument required
+                                                               }
+                                                       }
+                                                }
+                                        }
 				}
 			}
 		}
@@ -956,7 +1109,7 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                         }
                 }
                 // set boundary condition at membrane
-                if( sInfo->isLeaked == true ){
+/*                if( sInfo->isLeaked == true ){
                         GeometryInfo *geoInfo = sInfo->geoi; //added by Morita
                         boundaryMembrane *bMem = searchBMemInfoByAdjacentCompartment( bMemInfoList, sInfo->com->getId().c_str() ); //added by Morita
                         variableInfo *tInfo = new variableInfo; //added by Morita
@@ -1176,7 +1329,7 @@ void calcBoundary(variableInfo *sInfo, vector<variableInfo*> &varInfoList, vecto
                                   }
                         }       
                 }
-        }
+        }*/
 	//Zp, Zm
 	if (dimension >= 3) {
                 if( sInfo->boundaryInfo[Zmax] || sInfo->boundaryInfo[Zmin] ){
