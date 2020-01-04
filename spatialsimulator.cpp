@@ -1111,47 +1111,48 @@ void simulate(optionList options)
                                         //file02.open( "infiniteDiffusion_x_equal_y_t_0_1_D100.csv", std::ios::app );
                                         //std::ofstream file03;
                                         //file03.open( "check_neumann_image_edge_1_102.csv", std::ios::app );
-                                        //std::ofstream file04;
-                                        //file04.open( "check_Xito_Cytosol_48_66.csv", std::ios::app );
+                                        std::ofstream file04;
+                                        file04.open( "cmp_vcell_spatialsimulator.csv", std::ios::app );
                                         //std::ofstream file05;
                                         //file05.open( "extracellular_sum.csv", std::ios::app );
-                                        std::ofstream result_leaked;
+                                        //std::ofstream result_leaked;
                                         //result.open( "infiniteDiffusion_D100_dt_E-5_allarea.csv", std::ios::app );
                                         //std::ofstream line;
                                         //line.open( "check_diffusion_line_D1000_dt_E-4.csv", std::ios::app );
-                                        result_leaked.open( "check_Leaked_species.csv", std::ios::app );
+                                        //result_leaked.open( "check_Leaked_species.csv", std::ios::app );
                                         //--------------------------------------------//
 
 	for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
 
-          
+          if( t%100 == 0 )
+            file04 << t*dt << std::endl;
           //### record csv all pixels ###//
-          variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(1)->getId().c_str());
+          //variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(1)->getId().c_str());
           //cout << los->get(1)->getId() << endl;
           //cout << t*dt << endl;
           //cout << endl;
           
-          int aaa,bbb,ccc;
-          if( t%500 == 0 ){
-            result_leaked << t*dt;
+          //int aaa,bbb,ccc;
+          //if( t%500 == 0 ){
+          //  result_leaked << t*dt;
             //result << t*dt; 
-            for( aaa=0; aaa<Zdiv; aaa++ ){
-              for( bbb=0; bbb<Ydiv; bbb++ ){
-                for( ccc=0; ccc<Xdiv; ccc++ ){
-                  if(sInfoResult->value[(2*bbb)*Xindex + (2*ccc)] > 0)
-                    result_leaked << "," << sInfoResult->value[(2*bbb)*Xindex + (2*ccc)];
+            //for( aaa=0; aaa<Zdiv; aaa++ ){
+              //    for( bbb=0; bbb<Ydiv; bbb++ ){
+          //for( ccc=0; ccc<Xdiv; ccc++ ){
+                  //if(sInfoResult->value[(2*bbb)*Xindex + (2*ccc)] > 0)
+                  //result_leaked << ","; //<< sInfoResult->value[(2*bbb)*Xindex + (2*ccc)];
                   //if( bbb == ccc ){
                     //cout << bbb << endl;
                     //cout << ccc << endl;
                     //result << bbb+1 << "," << sInfoResult->value[ (2*aaa)*Yindex*Xindex + (2*bbb)*Xindex + (2*ccc) ] ;
                     //result <<  "," << sInfoResult->value[ (2*aaa)*Yindex*Xindex + (2*bbb)*Xindex + (2*ccc) ] ;
                     //}                    
-                }
-              }
-            }
-            result_leaked << endl;
+          //}
+          //}
+          //}
+        //result_leaked << endl;
             //result << endl;
-          }
+            //}
           //### finish ###//
 
 
@@ -1211,7 +1212,7 @@ void simulate(optionList options)
 				diff_start = clock();
 				//volume diffusion
 				if (sInfo->diffCInfo != 0 && sInfo->geoi->isVol) {                                        
-                                  calcDiffusion(sInfo, varInfoList, bMemInfoList, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, m, dt);
+                                        calcDiffusion(sInfo, varInfoList, bMemInfoList, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, m, dt);
 				}
 				//membane diffusion
 				if (sInfo->diffCInfo != 0 && !sInfo->geoi->isVol) {
@@ -1284,17 +1285,28 @@ void simulate(optionList options)
 					X = index - Z * Xindex * Yindex - Y * Xindex;
 					//int divIndex = (Z / 2) * Ydiv * Xdiv + (Y / 2) * Xdiv + (X / 2);
 
+                                        /*cout << sInfo->geoi->domainIndex.size() << endl;
+                                        for( int size = 0; size < sInfo->geoi->domainIndex.size(); size++ ){
+                                          index = sInfo->geoi->domainIndex[size];
+                                          Y = (index - Z * Xindex * Yindex) / Xindex;
+                                          X = index - Z * Xindex * Yindex - Y * Xindex;
+                                          cout << "(" << X/2 << "," << Y/2 << ")" << ",";
+                                        } exit(1);*/
+                                        
                                         //***write file***//
                                         // A_Nuc sInfo->geoi->domainIndexes.size() = 1113
-                                        // B = 5184
-
-                                        if( X/2 == 104 && Y/2 == 104 ){
+                                        // B = 5184                                        
+                                        if( sInfo->value[index] > 0 ){
+                                          if( t%100 == 0 ){
+                                            file04 << "[" << X/2 << "," << Y/2 << "]" << "," << sInfo->value[index] << std::endl;
+                                          }
+                                        }
+                                        if( X/2 == 102 && Y/2 == 99 ){
                                           //cout << "X: " << X << endl;
                                           //cout << "Y: " << Y << endl;
                                           //cout << "Z: " << Z << endl;
                                           //cout << "index: " << index << endl;
                                           //return;
-                                          //file01 << t*dt << "," << sInfo->value[index] << std::endl;
                                           //cout << s->getId() << endl;
                                           //cout << "Xdiv:60 Ydiv:74 DomainType is " << geoInfoList[0]->compartmentId << " isDomain is " << geoInfoList[0]->isDomain[ Y*Xindex + X ] << endl;
                                           //cout << "membrane Xdiv:60 Ydiv:74 DomainType is " << geoInfoList[4]->compartmentId << " isDomain is " << geoInfoList[4]->isDomain[ Y*Xindex + (X-1) ] << endl;
@@ -1419,8 +1431,8 @@ void simulate(optionList options)
                                         //file02.close();
                                         //file03.close();
                                         //file04.close();
-                                        //file05.close();
-                                        result_leaked.close();
+                                        file04.close();
+                                        //result_leaked.close();
                                         //line.close();
                                         //-----------//
         
