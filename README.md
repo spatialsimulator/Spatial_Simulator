@@ -28,7 +28,7 @@ By using this program, users may simulate their spatially extended SBML models.
 |-x | Mesh size for x dimension (only for analytic geometry)|
 |-y | Mesh size for y dimension (only for analytic geometry)|
 |-z | Mesh size for z dimension (only for analytic geometry)|
-|-m | (option) delta size between Meshes|
+|-m | delta size between Meshes|
 |-t | End time|
 |-d | Step size|
 |-o | Number of steps per output|
