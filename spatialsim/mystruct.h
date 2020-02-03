@@ -159,6 +159,7 @@ typedef struct _optionList{
   double end_time;
   double dt;
   int out_step;
+  int isOutCSV;
   double out_csv;
   double range_max;
   double range_min;

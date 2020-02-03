@@ -143,7 +143,7 @@ void simulate(optionList options)
 	double end_time = options.end_time;
 	double dt = options.dt;
 	int out_step = options.out_step;
-        double out_csv = options.out_csv;
+        double out_time_csv = options.out_csv;
 	int slice = options.slice;
 	char slicedim = options.slicedim;
 	bool sliceFlag = (options.sliceFlag != 0);
@@ -1153,29 +1153,31 @@ void simulate(optionList options)
 
 	for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
 
-                if( out_csv != 0 ){ //output text file at assigned time
-                  cout << out_csv << endl;
-                  if( out_csv == (t * dt) ){
-                    for( unsigned int sss = 0; sss < model->getNumSpecies(); sss++){
+                  if( out_time_csv == (t * dt) ){ //output text file at assigned time
+                    if( options.isOutCSV == true ){
 
-                      variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(sss)->getId().c_str());
-                      std::ofstream outCSV;
-
-                      outCSV.open( "amount_" + std::string(sInfoResult->id) + "_t_" + to_string(out_csv) + ".txt" );
-                      outCSV << "result: " << std::string(sInfoResult->id) << "t = " << to_string(out_csv) << endl;
-
-                      for( unsigned int xyz = 0; xyz < numOfVolIndexes; xyz++ ){
-                        if( xyz == 0){
-                          outCSV << sInfoResult->value[xyz];
-                        } else {
-                          outCSV << " " << sInfoResult->value[xyz];
-                        }
+                      for( unsigned int sss = 0; sss < model->getNumSpecies(); sss++){
+                        
+                        variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(sss)->getId().c_str());
+                        std::ofstream outCSV;
+                        std::string outfname = std::string(sInfoResult->id) + "_amount_" +  "t_" + to_string(out_time_csv) + ".txt";
+                        outCSV.open( outfname );
+                        outCSV << "result: " << std::string(sInfoResult->id) << "t = " << to_string(out_time_csv) << endl;
+                        
+                        for( unsigned int i = 0; i < numOfVolIndexes; i++ ){
+                          if( i == 0){
+                            outCSV << sInfoResult->value[i];
+                          } else {
+                            outCSV << " " << sInfoResult->value[i];
+                          }
                       } outCSV << endl;
-                      
-                      outCSV.close();
+                        
+                        outCSV.close();
+                        cout << endl;
+                        cout << "output Text file: " << outfname << endl << endl;
+                      }
                     }
                   }
-                }
           
           //if( t%100 == 0 )
             //  file04 << t*dt << std::endl;

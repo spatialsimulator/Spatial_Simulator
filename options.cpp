@@ -51,6 +51,7 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .end_time = 1.0,
     .dt = 0.01,
     .out_step = 1,
+    .isOutCSV = 0,
     .out_csv = 0.0,
     .range_max = -DBL_MAX,
     .range_min = 0.0,
@@ -115,7 +116,8 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
           if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
-        options.out_csv = atoi(optarg);        
+        options.isOutCSV = true;
+        options.out_csv = atof(optarg);        
         break;
       case 'C':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
