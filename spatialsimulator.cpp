@@ -81,6 +81,7 @@ void simulate(optionList options)
 	int X = 0, Y = 0, Z = 0, t = 0, count = 0, file_num = 0, percent = 0, index = 0;
 	double *sim_time = new double(0.0);
 	double deltaX = 0.0, deltaY = 0.0, deltaZ = 0.0;
+        double mesh = 0.0;
 	double Xsize = 0.0, Ysize = 0.0, Zsize = 0.0;
 	unsigned int numOfASTNodes = 0;
 	char *xaxis = 0, *yaxis = 0, *zaxis = 0;
@@ -135,13 +136,8 @@ void simulate(optionList options)
 	int Xdiv = options.Xdiv;
 	int Ydiv = options.Ydiv;
 	int Zdiv = options.Zdiv;
-        if( options.deltaX != 0 ){
-          deltaX = options.deltaX;
-        } else if( options.deltaY != 0 ){
-          deltaY = options.deltaY;
-        } else if( options.deltaZ != 0 ){
-          deltaZ = options.deltaZ;
-        }
+        if( options.mesh_size != 0 )
+          mesh = options.mesh_size;
 	double range_max = options.range_max;
 	double range_min = options.range_min;
 	double end_time = options.end_time;
@@ -219,7 +215,30 @@ void simulate(optionList options)
 	//species
 	setSpeciesInfo(model, varInfoList, volDimension, memDimension, Xindex, Yindex, Zindex);
 	//parameter
-	setParameterInfo(model, varInfoList, bMemInfoList, Xdiv, Ydiv, Zdiv, Xsize, Ysize, Zsize, deltaX, deltaY, deltaZ, xaxis, yaxis, zaxis);
+	setParameterInfo(model, varInfoList, bMemInfoList, Xdiv, Ydiv, Zdiv, Xsize, Ysize, Zsize, deltaX, deltaY, deltaZ, xaxis, yaxis, zaxis, mesh);
+
+        if( mesh != 0 ){
+          if( dimension >= 1 ){
+            deltaX = mesh;
+            cout << "deltaX: " << deltaX << endl;
+          }
+          if( dimension >= 2 ){
+            deltaY = mesh;
+            cout << "deltaY: " << deltaY << endl;
+          }
+          if( dimension >= 3 ){
+            deltaZ = mesh;
+            cout << "deltaZ: " << deltaZ << endl;
+          }
+        } else {
+          if( dimension >= 1 )
+            cout << "deltaX: " << deltaX << endl;
+          if( dimension >= 2 )
+            cout << "deltaY: " << deltaY << endl;
+          if( dimension >= 3 )
+            cout << "deltaZ: " << deltaZ << endl;
+        } cout << endl;
+        
 	//time
 	variableInfo *t_info = new variableInfo;
 	InitializeVarInfo(t_info);
@@ -963,6 +982,7 @@ void simulate(optionList options)
 			notOrderedInfo.push_back(info);
 		}
 	}
+
 	//dependency of symbols
 	unsigned int resolved_count = 0;
 	vector<variableInfo*> orderedARule;
@@ -1121,8 +1141,7 @@ void simulate(optionList options)
                                         //file03.open( fname + "_" +  sInfoResult->id + "_115_93_" + to_string(dt) + "_D" + to_string(model->getParameter(1)->getValue()) + "_average04_" + ".csv", std::ios::app );          
                                         //std::ofstream file04;
                                         //file04.open( fname + "_" +  sInfoResult->id + "_137_25_" + to_string(dt) + "_D" + to_string(model->getParameter(1)->getValue()) + /*"_deltaX_" + to_string(deltaX) +*/ ".csv", std::ios::app );
-                                        //deltaX = 0.15;
-                                        //deltaY = 0.15;
+
 //                                        std::ofstream file05;
 //                                        file05.open( fname + "_" +  sInfoResult->id + "_0_7_" + to_string(dt) + "_D" + to_string(model->getParameter(1)->getValue()) + "deltaX_" + to_string(deltaX) + ".csv", std::ios::app );          
                                         //std::ofstream result_leaked;
@@ -1149,7 +1168,7 @@ void simulate(optionList options)
                         if( xyz == 0){
                           outCSV << sInfoResult->value[xyz];
                         } else {
-                          outCSV << " " << std::string(sInfoResult->value[xyz]);
+                          outCSV << " " << sInfoResult->value[xyz];
                         }
                       } outCSV << endl;
                       

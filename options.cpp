@@ -20,7 +20,7 @@ void printErrorMessage(char *str)
   cout << "                 (ex. -y 200 [default:100])" << endl;
   cout << " -z #(int)     : the number of points at z coordinate (for analytic geometry only)" << endl;
   cout << "                 (ex. -z 200 [default:100])" << endl;
-  cout << " -m char#(double) : [option] mesh value between {x,y,z} coordinate (ex. -m x0.15)" << endl;
+  cout << " -m #(double)  : [option] mesh size between {x,y,z} coordinate (ex. -m 0.15)" << endl;
   cout << " -t #(double)  : simulation time (ex. -t 10 [default:1.0])" << endl;
   cout << " -d #(double)  : delta t (ex. -d 0.1 [default:0.01])" << endl;
   cout << " -o #(int)     : output results every # steps (ex. -o 10 [default:1])" << endl;
@@ -47,9 +47,7 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .Xdiv = 100,
     .Ydiv = 100,
     .Zdiv = 100,
-    .deltaX = 0.0,
-    .deltaY = 0.0,
-    .deltaZ = 0.0,
+    .mesh_size = 0.0,
     .end_time = 1.0,
     .dt = 0.01,
     .out_step = 1,
@@ -90,21 +88,10 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
         options.Zdiv = atoi(optarg) + 1;
         break;
       case 'm':
-        printf("hoge\n");
-        if (optarg[0] != 'x' && optarg[0] != 'y' && optarg[0] != 'z') printErrorMessage(myname);
-        printf("hogehoge\n");
-        for (unsigned int i = 1; i < string(optarg).size(); i++) {
+        for (unsigned int i = 0; i < string(optarg).size(); i++) {
           if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
-        if( optarg[0] == 'x' ){
-          options.deltaX = atoi(optarg + 1) * 2;
-        }
-        else if( optarg[0] == 'y' ){
-          options.deltaY = atoi(optarg + 1) * 2;
-        }
-        else if( optarg[0] == 'z' ){
-          options.deltaZ = atoi(optarg + 1) * 2;
-        }
+        options.mesh_size = atof(optarg);
         break;
       case 't':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {

@@ -155,9 +155,7 @@ typedef struct _optionList{
   int Xdiv;
   int Ydiv;
   int Zdiv;
-  double deltaX;
-  double deltaY;
-  double deltaZ;
+  double mesh_size;
   double end_time;
   double dt;
   int out_step;

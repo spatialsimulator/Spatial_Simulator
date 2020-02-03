@@ -153,7 +153,7 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 	}
 }
 
-void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<boundaryMembrane*> &bMemInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
+void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<boundaryMembrane*> &bMemInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis, double mesh)
 {
 	SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin("spatial"));
 	Geometry *geometry = spPlugin->getGeometry();
@@ -375,7 +375,7 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                   double min = cc->getBoundaryMin()->getValue();
                                   double max = cc->getBoundaryMax()->getValue();
                                   if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
-                                    if( deltaX == 0 ){
+                                    //if( mesh == 0 ){
                                       info->value = new double[numOfVolIndexes];
                                       fill_n(info->value, numOfVolIndexes, 0);
                                       xaxis = const_cast<char*>(p->getId().c_str());
@@ -389,10 +389,9 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                           }
                                         }
                                       }
-                                    }
-                                    cout << "deltaX: " << deltaX << endl;
+                                      //}
                                   } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
-                                    if( deltaY == 0 ){
+                                    //if( mesh == 0 ){
                                       info->value = new double[numOfVolIndexes];
                                       fill_n(info->value, numOfVolIndexes, 0);
                                       yaxis = const_cast<char*>(p->getId().c_str());
@@ -406,10 +405,9 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                           }
                                         }
                                       }
-                                    }
-                                    cout << "deltaY: " << deltaY << endl;
+                                      //}
                                   } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
-                                    if( deltaZ == 0 ){
+                                    //if( mesh == 0 ){
                                       info->value = new double[numOfVolIndexes];
                                       fill_n(info->value, numOfVolIndexes, 0);
                                       zaxis = const_cast<char*>(p->getId().c_str());
@@ -423,10 +421,9 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                           }
                                         }
                                       }
-                                    }
-                                    cout << "deltaZ: " << deltaZ << endl;
+                                      //}
                                   }
-                                  cout << endl;
+                                  //cout << endl;
                                 }
 			}
                           break;
