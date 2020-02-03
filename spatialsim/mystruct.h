@@ -155,9 +155,13 @@ typedef struct _optionList{
   int Xdiv;
   int Ydiv;
   int Zdiv;
+  double deltaX;
+  double deltaY;
+  double deltaZ;
   double end_time;
   double dt;
   int out_step;
+  double out_csv;
   double range_max;
   double range_min;
   int sliceFlag;

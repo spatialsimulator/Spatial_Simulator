@@ -20,9 +20,11 @@ void printErrorMessage(char *str)
   cout << "                 (ex. -y 200 [default:100])" << endl;
   cout << " -z #(int)     : the number of points at z coordinate (for analytic geometry only)" << endl;
   cout << "                 (ex. -z 200 [default:100])" << endl;
+  cout << " -m char#(double) : [option] mesh value between {x,y,z} coordinate (ex. -m x0.15)" << endl;
   cout << " -t #(double)  : simulation time (ex. -t 10 [default:1.0])" << endl;
   cout << " -d #(double)  : delta t (ex. -d 0.1 [default:0.01])" << endl;
   cout << " -o #(int)     : output results every # steps (ex. -o 10 [default:1])" << endl;
+  cout << " -l #(double)  : [option] output species' amount / concentration at assigned time (ex. -l 0.5)" << endl;
   cout << " -c #(double)  : min of color bar range (ex. -c 1 [default:0.0])" << endl;
   cout << " -C #(double)  : max of color bar range (ex. -C 10)" << endl;
   cout << "                 [default:Max value of InitialConcentration or InitialAmount]" << endl;
@@ -45,9 +47,13 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
     .Xdiv = 100,
     .Ydiv = 100,
     .Zdiv = 100,
+    .deltaX = 0.0,
+    .deltaY = 0.0,
+    .deltaZ = 0.0,
     .end_time = 1.0,
     .dt = 0.01,
     .out_step = 1,
+    .out_csv = 0.0,
     .range_max = -DBL_MAX,
     .range_min = 0.0,
     .sliceFlag = 0,
@@ -60,7 +66,7 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
   };
   char *myname = argv[0];
   int opt_result;
-  while ((opt_result = getopt(argc, argv, "x:y:z:t:d:o:c:C:s:O:h")) != -1) {
+  while ((opt_result = getopt(argc, argv, "x:y:z:m:t:d:o:l:c:C:s:O:h")) != -1) {
     switch(opt_result) {
       case 'h':
         printErrorMessage(myname);
@@ -83,6 +89,23 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
         }
         options.Zdiv = atoi(optarg) + 1;
         break;
+      case 'm':
+        printf("hoge\n");
+        if (optarg[0] != 'x' && optarg[0] != 'y' && optarg[0] != 'z') printErrorMessage(myname);
+        printf("hogehoge\n");
+        for (unsigned int i = 1; i < string(optarg).size(); i++) {
+          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
+        }
+        if( optarg[0] == 'x' ){
+          options.deltaX = atoi(optarg + 1) * 2;
+        }
+        else if( optarg[0] == 'y' ){
+          options.deltaY = atoi(optarg + 1) * 2;
+        }
+        else if( optarg[0] == 'z' ){
+          options.deltaZ = atoi(optarg + 1) * 2;
+        }
+        break;
       case 't':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {
           if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
@@ -100,6 +123,12 @@ optionList getOptionList(int argc, char **argv, SBMLDocument *doc){
           if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
         }
         options.out_step = atoi(optarg);
+        break;
+      case 'l':
+        for (unsigned int i = 0; i < string(optarg).size(); i++) {
+          if (!isdigit(optarg[i]) && optarg[i] != '.') printErrorMessage(myname);
+        }
+        options.out_csv = atoi(optarg);        
         break;
       case 'C':
         for (unsigned int i = 0; i < string(optarg).size(); i++) {

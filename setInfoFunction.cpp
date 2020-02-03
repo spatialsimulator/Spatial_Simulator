@@ -3,6 +3,7 @@
 #include "spatialsim/initializeFunction.h"
 #include "spatialsim/searchFunction.h"
 #include "spatialsim/astFunction.h"
+#include "spatialsim/options.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
@@ -77,64 +78,24 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
                                  fill_n(info->value, numOfVolIndexes, 0);
                                  info->delta = new double[4 * numOfVolIndexes];
                                  fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
-                                 //converted into sparse matrix 　　        
+                                 //converted into sparse matrix
+                                 double sum = 0;
                                  for( Z = 0; Z < Zdiv; Z++ ){
                                          for( Y = 0; Y < Ydiv; Y++ ){
                                                  for( X = 0; X < Xdiv; X++ ){
                                                          info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
-                                                         if( samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] > 0 ){
-                                                           printf("X:%d Y:%d value:%d\n",X,Y,samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ]);
-                                                           //info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = 0;
-                                                         }
-                                                         
-                                                         //if( X==100 && Y==100 )
-                                                         //info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = 255;
-                                                           
+                                                         sum += samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
+                                                         /*if( samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] > 0 ){
+                                                           cout << endl;
+                                                           cout << "X:" +to_string(X)+ " Y:" +to_string(Y)+ " Z:"+to_string(Z)+ " value:"; //<- Check Intensity
+                                                           cout << samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] << endl;
+                                                           cout << endl;
+                                                         }*/
                                                  }
                                          }
                                  }
                                  delete[] samples;
-/*
-                                 //check info->value
-                                 //write file
-                                 std::ofstream file01;
-                                 file01.open( "check_circle_neumann_101_101.csv", std::ios::out );
-                                 std::ofstream file02;
-                                 file02.open( "check_circle_neumann_102_101.csv", std::ios::out );
-                                 std::ofstream file03;
-                                 file03.open( "check_circle_neumann_101_104.csv", std::ios::out );
-                                 std::ofstream file04;
-                                 file04.open( "check_circle_neumann_97_105.csv", std::ios::out );
-                                 std::ofstream file05;
-                                 file05.open( "neumann_sum.csv", std::ios::out );
-
-                                 for (Z = 0; Z < Zdiv; Z++) {
-                                   for (Y = 0; Y < Ydiv; Y++) {
-                                     for (X = 0; X < Xdiv; X++) {
-                                       if( X==101 && Y==99 ){
-                                         printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
-                                         file01 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
-                                       } else if( X==102 && Y==99 ){
-                                         printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
-                                         file02 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
-                                       } else if( X==101 && Y==102 ){
-                                         printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
-                                         file03 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
-                                       } else if( X==97 && Y==103 ){
-                                         printf( "[%d*%d] %lf \n",X,Y,info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] );
-                                         file04 << 0 << "," << info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] << std::endl;
-                                       }
-                                     }
-                                   }
-                                 }
-                                 file05 << 0 << "," << info->value[ (2*1) * Yindex * Xindex + (2*99) * Xindex + (2*101) ] << std::endl;
-                                         
-                                 file01.close();
-                                 file02.close();
-                                 file03.close();
-                                 file04.close();
-                                 file05.close();
-*/                                 
+                                 
                         }
                         //Species have Uniform Concentration at a Compartment
                         else if( model->getInitialAssignment(s->getId()) == 0 ){
@@ -414,48 +375,58 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std
                                   double min = cc->getBoundaryMin()->getValue();
                                   double max = cc->getBoundaryMax()->getValue();
                                   if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
-                                    info->value = new double[numOfVolIndexes];
-                                    fill_n(info->value, numOfVolIndexes, 0);
-                                    xaxis = const_cast<char*>(p->getId().c_str());
-                                    Xsize = max - min;
-                                    deltaX = (max - min) / (Xdiv - 1);
-                                    info->isResolved = true;
-                                    for (Z = 0; Z < Zindex; Z++) {
-                                      for (Y = 0; Y < Yindex; Y++) {
-                                        for (X = 0; X < Xindex; X++) {
-                                          info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(X) * deltaX / 2.0;
+                                    if( deltaX == 0 ){
+                                      info->value = new double[numOfVolIndexes];
+                                      fill_n(info->value, numOfVolIndexes, 0);
+                                      xaxis = const_cast<char*>(p->getId().c_str());
+                                      Xsize = max - min;
+                                      deltaX = (max - min) / (Xdiv - 1);
+                                      info->isResolved = true;
+                                      for (Z = 0; Z < Zindex; Z++) {
+                                        for (Y = 0; Y < Yindex; Y++) {
+                                          for (X = 0; X < Xindex; X++) {
+                                            info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(X) * deltaX / 2.0;
+                                          }
                                         }
                                       }
                                     }
+                                    cout << "deltaX: " << deltaX << endl;
                                   } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
-                                    info->value = new double[numOfVolIndexes];
-                                    fill_n(info->value, numOfVolIndexes, 0);
-                                    yaxis = const_cast<char*>(p->getId().c_str());
-                                    Ysize = max - min;
-                                    deltaY = (max - min) / (Ydiv - 1);
-                                    info->isResolved = true;
-                                    for (Z = 0; Z < Zindex; Z++) {
-                                      for (Y = 0; Y < Yindex; Y++) {
-                                        for (X = 0; X < Xindex; X++) {
-                                          info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Y) * deltaY / 2.0;
+                                    if( deltaY == 0 ){
+                                      info->value = new double[numOfVolIndexes];
+                                      fill_n(info->value, numOfVolIndexes, 0);
+                                      yaxis = const_cast<char*>(p->getId().c_str());
+                                      Ysize = max - min;
+                                      deltaY = (max - min) / (Ydiv - 1);
+                                      info->isResolved = true;
+                                      for (Z = 0; Z < Zindex; Z++) {
+                                        for (Y = 0; Y < Yindex; Y++) {
+                                          for (X = 0; X < Xindex; X++) {
+                                            info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Y) * deltaY / 2.0;
+                                          }
                                         }
                                       }
                                     }
+                                    cout << "deltaY: " << deltaY << endl;
                                   } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
-                                    info->value = new double[numOfVolIndexes];
-                                    fill_n(info->value, numOfVolIndexes, 0);
-                                    zaxis = const_cast<char*>(p->getId().c_str());
-                                    Zsize = max - min;
-                                    deltaZ = (max - min) / (Zdiv - 1);
-                                    info->isResolved = true;
-                                    for (Z = 0; Z < Zindex; Z++) {
-                                      for (Y = 0; Y < Yindex; Y++) {
-                                        for (X = 0; X < Xindex; X++) {
-                                          info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Z) * deltaZ / 2.0;
+                                    if( deltaZ == 0 ){
+                                      info->value = new double[numOfVolIndexes];
+                                      fill_n(info->value, numOfVolIndexes, 0);
+                                      zaxis = const_cast<char*>(p->getId().c_str());
+                                      Zsize = max - min;
+                                      deltaZ = (max - min) / (Zdiv - 1);
+                                      info->isResolved = true;
+                                      for (Z = 0; Z < Zindex; Z++) {
+                                        for (Y = 0; Y < Yindex; Y++) {
+                                          for (X = 0; X < Xindex; X++) {
+                                            info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Z) * deltaZ / 2.0;
+                                          }
                                         }
                                       }
                                     }
+                                    cout << "deltaZ: " << deltaZ << endl;
                                   }
+                                  cout << endl;
                                 }
 			}
                           break;
