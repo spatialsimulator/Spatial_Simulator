@@ -85,12 +85,12 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
                                                  for( X = 0; X < Xdiv; X++ ){
                                                          info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
                                                          sum += samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
-                                                         /*if( samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] > 0 ){
+                                                         if( samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] > 0 ){
                                                            cout << endl;
                                                            cout << "X:" +to_string(X)+ " Y:" +to_string(Y)+ " Z:"+to_string(Z)+ " value:"; //<- Check Intensity
                                                            cout << samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] << endl;
                                                            cout << endl;
-                                                         }*/
+                                                         }
                                                  }
                                          }
                                  }

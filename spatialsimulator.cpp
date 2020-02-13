@@ -20,6 +20,7 @@
 #include "spatialsim/options.h"
 #include "spatialsim/outputHDF.h"
 #include "spatialsim/outputImage.h"
+#include "spatialsim/cerealize.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
@@ -33,6 +34,7 @@
 #include <zlib.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <csignal>
 
 LIBSBML_CPP_NAMESPACE_USE
 using namespace H5;
@@ -1133,8 +1135,8 @@ void simulate(optionList options)
                                         /***--- write CSV added by Morita ---***/
                                         //deltaX = 0.15;
                                         //deltaY = 0.15;
-                                        //std::ofstream file01;
-                                        //file01.open( fname + "_" +  sInfoResult->id + "_65_69_" + to_string(dt) + "_D" + to_string(model->getParameter(1)->getValue()) + "_distance_to_speed" + ".csv", std::ios::app );
+                                        std::ofstream file01;
+                                        file01.open( "heat_diffusion_y101.csv", std::ios::app );
                                         //std::ofstream file02;
                                         //file02.open( fname + "_" +  sInfoResult->id + "_82_96_" + to_string(dt) + "_D" + to_string(model->getParameter(1)->getValue()) + "_distance_to_speed" + ".csv", std::ios::app );
                                         //std::ofstream file03;          
@@ -1188,9 +1190,21 @@ void simulate(optionList options)
           //cout << t*dt << endl;
           //cout << endl;
           
-          //int aaa = 0;
           //int bbb,ccc;
-          //if( t*dt == 0.1 ){
+
+                  //*** deleted later ***//
+                  variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(0)->getId().c_str());
+                  sInfoResult->value[2*101*Xindex+2*101] = 1;// always source exists
+                  file01 << t * dt;
+                  for(unsigned int i = 0; i < numOfVolIndexes; i++){
+                    Y = i / Xindex;
+                    X = i - Y * Xindex;
+                    if( Y == 2*101 ){
+                      file01 << "," << sInfoResult->value[i];
+                    }
+                  } file01 << endl;
+                  //*** deleted later ***//
+
             //file01 << t*dt;
             //result << t*dt; 
             //for( aaa=0; aaa<result_geoi->domainIndex.size(); aaa++ ){
@@ -1223,7 +1237,7 @@ void simulate(optionList options)
 		*sim_time = t * dt;
 		//output
 		out_start = clock();
-		if (count % out_step == 0) {
+/*		if (count % out_step == 0) {
 			if (dimension == 2) {
         outputImg(model, varInfoList, geo_edge, Xdiv, Ydiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize, *sim_time, range_min, range_max, fname, file_num, outpath, num_digits);
        }
@@ -1244,7 +1258,7 @@ void simulate(optionList options)
       }
       outputValueData(varInfoList, los, Xdiv, Ydiv, Zdiv, dimension, file_num, fname, outpath);
 			file_num++;
-		}
+		}*/
 		out_end = clock();
 		output_time += out_end - out_start;
 		count++;
@@ -1271,6 +1285,7 @@ void simulate(optionList options)
 				diff_start = clock();
 				//volume diffusion
 				if (sInfo->diffCInfo != 0 && sInfo->geoi->isVol) {
+
                                         calcDiffusion(sInfo, varInfoList, bMemInfoList, deltaX, deltaY, deltaZ, Xindex, Yindex, Zindex, m, dt);
 				}
 				//membane diffusion
@@ -1506,6 +1521,9 @@ void simulate(optionList options)
   cout << "assign_time: "<< (assign_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
   cout << "output_time: "<< (output_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
 
+  //### DUMP ###//
+  std::signal(SIGINT, cerealize);
+  
   //free
   delete[] geo_edge;//mashimo
 //for (i = 0; i < freeConstList.size(); i++) {
