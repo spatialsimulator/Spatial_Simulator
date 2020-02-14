@@ -3,6 +3,6 @@
 
 #include "mystruct.h"
 
-void cerealize();
+void cerealize(int signal);
 
 #endif

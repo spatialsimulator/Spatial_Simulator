@@ -1123,6 +1123,9 @@ void simulate(optionList options)
   }
   outputGeo3dImage(geoInfoList, Xdiv, Ydiv, Zdiv, fname, outpath);
 	cout << "finished" << endl << endl;
+        
+        //### DUMP ###//
+        std::signal(SIGINT, cerealize);
 
 	//simulation
 	cout << "simulation starts" << endl;
@@ -1521,9 +1524,6 @@ void simulate(optionList options)
   cout << "assign_time: "<< (assign_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
   cout << "output_time: "<< (output_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
 
-  //### DUMP ###//
-  std::signal(SIGINT, cerealize);
-  
   //free
   delete[] geo_edge;//mashimo
 //for (i = 0; i < freeConstList.size(); i++) {
