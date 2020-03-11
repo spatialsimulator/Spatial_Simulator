@@ -24,7 +24,7 @@ void printErrorMessage(char *str)
   cout << " -t #(double)  : simulation time (ex. -t 10 [default:1.0])" << endl;
   cout << " -d #(double)  : delta t (ex. -d 0.1 [default:0.01])" << endl;
   cout << " -o #(int)     : output results every # steps (ex. -o 10 [default:1])" << endl;
-  cout << " -l #(double)  : [option] output species' amount / concentration at assigned time (ex. -l 0.5)" << endl;
+  //cout << " -l #(double)  : [option] output species' amount / concentration at assigned time (ex. -l 0.5)" << endl;
   cout << " -c #(double)  : min of color bar range (ex. -c 1 [default:0.0])" << endl;
   cout << " -C #(double)  : max of color bar range (ex. -C 10)" << endl;
   cout << "                 [default:Max value of InitialConcentration or InitialAmount]" << endl;

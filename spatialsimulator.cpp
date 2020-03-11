@@ -1,4 +1,5 @@
-//============================================================================
+
+1;95;0c//============================================================================
 // Name        : SBMLSimulator.cpp
 // Author      :
 // Version     :
@@ -20,7 +21,7 @@
 #include "spatialsim/options.h"
 #include "spatialsim/outputHDF.h"
 #include "spatialsim/outputImage.h"
-#include "spatialsim/cerealize.h"
+//#include "spatialsim/cerealize.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
@@ -149,7 +150,8 @@ void simulate(optionList options)
 	int slice = options.slice;
 	char slicedim = options.slicedim;
 	bool sliceFlag = (options.sliceFlag != 0);
-  string outpath(options.outpath);
+        string outpath(options.outpath);
+        double pixelWidth = options.mesh_size;// added by morita
 	//div
 	if (dimension <= 1) {
 		Ydiv = 1;
@@ -218,27 +220,27 @@ void simulate(optionList options)
 	setSpeciesInfo(model, varInfoList, volDimension, memDimension, Xindex, Yindex, Zindex);
 	//parameter
 	setParameterInfo(model, varInfoList, bMemInfoList, Xdiv, Ydiv, Zdiv, Xsize, Ysize, Zsize, deltaX, deltaY, deltaZ, xaxis, yaxis, zaxis, mesh);
-
-        if( mesh != 0 ){
+        //pixel width
+        if( options.mesh_size == 0 ){ // added by morita
           if( dimension >= 1 ){
             deltaX = mesh;
-            cout << "deltaX: " << deltaX << endl;
+            cout << "default deltaX: " << deltaX << endl;
           }
           if( dimension >= 2 ){
             deltaY = mesh;
-            cout << "deltaY: " << deltaY << endl;
+            cout << "default deltaY: " << deltaY << endl;
           }
           if( dimension >= 3 ){
             deltaZ = mesh;
-            cout << "deltaZ: " << deltaZ << endl;
+            cout << "default deltaZ: " << deltaZ << endl;
           }
-        } else {
+        } else if( options.mesh_size != 0 ) {
           if( dimension >= 1 )
-            cout << "deltaX: " << deltaX << endl;
+            cout << "assigned deltaX: " << deltaX << endl;
           if( dimension >= 2 )
-            cout << "deltaY: " << deltaY << endl;
+            cout << "assigned deltaY: " << deltaY << endl;
           if( dimension >= 3 )
-            cout << "deltaZ: " << deltaZ << endl;
+            cout << "assigned deltaZ: " << deltaZ << endl;
         } cout << endl;
         
 	//time
@@ -1125,7 +1127,7 @@ void simulate(optionList options)
 	cout << "finished" << endl << endl;
         
         //### DUMP ###//
-        std::signal(SIGINT, cerealize);
+        //std::signal(SIGINT, cerealize);
 
 	//simulation
 	cout << "simulation starts" << endl;
