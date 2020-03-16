@@ -71,7 +71,7 @@
     <listOfUnitDefinitions>
       <unitDefinition id="length">
         <listOfUnits>
-          <unit exponent="1" kind="metre" multiplier="1E-6" scale="0"/>
+          <unit exponent="1" kind="metre" multiplier="1E-6" scale="0"></unit>
         </listOfUnits>
       </unitDefinition>
       <unitDefinition id="area">

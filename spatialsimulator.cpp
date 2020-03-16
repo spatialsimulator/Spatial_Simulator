@@ -1,5 +1,4 @@
-
-1;95;0c//============================================================================
+//============================================================================
 // Name        : SBMLSimulator.cpp
 // Author      :
 // Version     :
@@ -222,25 +221,54 @@ void simulate(optionList options)
 	setParameterInfo(model, varInfoList, bMemInfoList, Xdiv, Ydiv, Zdiv, Xsize, Ysize, Zsize, deltaX, deltaY, deltaZ, xaxis, yaxis, zaxis, mesh);
         //pixel width
         if( options.mesh_size == 0 ){ // added by morita
-          if( dimension >= 1 ){
-            deltaX = mesh;
-            cout << "default deltaX: " << deltaX << endl;
-          }
-          if( dimension >= 2 ){
-            deltaY = mesh;
-            cout << "default deltaY: " << deltaY << endl;
-          }
-          if( dimension >= 3 ){
-            deltaZ = mesh;
-            cout << "default deltaZ: " << deltaZ << endl;
-          }
-        } else if( options.mesh_size != 0 ) {
-          if( dimension >= 1 )
-            cout << "assigned deltaX: " << deltaX << endl;
-          if( dimension >= 2 )
-            cout << "assigned deltaY: " << deltaY << endl;
-          if( dimension >= 3 )
-            cout << "assigned deltaZ: " << deltaZ << endl;
+
+                ListOfCompartments *loc = model->getListOfCompartments();
+                Compartment *c = loc->get(0);
+                SpatialCompartmentPlugin *cplugin = static_cast<SpatialCompartmentPlugin*>(c->getPlugin("spatial"));
+                CompartmentMapping *cmap = cplugin->getCompartmentMapping();
+                
+                if( cmap->getUnitSize() == 1.0 ){
+                        if( dimension >= 1 ){
+                                deltaX = mesh;
+                                cout << "default deltaX: " << deltaX << endl;
+                        }
+                        if( dimension >= 2 ){
+                                deltaY = mesh;
+                                cout << "default deltaY: " << deltaY << endl;
+                        }
+                        if( dimension >= 3 ){
+                                deltaZ = mesh;
+                                cout << "default deltaZ: " << deltaZ << endl;
+                        }                  
+                } else if( cmap->getUnitSize() != 1.0 ){
+                        if( dimension >= 1 ){
+                                deltaX = cmap->getUnitSize();
+                                cout << "model defining deltaX: " << deltaX << endl;
+                        }
+                        if( dimension >= 2 ){
+                                deltaY = cmap->getUnitSize();
+                                cout << "model defining deltaY: " << deltaY << endl;
+                        }
+                        if( dimension >= 3 ){
+                                deltaZ = cmap->getUnitSize();
+                                cout << "model defining deltaZ: " << deltaZ << endl;
+                        }                                          
+                }
+                
+        } else if( options.mesh_size != 0 ) {          
+
+                if( dimension >= 1 ){
+                        deltaX = options.mesh_size;
+                        cout << "assigned deltaX: " << deltaX << endl;
+                }
+                if( dimension >= 2 ){
+                        deltaY = options.mesh_size;
+                        cout << "assigned deltaY: " << deltaY << endl;
+                }
+                if( dimension >= 3 ){
+                        deltaZ = options.mesh_size;
+                        cout << "assigned deltaZ: " << deltaZ << endl;
+                }
         } cout << endl;
         
 	//time
