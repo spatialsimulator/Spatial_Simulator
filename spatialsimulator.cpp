@@ -138,8 +138,8 @@ void simulate(optionList options)
 	int Xdiv = options.Xdiv;
 	int Ydiv = options.Ydiv;
 	int Zdiv = options.Zdiv;
-        if( options.mesh_size != 0 )
-          mesh = options.mesh_size;
+        //if( options.mesh_size != 0 )
+        //mesh = options.mesh_size;
 	double range_max = options.range_max;
 	double range_min = options.range_min;
 	double end_time = options.end_time;
@@ -150,7 +150,7 @@ void simulate(optionList options)
 	char slicedim = options.slicedim;
 	bool sliceFlag = (options.sliceFlag != 0);
         string outpath(options.outpath);
-        double pixelWidth = options.mesh_size;// added by morita
+        //double pixelWidth = options.mesh_size;
 	//div
 	if (dimension <= 1) {
 		Ydiv = 1;
@@ -229,15 +229,15 @@ void simulate(optionList options)
                 
                 if( cmap->getUnitSize() == 1.0 ){
                         if( dimension >= 1 ){
-                                deltaX = mesh;
+                                //deltaX = mesh;
                                 cout << "default deltaX: " << deltaX << endl;
                         }
                         if( dimension >= 2 ){
-                                deltaY = mesh;
+                                //deltaY = mesh;
                                 cout << "default deltaY: " << deltaY << endl;
                         }
                         if( dimension >= 3 ){
-                                deltaZ = mesh;
+                                //deltaZ = mesh;
                                 cout << "default deltaZ: " << deltaZ << endl;
                         }                  
                 } else if( cmap->getUnitSize() != 1.0 ){
@@ -1165,27 +1165,6 @@ void simulate(optionList options)
 	cout << endl;
   int num_digits = (log10(dt * out_step) < 0)? ceil(-1 * log10(dt * out_step)) : 0;
 
-                                        /***--- write CSV added by Morita ---***/
-                                        //deltaX = 0.15;
-                                        //deltaY = 0.15;
-                                        std::ofstream file01;
-                                        file01.open( "heat_diffusion_y101.csv", std::ios::app );
-                                        //std::ofstream file02;
-                                        //file02.open( fname + "_" +  sInfoResult->id + "_82_96_" + to_string(dt) + "_D" + to_string(model->getParameter(1)->getValue()) + "_distance_to_speed" + ".csv", std::ios::app );
-                                        //std::ofstream file03;          
-                                        //file03.open( fname + "_" +  sInfoResult->id + "_115_93_" + to_string(dt) + "_D" + to_string(model->getParameter(1)->getValue()) + "_average04_" + ".csv", std::ios::app );          
-                                        //std::ofstream file04;
-                                        //file04.open( fname + "_" +  sInfoResult->id + "_137_25_" + to_string(dt) + "_D" + to_string(model->getParameter(1)->getValue()) + /*"_deltaX_" + to_string(deltaX) +*/ ".csv", std::ios::app );
-
-//                                        std::ofstream file05;
-//                                        file05.open( fname + "_" +  sInfoResult->id + "_0_7_" + to_string(dt) + "_D" + to_string(model->getParameter(1)->getValue()) + "deltaX_" + to_string(deltaX) + ".csv", std::ios::app );          
-                                        //std::ofstream result_leaked;
-                                        //result.open( "infiniteDiffusion_D100_dt_E-5_allarea.csv", std::ios::app );
-                                        //std::ofstream line;
-                                        //line.open( "check_diffusion_line_D1000_dt_E-4.csv", std::ios::app );
-                                        //result_leaked.open( "check_Leaked_species.csv", std::ios::app );
-                                        //--------------------------------------------//
-
 	for (t = 0; t <= static_cast<int>(end_time / dt); t++) {
 
                   if( out_time_csv == (t * dt) ){ //output text file at assigned time
@@ -1214,63 +1193,10 @@ void simulate(optionList options)
                     }
                   }
           
-          //if( t%100 == 0 )
-            //  file04 << t*dt << std::endl;
-          //### record csv all pixels ###//
-          //GeometryInfo* result_geoi = sInfoResult->geoi;
-
-          //cout << los->get(1)->getId() << endl;
-          //cout << t*dt << endl;
-          //cout << endl;
-          
-          //int bbb,ccc;
-
-                  //*** deleted later ***//
-                  variableInfo *sInfoResult = searchInfoById(varInfoList, los->get(0)->getId().c_str());
-                  sInfoResult->value[2*101*Xindex+2*101] = 1;// always source exists
-                  file01 << t * dt;
-                  for(unsigned int i = 0; i < numOfVolIndexes; i++){
-                    Y = i / Xindex;
-                    X = i - Y * Xindex;
-                    if( Y == 2*101 ){
-                      file01 << "," << sInfoResult->value[i];
-                    }
-                  } file01 << endl;
-                  //*** deleted later ***//
-
-            //file01 << t*dt;
-            //result << t*dt; 
-            //for( aaa=0; aaa<result_geoi->domainIndex.size(); aaa++ ){
-            //for( bbb=0; bbb<Ydiv; bbb++ ){
-            //for( ccc=0; ccc<Xdiv; ccc++ ){
-                  //if(sInfoResult->value[(2*bbb)*Xindex + (2*ccc)] > 0)
-          //file01 << "," << sInfoResult->value[result_geoi->domainIndex[aaa]];
-                  //if( bbb == ccc ){
-                    //cout << bbb << endl;
-                    //cout << ccc << endl;
-                    //result << bbb+1 << "," << sInfoResult->value[ (2*aaa)*Yindex*Xindex + (2*bbb)*Xindex + (2*ccc) ] ;
-                    //result <<  "," << sInfoResult->value[ (2*aaa)*Yindex*Xindex + (2*bbb)*Xindex + (2*ccc) ] ;
-                    //}                    
-          //}
-          //} file01 << endl;
-          //file01 << endl;            
-          //}
-          //result_leaked << endl;
-          //result << endl;
-          //}
-          //if( t % 5 == 0 )
-
-          //file01 << t*dt << "," << sInfoResult->value[2*0*Yindex*Xindex + 2*(139-69)*Xindex + 2*65] << endl;
-          //file02 << t*dt << "," << sInfoResult->value[2*0*Yindex*Xindex + 2*(139-96)*Xindex + 2*82] << endl;
-          //file03 << t*dt << "," << sInfoResult->value[2*0*Yindex*Xindex + 2*(139-93)*Xindex + 2*115] << endl;
-          //file05 << t*dt << "," << sInfoResult->value[2*0*Yindex*Xindex + 2*108*Xindex + 2*101] << endl;
-          //file04 << t*dt << "," << sInfoResult->value[2*0*Yindex*Xindex + 2*(139-25)*Xindex + 2*137] << endl;
-          //### finish ###//
-
 		*sim_time = t * dt;
 		//output
 		out_start = clock();
-/*		if (count % out_step == 0) {
+		if (count % out_step == 0) {
 			if (dimension == 2) {
         outputImg(model, varInfoList, geo_edge, Xdiv, Ydiv, xInfo->value[0], xInfo->value[0] + Xsize, yInfo->value[0], yInfo->value[0] + Ysize, *sim_time, range_min, range_max, fname, file_num, outpath, num_digits);
        }
@@ -1291,7 +1217,7 @@ void simulate(optionList options)
       }
       outputValueData(varInfoList, los, Xdiv, Ydiv, Zdiv, dimension, file_num, fname, outpath);
 			file_num++;
-		}*/
+		}
 		out_end = clock();
 		output_time += out_end - out_start;
 		count++;
@@ -1382,7 +1308,6 @@ void simulate(optionList options)
 		for (i = 0; i < numOfSpecies; i++) {
 			s = los->get(i);
 			variableInfo *sInfo = searchInfoById(varInfoList, s->getId().c_str());
-                        double sum = 0;//delete later
 			if (!s->isSetConstant() || !s->getConstant()) {
 				for (j = 0; j < sInfo->geoi->domainIndex.size(); j++) {
 					index = sInfo->geoi->domainIndex[j];
@@ -1391,56 +1316,12 @@ void simulate(optionList options)
 					Y = (index - Z * Xindex * Yindex) / Xindex;
 					X = index - Z * Xindex * Yindex - Y * Xindex;
 					//int divIndex = (Z / 2) * Ydiv * Xdiv + (Y / 2) * Xdiv + (X / 2);
-
-                                        /*cout << sInfo->geoi->domainIndex.size() << endl;
-                                        for( int size = 0; size < sInfo->geoi->domainIndex.size(); size++ ){
-                                          index = sInfo->geoi->domainIndex[size];
-                                          Y = (index - Z * Xindex * Yindex) / Xindex;
-                                          X = index - Z * Xindex * Yindex - Y * Xindex;
-                                          cout << "(" << X/2 << "," << Y/2 << ")" << ",";
-                                        } exit(1);*/
-                                        
-                                        //***write file***//
-                                        // A_Nuc sInfo->geoi->domainIndexes.size() = 1113
-                                        // B = 5184                                        
-
-                                        if( X/2 == 104 && Y/2 == 99 ){
-                                          //cout << "X: " << X << endl;
-                                          //cout << "Y: " << Y << endl;
-                                          //cout << "Z: " << Z << endl;
-                                          //cout << "index: " << index << endl;
-                                          //if( t%100==0 )
-                                          //file04 << t*dt << "," << sInfo->value[index] << std::endl;
-                                          //return;
-                                          //cout << s->getId() << endl;
-                                          //cout << "Xdiv:60 Ydiv:74 DomainType is " << geoInfoList[0]->compartmentId << " isDomain is " << geoInfoList[0]->isDomain[ Y*Xindex + X ] << endl;
-                                          //cout << "membrane Xdiv:60 Ydiv:74 DomainType is " << geoInfoList[4]->compartmentId << " isDomain is " << geoInfoList[4]->isDomain[ Y*Xindex + (X-1) ] << endl;
-                                          //file03 << t << "," << sInfo->value[ Y*Xindex + (X-1) ] << std::endl;
-                                        } else if( X/2==111 && Y/2==99 ){
-                                          //file02 << t << "," << sInfo->value[index] << std::endl;
-                                          //if( t%100==0 )
-                                          //file03 << t*dt << "," << sInfo->value[index] << std::endl;
-                                        } else if( X/2==0 && Y/2==101 ){
-                                          //file03 << t << "," << sInfo->value[index] << std::endl;
-                                        } else if( X/2==47 && Y/2==65 ){
-                                          //file04 << t << "," << sInfo->value[index] << std::endl;
-                                        }
-                                        
-                                        //sum within compartment
-                                        sum+=sInfo->value[index];
-                                        //***--- finished ---***//
-
                                         
 					//update values for the next time
 					sInfo->value[index] += dt * (sInfo->delta[index] + 2.0 * sInfo->delta[numOfVolIndexes + index] + 2.0 * sInfo->delta[2 * numOfVolIndexes + index] + sInfo->delta[3 * numOfVolIndexes + index]) / 6.0;                                        
 
 					for (k = 0; k < 4; k++) sInfo->delta[k * numOfVolIndexes + index] = 0.0;
 				}
-
-                                //###record sum in compartment
-                                //if( t%100 == 0 )
-                                //file05 << t*dt << "," << sum << std::endl;
-                                //###record sum in compartment
 
                                 //boundary condition
 				if (sInfo->boundaryInfo != 0) {
@@ -1533,16 +1414,6 @@ void simulate(optionList options)
 			percent++;
 		}
 	}
-
-                                    //*** file closed ***//
-        //file01.close();
-        //file02.close();
-        //file03.close();
-        //file04.close();
-        //file05.close();
-                                        //result_leaked.close();
-                                        //line.close();
-                                        //-----------//
         
 	clock_t sim_end = clock();
 	cout << endl;

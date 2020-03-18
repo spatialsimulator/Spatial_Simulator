@@ -66,36 +66,44 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 
                         //Species have Local Concentration at a Compartment added by Morita                        
                         if( model->getInitialAssignment(s->getId()) ){
+                                InitialAssignment* ia = model->getInitialAssignment(s->getId());
+                                if( ia->isSetMath() ){                                  
+                                          if(model->getParameter(ia->getMath()->getName())){
+                                            
+                                          Parameter *p = model->getParameter(ia->getMath()->getName()); 
+                                          Geometry* geo = spPlugin->getGeometry();
+                                          ListOfSampledFields* losf = geo->getListOfSampledFields();
+                                          SampledField* sf = losf->get( p->getId() );
 
-                                 Geometry* geo = spPlugin->getGeometry();
-                                 ListOfSampledFields* losf = geo->getListOfSampledFields();
-                                 SampledField* sf = losf->get( s->getId() + "_initialConcentration" );
-                                 int* samples = new int[ Xdiv * Ydiv * Zdiv ];
-                                 //get intensity in model       
-                                 sf->getSamples( samples );
-                                 //initialize matrix "info->value"
-                                 info->value = new double[numOfVolIndexes];
-                                 fill_n(info->value, numOfVolIndexes, 0);
-                                 info->delta = new double[4 * numOfVolIndexes];
-                                 fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
-                                 //converted into sparse matrix
-                                 double sum = 0;
-                                 for( Z = 0; Z < Zdiv; Z++ ){
-                                         for( Y = 0; Y < Ydiv; Y++ ){
-                                                 for( X = 0; X < Xdiv; X++ ){
-                                                         info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
-                                                         sum += samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
-                                                         if( samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] > 0 ){
-                                                           cout << endl;
-                                                           cout << "X:" +to_string(X)+ " Y:" +to_string(Y)+ " Z:"+to_string(Z)+ " value:"; //<- Check Intensity
-                                                           cout << samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] << endl;
-                                                           cout << endl;
-                                                         }
-                                                 }
-                                         }
-                                 }
-                                 delete[] samples;
-                                 
+                                          int* samples = new int[ Xdiv * Ydiv * Zdiv ];
+                                          
+                                          //get intensity in model       
+                                          sf->getSamples( samples );
+                                          //initialize matrix "info->value"
+                                          info->value = new double[numOfVolIndexes];
+                                          fill_n(info->value, numOfVolIndexes, 0);
+                                          info->delta = new double[4 * numOfVolIndexes];
+                                          fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
+                                          //converted into sparse matrix
+                                          double sum = 0;
+                                          for( Z = 0; Z < Zdiv; Z++ ){
+                                                  for( Y = 0; Y < Ydiv; Y++ ){
+                                                          for( X = 0; X < Xdiv; X++ ){
+                                                                  info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
+                                                                  sum += samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
+                                                                  //check samples value
+                                                                  /*if( samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] > 0 ){
+                                                                    cout << endl;
+                                                                    cout << "X:" +to_string(X)+ " Y:" +to_string(Y)+ " Z:"+to_string(Z)+ " value:"; //<- Check Intensity
+                                                                    cout << samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] << endl;
+                                                                    cout << endl;*/
+                                                                  }
+                                                          }
+                                                  }
+                                          }
+                                          delete[] samples;                                          
+                                        }
+                                }
                         }
                         //Species have Uniform Concentration at a Compartment
                         else if( model->getInitialAssignment(s->getId()) == 0 ){
