@@ -197,7 +197,7 @@ void simulate(optionList options)
     range_max = getDefaultRangeMax(model);
     cout << "using default value: ";
   }
-	cout << range_max << endl << endl;
+	cout << range_max << endl;
   if (range_min >= range_max) {
     cout << "Your range_min(" << range_min << ") is equal or larger than range_max(" << range_max << ")."<< endl;
     cout << "This will cause corrupted output image." << endl;
@@ -254,7 +254,6 @@ void simulate(optionList options)
                                 cout << "model defining deltaZ: " << deltaZ << endl;
                         }                                          
                 }
-                
         } else if( options.mesh_size != 0 ) {          
 
                 if( dimension >= 1 ){

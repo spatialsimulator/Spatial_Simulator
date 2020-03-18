@@ -57,7 +57,6 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
 			info->com = model->getCompartment(s->getCompartment());
 			info->id = s->getId().c_str();
                         info->name = s->getName().c_str();
-                        
 			if (info->com->getSpatialDimensions()== volDimension) {
 				info->inVol = true;
 			} else if (info->com->getSpatialDimensions()== memDimension) {
@@ -98,8 +97,8 @@ void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsig
                                                                     cout << "X:" +to_string(X)+ " Y:" +to_string(Y)+ " Z:"+to_string(Z)+ " value:"; //<- Check Intensity
                                                                     cout << samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] << endl;
                                                                     cout << endl;*/
+                                                                  }
                                                           }
-                                                  }
                                           }
                                           delete[] samples;                                          
                                           }
