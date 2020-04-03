@@ -12,4 +12,5 @@ void freeRInfo(std::vector<reactionInfo*> &geoInfoList);
 
 void freeAvolInfo(std::vector<GeometryInfo*> &geoInfoList);
 
+void freeBMemInfo(std::vector<boundaryMembrane*> &bMemInfoList);
 #endif

@@ -28,13 +28,14 @@ void setBoundaryType(Model *model, vector<variableInfo*> &varInfoList, vector<Ge
 					for (X = 0; X < Xindex; X += 2) {
 						if (isD[X] == 0) sInfo->value[X] = 0.0;
 						if (isD[X] == 1 && isB[X] == 1) {
+                                                        //image edge
 							if (X == Xindex - 1 || X == 0) {
 								if (X == 0) sInfo->geoi->bType[X].isBofXm = true;
 								if (X == Xindex - 1) sInfo->geoi->bType[X].isBofXp = true;
 							} else {//not the edge of simulation area
 								if (isD[X - 2] == 0) sInfo->geoi->bType[X].isBofXm = true;
 								if (isD[X + 2] == 0) sInfo->geoi->bType[X].isBofXp = true;
-							}
+							}                                                        
 						}
 					}
 				} else {//membrane

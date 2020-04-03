@@ -284,6 +284,8 @@ void makeValueMat(cv::Mat mat, double* value, int Xindex, int Yindex, double ran
   for (Y = 0; Y < mat.rows; ++Y) {
     for (X = 0; X < mat.cols; ++X) {
       index = (Yindex - 1 - Y * 2) * Xindex + X * 2;//疎行列用 なんかこうしないと逆になっちゃう
+      //if( value[index] > 0 )
+      //  printf("%lf ",value[index]);
       mat.at<Vec3b>(Y, X) = getRBGValue(value[index], range_min, range_max);
     }
   }

@@ -27,6 +27,19 @@ typedef struct _reversePolishInfo {
 	unsigned int listNum;
 }reversePolishInfo;
 
+typedef struct _boundaryMembrane { //added by Morita
+        const char *name; //compartmentId
+        const char *sName; //original species name
+        const char *sId; //original species id
+        const char *sCompartment; // original compartmentId
+        const char *tId; //transported species id
+        const char *tCompartment; // transported compartmentId
+        double bcType; // neumann=1 dirichlet=2 others=3
+        double value; // assumed constant
+        double *position;
+  //std::vector <const char *> adjacentDomainIdList;
+}boundaryMembrane;
+
 typedef struct _boundaryType {
 	bool isBofXp;
 	bool isBofXm;
@@ -67,11 +80,13 @@ typedef struct _variableInfo {
 	Compartment *com;
 	Parameter *para;
 	const char* id;
+        const char* name;
 	double *value;
 	double *delta;
 	bool inVol;
 	bool isUniform;
 	bool hasAssignmentRule;
+        bool isLeaked;
 	//boundaryType bType;
 	reversePolishInfo *rpInfo;
 	GeometryInfo *geoi;
@@ -140,9 +155,12 @@ typedef struct _optionList{
   int Xdiv;
   int Ydiv;
   int Zdiv;
+  double mesh_size;
   double end_time;
   double dt;
   int out_step;
+  int isOutCSV;
+  double out_csv;
   double range_max;
   double range_min;
   int sliceFlag;

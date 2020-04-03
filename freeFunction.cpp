@@ -142,3 +142,15 @@ void freeRInfo(vector<reactionInfo*> &rInfoList)
 		rInfo = 0;
 	}
 }
+
+void freeBMemInfo(vector<boundaryMembrane*> &bMemInfoList)
+{
+	for (size_t i = 0; i < bMemInfoList.size(); i++) {
+		boundaryMembrane *info = bMemInfoList[i];
+                delete[] info->position;
+                info->position = 0;
+                //info
+                delete[] info;
+                info = 0;
+        }
+}

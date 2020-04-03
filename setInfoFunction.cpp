@@ -3,11 +3,14 @@
 #include "spatialsim/initializeFunction.h"
 #include "spatialsim/searchFunction.h"
 #include "spatialsim/astFunction.h"
+#include "spatialsim/options.h"
 #include "sbml/SBMLTypes.h"
 #include "sbml/packages/spatial/common/SpatialExtensionTypes.h"
 #include "sbml/packages/spatial/extension/SpatialModelPlugin.h"
 #include <vector>
 #include <iostream>
+#include <fstream>//added by Morita
+#include <string>//added by Morita
 
 using namespace std;
 LIBSBML_CPP_NAMESPACE_USE
@@ -34,62 +37,130 @@ void setCompartmentInfo(Model *model, std::vector<variableInfo*> &varInfoList)
 
 void setSpeciesInfo(Model *model, std::vector<variableInfo*> &varInfoList, unsigned int volDimension, unsigned int memDimension, int Xindex, int Yindex, int Zindex)
 {
+        SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin("spatial"));//added by Morita
 	ListOfSpecies *los = model->getListOfSpecies();
 	unsigned int numOfSpecies = static_cast<unsigned int>(model->getNumSpecies());
 	unsigned int i;
 	int X, Y, Z;
+        unsigned int Xdiv = (Xindex + 1)/2, Ydiv = (Yindex + 1)/2, Zdiv = (Zindex + 1)/2;//added by Morita
 	unsigned int numOfVolIndexes = Xindex * Yindex * Zindex;
 	for (i = 0; i < numOfSpecies; i++) {
 		Species *s = los->get(i);
 		SpatialSpeciesPlugin* splugin = static_cast<SpatialSpeciesPlugin*>(s->getPlugin("spatial"));
 		//species have spatial extension
 		if (splugin->getIsSpatial()) {
+                  
 			variableInfo *info = new variableInfo;
 			InitializeVarInfo(info);
 			varInfoList.push_back(info);
 			info->sp = s;
 			info->com = model->getCompartment(s->getCompartment());
 			info->id = s->getId().c_str();
+                        info->name = s->getName().c_str();
 			if (info->com->getSpatialDimensions()== volDimension) {
 				info->inVol = true;
 			} else if (info->com->getSpatialDimensions()== memDimension) {
 				info->inVol = false;
 			}
-			//species value is specified by initial amount, initial value, rule or initial assignment
-			//species is spatially defined
+                        info->isLeaked = false;
 
-			if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
-				info->value = new double[numOfVolIndexes];
-				fill_n(info->value, numOfVolIndexes, 0);
-				//if (!s->isSetConstant() || !s->getConstant()) {
-				info->delta = new double[4 * numOfVolIndexes];
-				fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
-				//}
-				if (s->isSetInitialAmount()) {//Initial Amount
-					info->isResolved = true;
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
-							}
-						}
-					}
-				} else if (s->isSetInitialConcentration()) {//Initial Concentration
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
-							}
-						}
-					}
-				}
-			}
+                        //Species have Local Concentration at a Compartment added by Morita                        
+                        if( model->getInitialAssignment(s->getId()) ){
+                                InitialAssignment* ia = model->getInitialAssignment(s->getId());
+                                if( ia->isSetMath() ){                                  
+                                          if(model->getParameter(ia->getMath()->getName())){
+                                            
+                                          Parameter *p = model->getParameter(ia->getMath()->getName()); 
+                                          Geometry* geo = spPlugin->getGeometry();
+                                          ListOfSampledFields* losf = geo->getListOfSampledFields();
+                                          SampledField* sf = losf->get( p->getId() );
+
+                                          int* samples = new int[ Xdiv * Ydiv * Zdiv ];
+                                          
+                                          //get intensity in model       
+                                          sf->getSamples( samples );
+                                          //initialize matrix "info->value"
+                                          info->value = new double[numOfVolIndexes];
+                                          fill_n(info->value, numOfVolIndexes, 0);
+                                          info->delta = new double[4 * numOfVolIndexes];
+                                          fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
+                                          //converted into sparse matrix
+                                          double sum = 0;
+                                          for( Z = 0; Z < Zdiv; Z++ ){
+                                                  for( Y = 0; Y < Ydiv; Y++ ){
+                                                          for( X = 0; X < Xdiv; X++ ){
+                                                                  info->value[ (2*Z) * Yindex * Xindex + (2*Y) * Xindex + (2*X) ] = samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
+                                                                  sum += samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ];
+                                                                  //check samples value
+                                                                  /*if( samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] > 0 ){
+                                                                    cout << endl;
+                                                                    cout << "X:" +to_string(X)+ " Y:" +to_string(Y)+ " Z:"+to_string(Z)+ " value:"; //<- Check Intensity
+                                                                    cout << samples[ Z * Ydiv * Xdiv + (Ydiv -1 -Y) * Xdiv + X ] << endl;
+                                                                    cout << endl;*/
+                                                                  }
+                                                          }
+                                          }
+                                          delete[] samples;                                          
+                                          }
+                                }
+                        }
+                        //Species have Uniform Concentration at a Compartment
+                        else if( model->getInitialAssignment(s->getId()) == 0 ){
+                                //species value is specified by initial amount, initial value, rule or initial assignment
+                                //species is spatially defined
+			        if (s->isSetInitialAmount() || s->isSetInitialConcentration()) {//Initial Amount or Initial Concentration
+				        info->value = new double[numOfVolIndexes];
+				        fill_n(info->value, numOfVolIndexes, 0);
+				        //if (!s->isSetConstant() || !s->getConstant()) {
+				        info->delta = new double[4 * numOfVolIndexes];
+				        fill_n(info->delta, 4 * numOfVolIndexes, 0.0);
+				        //}
+				        if (s->isSetInitialAmount()) {//Initial Amount
+					        info->isResolved = true;
+					        for (Z = 0; Z < Zindex; Z++) {
+						        for (Y = 0; Y < Yindex; Y++) {
+							        for (X = 0; X < Xindex; X++) {
+                                                                         if( X%2==0 && Y%2==0 ){ // original point
+                                                                                 if( s->getCompartment().find("membrane") == std::string::npos ){
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
+                                                                                 } else 
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = 0.0;
+                                                                         } else { // for membrane
+                                                                                 if( s->getCompartment().find("membrane") == std::string::npos ){
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = 0.0;
+                                                                                 } else
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialAmount();
+                                                                         }
+							        }
+						        }
+					        }
+				        } else if (s->isSetInitialConcentration()) {//Initial Concentration
+					        for (Z = 0; Z < Zindex; Z++) {
+						        for (Y = 0; Y < Yindex; Y++) {
+							        for (X = 0; X < Xindex; X++) {
+                                                                         if( X%2==0 && Y%2==0 ){ // original pixels
+                                                                                 if( s->getCompartment().find("membrane") == std::string::npos ){
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
+                                                                                 } else 
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = 0.0;
+                                                                         } else { // for membrane
+                                                                                 if( s->getCompartment().find("membrane") == std::string::npos ){
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = 0.0;
+                                                                                 } else
+                                                                                         info->value[Z * Yindex * Xindex + Y * Xindex + X] = s->getInitialConcentration();
+                                                                         }
+							        }
+						        }
+					        }
+				        }
+			        }
+                        }
       info -> isResolved = true;
 		}
 	}
 }
 
-void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis)
+void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, std::vector<boundaryMembrane*> &bMemInfoList, int Xdiv, int Ydiv, int Zdiv, double &Xsize, double &Ysize, double &Zsize, double &deltaX, double &deltaY, double &deltaZ, char *&xaxis, char *&yaxis, char *&zaxis, double mesh)
 {
 	SpatialModelPlugin *spPlugin = static_cast<SpatialModelPlugin*>(model->getPlugin("spatial"));
 	Geometry *geometry = spPlugin->getGeometry();
@@ -162,7 +233,7 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
 					sInfo->diffCInfo[dc->getCoordinateReference2() - 1] = info;
 					break;
 
-				case DIFFUSIONKIND_UNKNOWN:
+				case SPATIAL_DIFFUSIONKIND_INVALID:
 					cerr << "warning: Diffusion_Kind == Unknown" << endl;
 					break;
 				}
@@ -182,7 +253,7 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
 						info->value = new double(p->getValue());
 						break;
 
-					case DIFFUSIONKIND_UNKNOWN:
+					case SPATIAL_DIFFUSIONKIND_INVALID:
 						cerr << "warning: Diffusion_Kind == Unknown" << endl;
 						break;
 					}
@@ -211,74 +282,158 @@ void setParameterInfo(Model *model, std::vector<variableInfo*> &varInfoList, int
 					fill_n(sInfo->boundaryInfo, 6, reinterpret_cast<variableInfo*>(0));
 				}
 				if (sInfo != 0 &&bcon != 0) {
-					int boundaryIndex = -1;
-					if (bcon->getCoordinateBoundary() == XmaxId) boundaryIndex = Xmax;
-					if (bcon->getCoordinateBoundary() == XminId) boundaryIndex = Xmin;
-					if (bcon->getCoordinateBoundary() == YmaxId) boundaryIndex = Ymax;
-					if (bcon->getCoordinateBoundary() == YminId) boundaryIndex = Ymin;
-					if (bcon->getCoordinateBoundary() == ZmaxId) boundaryIndex = Zmax;
-					if (bcon->getCoordinateBoundary() == ZminId) boundaryIndex = Zmin;
-					if (boundaryIndex != -1) {
-						sInfo->boundaryInfo[boundaryIndex] = info;
-						if (model->getRule(info->id) == 0 && p->isSetValue()) {
-							info->isResolved = true;
-							info->isUniform = true;
-							info->value = new double(p->getValue());
-						}
-					}
+                                        //image edge
+                                        if( bcon->getCoordinateBoundary().find("membrane") == std::string::npos ){
+                                                int boundaryIndex = -1;
+                                                if (bcon->getCoordinateBoundary() == XmaxId) boundaryIndex = Xmax;
+                                                if (bcon->getCoordinateBoundary() == XminId) boundaryIndex = Xmin;
+                                                if (bcon->getCoordinateBoundary() == YmaxId) boundaryIndex = Ymax;
+                                                if (bcon->getCoordinateBoundary() == YminId) boundaryIndex = Ymin;
+                                                if (bcon->getCoordinateBoundary() == ZmaxId) boundaryIndex = Zmax;
+                                                if (bcon->getCoordinateBoundary() == ZminId) boundaryIndex = Zmin;
+                                                if (boundaryIndex != -1) {
+                                                        sInfo->boundaryInfo[boundaryIndex] = info;
+                                                        if (model->getRule(info->id) == 0 && p->isSetValue()) {
+                                                                info->isResolved = true;
+                                                                info->isUniform = true;
+                                                                info->value = new double(p->getValue());
+                                                        }
+                                                }
+                                        } else { //membrane
+                                                if (model->getRule(info->id) == 0 && p->isSetValue()) {
+
+                                                          info->isResolved = true;
+                                                          info->isUniform = true;
+                                                          
+                                                          boundaryMembrane *bMem = new boundaryMembrane;
+                                                          InitializeBMemInfo(bMem);
+                                                          bMemInfoList.push_back(bMem);
+                                                          bMem->name = bcon->getCoordinateBoundary().c_str();
+                                                          switch(pPlugin->getBoundaryCondition()->getType()){
+                                                                  case SPATIAL_BOUNDARYKIND_NEUMANN:
+                                                                          bMem->bcType = 1;//neumann
+                                                                          break;
+                                                                  case SPATIAL_BOUNDARYKIND_DIRICHLET:
+                                                                          bMem->bcType = 2;//neumann
+                                                                          break;
+                                                                  default:
+                                                                          bMem->bcType = 3;//others
+                                                                          break;
+                                                          }
+                                                          bMem->value = p->getValue();
+                                                          bMem->sId = sInfo->sp->getId().c_str();
+                                                          bMem->sName = sInfo->sp->getName().c_str();
+                                                          bMem->sCompartment = sInfo->com->getId().c_str();
+                                                          variableInfo *originalSpecies = searchInfoById(varInfoList,bMem->sId);
+                                                          originalSpecies->isLeaked = true;
+                                                          bMem->position = new double[numOfVolIndexes];
+                                                          fill_n(bMem->position, numOfVolIndexes, 0);
+                                                          //adjacent compartment
+                                                          unsigned int geoAdDnum = 0;
+                                                          for (geoAdDnum = 0; geoAdDnum < geometry->getNumAdjacentDomains(); geoAdDnum++) {
+                                                                  AdjacentDomains *adDomain = geometry->getAdjacentDomains(geoAdDnum);
+                                                                  Domain *ad1 = geometry->getDomain(adDomain->getDomain1());
+                                                                  Domain *ad2 = geometry->getDomain(adDomain->getDomain2());
+                                                                  if( strcmp(ad1->getDomainType().c_str(),bMem->name)==0 || strcmp(ad2->getDomainType().c_str(),bMem->name)==0 ){
+                                                                          if( strcmp(bMem->name, ad1->getDomainType().c_str()) != 0 && strcmp(bMem->sCompartment, ad1->getDomainType().c_str()) != 0 ){
+                                                                                  bMem->tCompartment = ad1->getDomainType().c_str();
+                                                                          }
+                                                                          if( strcmp(bMem->name, ad2->getDomainType().c_str()) != 0 && strcmp(bMem->sCompartment, ad2->getDomainType().c_str()) != 0 ){
+                                                                                  bMem->tCompartment = ad2->getDomainType().c_str();
+                                                                          }
+                                                                  }
+                                                          }
+                                                          bMem->tId = searchSInfoByCompartment_Name(varInfoList,sInfo->name,bMem->tCompartment)->id;
+                                                          variableInfo *psInfo = searchInfoById(varInfoList, bMem->tId);
+                                                          if( psInfo!=0 ){//model has leaked species
+
+                                                                  psInfo->isLeaked = false; // required to consider
+
+                                                          } else {//model has no leaked species
+                                                            cout<< bMem->tId <<endl;
+                                                                  //making new species in model
+                                                                  Species* newSpecies = model->createSpecies();
+                                                                  newSpecies->setId(std::string(bMem->tId));
+                                                                  model->addSpecies(newSpecies);
+                                                                  //making new species variable
+                                                                  variableInfo *newSInfo = new variableInfo;
+                                                                  InitializeVarInfo(newSInfo);
+                                                                  varInfoList.push_back(newSInfo);
+                                                                  newSInfo->sp = newSpecies;
+                                                                  newSInfo->com = model->getCompartment(std::string(bMem->tCompartment));
+                                                                  newSInfo->id = newSpecies->getId().c_str();
+                                                                  newSInfo->isLeaked = true;
+                                                                  newSInfo->value = new double[numOfVolIndexes];
+                                                                  fill_n(newSInfo->value, numOfVolIndexes, 0);
+                                                                  newSInfo->delta = new double[4 * numOfVolIndexes];
+                                                                  fill_n(newSInfo->delta, 4 * numOfVolIndexes, 0.0);
+                                                          }
+                                                }
+                                        }                     
 				}
 			}
 			break;
 			case SBML_SPATIAL_SPATIALSYMBOLREFERENCE: {//spatial symbol reference
 				                                   //  if (pPlugin->getSpatialSymbolReference()->getType() == "coordinateComponent")
 				cc = geometry->getCoordinateComponent(pPlugin->getSpatialSymbolReference()->getSpatialRef());
-				double min = cc->getBoundaryMin()->getValue();
-				double max = cc->getBoundaryMax()->getValue();
-				if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
-					info->value = new double[numOfVolIndexes];
-					fill_n(info->value, numOfVolIndexes, 0);
-					xaxis = const_cast<char*>(p->getId().c_str());
-					Xsize = max - min;
-					deltaX = (max - min) / (Xdiv - 1);
-					info->isResolved = true;
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(X) * deltaX / 2.0;
-							}
-						}
-					}
-				} else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
-					info->value = new double[numOfVolIndexes];
-					fill_n(info->value, numOfVolIndexes, 0);
-					yaxis = const_cast<char*>(p->getId().c_str());
-					Ysize = max - min;
-					deltaY = (max - min) / (Ydiv - 1);
-					info->isResolved = true;
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Y) * deltaY / 2.0;
-							}
-						}
-					}
-				} else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
-					info->value = new double[numOfVolIndexes];
-					fill_n(info->value, numOfVolIndexes, 0);
-					zaxis = const_cast<char*>(p->getId().c_str());
-					Zsize = max - min;
-					deltaZ = (max - min) / (Zdiv - 1);
-					info->isResolved = true;
-					for (Z = 0; Z < Zindex; Z++) {
-						for (Y = 0; Y < Yindex; Y++) {
-							for (X = 0; X < Xindex; X++) {
-								info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Z) * deltaZ / 2.0;
-							}
-						}
-					}
-				}
+                                
+                                if(cc != NULL){//added by Morita
+                                  
+                                  double min = cc->getBoundaryMin()->getValue();
+                                  double max = cc->getBoundaryMax()->getValue();
+                                  if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_X) {
+                                    //if( mesh == 0 ){
+                                      info->value = new double[numOfVolIndexes];
+                                      fill_n(info->value, numOfVolIndexes, 0);
+                                      xaxis = const_cast<char*>(p->getId().c_str());
+                                      Xsize = max - min;
+                                      deltaX = (max - min) / (Xdiv - 1);
+                                      info->isResolved = true;
+                                      for (Z = 0; Z < Zindex; Z++) {
+                                        for (Y = 0; Y < Yindex; Y++) {
+                                          for (X = 0; X < Xindex; X++) {
+                                            info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(X) * deltaX / 2.0;
+                                          }
+                                        }
+                                      }
+                                      //}
+                                  } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Y) {
+                                    //if( mesh == 0 ){
+                                      info->value = new double[numOfVolIndexes];
+                                      fill_n(info->value, numOfVolIndexes, 0);
+                                      yaxis = const_cast<char*>(p->getId().c_str());
+                                      Ysize = max - min;
+                                      deltaY = (max - min) / (Ydiv - 1);
+                                      info->isResolved = true;
+                                      for (Z = 0; Z < Zindex; Z++) {
+                                        for (Y = 0; Y < Yindex; Y++) {
+                                          for (X = 0; X < Xindex; X++) {
+                                            info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Y) * deltaY / 2.0;
+                                          }
+                                        }
+                                      }
+                                      //}
+                                  } else if (cc->getType() ==  SPATIAL_COORDINATEKIND_CARTESIAN_Z) {
+                                    //if( mesh == 0 ){
+                                      info->value = new double[numOfVolIndexes];
+                                      fill_n(info->value, numOfVolIndexes, 0);
+                                      zaxis = const_cast<char*>(p->getId().c_str());
+                                      Zsize = max - min;
+                                      deltaZ = (max - min) / (Zdiv - 1);
+                                      info->isResolved = true;
+                                      for (Z = 0; Z < Zindex; Z++) {
+                                        for (Y = 0; Y < Yindex; Y++) {
+                                          for (X = 0; X < Xindex; X++) {
+                                            info->value[Z * Yindex * Xindex + Y * Xindex + X] = min + static_cast<double>(Z) * deltaZ / 2.0;
+                                          }
+                                        }
+                                      }
+                                      //}
+                                  }
+                                  //cout << endl;
+                                }
 			}
-			break;
+                          break;
 			default:
 				break;
 			}
