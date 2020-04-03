@@ -1155,7 +1155,7 @@ void simulate(optionList options)
         
         //### DUMP ###//
         //std::signal(SIGINT, cerealize);
-
+        
 	//simulation
 	cout << "simulation starts" << endl;
 	clock_t diff_start, diff_end, boundary_start, boundary_end, out_start, out_end, re_start, re_end, ad_start, ad_end, assign_start, assign_end, update_start, update_end;
@@ -1216,7 +1216,7 @@ void simulate(optionList options)
       }
       outputValueData(varInfoList, los, Xdiv, Ydiv, Zdiv, dimension, file_num, fname, outpath);
 			file_num++;
-		}
+                        }
 		out_end = clock();
 		output_time += out_end - out_start;
 		count++;
@@ -1315,10 +1315,9 @@ void simulate(optionList options)
 					Y = (index - Z * Xindex * Yindex) / Xindex;
 					X = index - Z * Xindex * Yindex - Y * Xindex;
 					//int divIndex = (Z / 2) * Ydiv * Xdiv + (Y / 2) * Xdiv + (X / 2);
-                                        
+                                                                                
 					//update values for the next time
 					sInfo->value[index] += dt * (sInfo->delta[index] + 2.0 * sInfo->delta[numOfVolIndexes + index] + 2.0 * sInfo->delta[2 * numOfVolIndexes + index] + sInfo->delta[3 * numOfVolIndexes + index]) / 6.0;                                        
-
 					for (k = 0; k < 4; k++) sInfo->delta[k * numOfVolIndexes + index] = 0.0;
 				}
 
@@ -1423,7 +1422,7 @@ void simulate(optionList options)
   cout << "update_time: "<< (update_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
   cout << "assign_time: "<< (assign_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
   cout << "output_time: "<< (output_time / static_cast<double>(CLOCKS_PER_SEC)) << endl;
-
+  
   //free
   delete[] geo_edge;//mashimo
 //for (i = 0; i < freeConstList.size(); i++) {

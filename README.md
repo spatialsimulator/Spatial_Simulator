@@ -21,7 +21,7 @@ By using this program, users may simulate their spatially extended SBML models.
 
 ### Run ###
 
-    % ./spatialsimulator  -m 0.1 -x 100 -y 100 -z 100 -t 10 -d 0.001 -o 500 -l 10 -c 0 -C 5 -s z30 /path/to/model.xml
+    % ./spatialsimulator  -x 100 -y 100 -z 100 -m 0.1 -t 10 -d 0.001 -o 500 -l 10 -c 0 -C 5 -s z30 /path/to/model.xml
 
 | Options | Definitions|
 |:--------:|:------------|
@@ -32,7 +32,7 @@ By using this program, users may simulate their spatially extended SBML models.
 |-t | End time|
 |-d | Step size|
 |-o | Number of steps per output|
-|-l | output Text file for species value at assigned time|
+[](|-l | output Text file for species value at assigned time|)
 |-C | Max Value for color bar|
 |-c | Min Value for color bar|
 |-s | Select which dimension and slice (e.g. z30 means xy plane where z = 30)|
