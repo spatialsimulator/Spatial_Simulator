@@ -38,7 +38,7 @@ Simulation results will be generated under `result/${model_name}` directory.
 -o #(int)    | output results every # steps (ex. -o 10) (default:1)
 -c #(double) | min of color bar range (ex. -c 1) (default:0.0)
 -C #(double) | max of color bar range (ex. -C 10) (default:Max value of InitialConcentration or InitialAmount)
--s char#(int)| select which dimension {x,y,z} and the number of slice to output (only 3D) (ex. -s z10 which means xy plane where z = 10)
+-s char#(int)| select which dimension {x,y,z} and the number of slice to output (only 3D) (ex. -s z10 means output xy plane where z = 10)
 -O outDir    | path to output directory (default:"result")
 model.xml    | Target SBML Model
 
