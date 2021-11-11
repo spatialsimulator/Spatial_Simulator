@@ -28,7 +28,8 @@ void printErrorMessage(char *str)
   cout << " -c #(double)  : min of color bar range (ex. -c 1 [default:0.0])" << endl;
   cout << " -C #(double)  : max of color bar range (ex. -C 10)" << endl;
   cout << "                 [default:Max value of InitialConcentration or InitialAmount]" << endl;
-  cout << " -s char#(int) : {x,y,z} and the number of slice (only 3D) (ex. -s z10)" << endl;
+  cout << " -s char#(int) : select which dimension {x,y,z} and the number of slice to output (only 3D)" << endl;
+  cout << "                 (ex. -s z10 means output xy plane where z = 10)" << endl;
 //cout << " -p            : create simulation image" << endl;
   cout << " -O outDir     : path to output directory" << endl << endl;
   cout << "(ex)           : " << str << " -t 0.1 -d 0.001 -o 10 -C 10 sam2d.xml" << endl;
